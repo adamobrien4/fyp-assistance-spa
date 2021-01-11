@@ -1,27 +1,33 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import {
+  BrowserRouter as Router
+} from 'react-router-dom';
 import App from "./App";
 
-import { MsalProvider } from "@azure/msal-react";
 import { PublicClientApplication } from "@azure/msal-browser";
+import { msalConfig } from './config/msal-config';
 
-import { config } from "./config/msal-config";
+import { ThemeProvider } from '@material-ui/core/styles';
+import { MsalProvider } from "@azure/msal-react";
 
-const pca = new PublicClientApplication({
-  auth: { clientId: config.auth.clientId },
-});
+import { theme } from "./styles/theme.js";
 
-
-
-//getAccessToken(pca,pca.getAllAccounts()[0])
-
-//<AuthContextProvider></AuthContextProvider>
-
+const msalInstance = new PublicClientApplication(msalConfig);
 
 const AppProvider = () => (
-  <MsalProvider instance={pca}>
-      <App />
-  </MsalProvider>
+  <Router>
+    <ThemeProvider theme={theme}>
+      <MsalProvider instance={msalInstance}>
+        <React.StrictMode>
+        	<App/>
+        </React.StrictMode>
+      </MsalProvider>
+    </ThemeProvider>
+  </Router>
 );
 
-ReactDOM.render(<AppProvider />, document.getElementById("root"));
+ReactDOM.render(
+  <AppProvider />,
+  document.getElementById("root")
+);

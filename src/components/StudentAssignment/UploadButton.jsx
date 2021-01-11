@@ -5,18 +5,14 @@ import Button from '@material-ui/core/Button';
 
 export default function UploadButton(props) {
 	return (
-		<Button variant="outlined" color="primary" onClick={props.onUpload} >
-			{props.checkedCount > 0 ? (
-				`Upload Selected (${props.checkedCount})`
-			) : (
-				'Upload All'
-			)}
+		<Button disabled={props.disabled} variant="contained" color="primary" onClick={props.onUpload} >
+			Upload All
 		</Button>
 	)
 }
 
 UploadButton.propTypes = {
-	checkedCount: PropTypes.number.isRequired,
+	disabled: PropTypes.bool.isRequired,
 	onUpload: PropTypes.func.isRequired
 }
 

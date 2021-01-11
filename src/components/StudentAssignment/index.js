@@ -1,27 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { config } from '../../config/msal-config';
 
+import Typography from "@material-ui/core/Typography";
 import { makeStyles } from '@material-ui/core/styles';
-import { Container, Paper, InputBase, Divider, Button, IconButton, List, ListItem, TextField, Checkbox, ListItemText, ListItemSecondaryAction, Tooltip } from '@material-ui/core';
+import { Container, Paper, InputBase, Divider, Button, IconButton, Checkbox, Tooltip, Collapse } from '@material-ui/core';
+import Alert from '@material-ui/lab/Alert';
 import DeleteSweepIcon from '@material-ui/icons/DeleteSweep';
-import SelectAllIcon from '@material-ui/icons/SelectAll';
-import { Menu, Search, AddCircle as AddCircleIcon } from '@material-ui/icons';
+import { AddCircle as AddCircleIcon, Close as CloseIcon } from '@material-ui/icons';
 
-import { useMsal } from "@azure/msal-react";
+import { useMsal, useAccount } from "@azure/msal-react";
 import { getAccessToken } from "../../msalHelpers";
 
 import UploadButton from './UploadButton';
-import SelectAllButton from './SelectAllButton';
-import StudentListItem from './StudentListItem';
 import CSVUploader from '../CSVUploader';
+import { DataGrid } from '@material-ui/data-grid';
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    padding: '2px 4px',
+    padding: '2px 0px',
     display: 'flex',
     alignItems: 'center',
-    width: 400,
+    width: "100%",
   },
   input: {
     marginLeft: theme.spacing(1),
@@ -40,74 +40,66 @@ export default function StudentAssignment(props) {
 
 	const classes = useStyles();
 
-	const {accounts, instance} = useMsal();
+	const { instance, accounts } = useMsal();
+  const account = useAccount(accounts[0] || {});
 
 	const [currentEmail, setCurrentEmail] = useState('');
 	const [students, setStudents] = useState([]);
 	const [checked, setChecked] = useState([]);
 	const [includeEmailPrefix, setIncludeEmailPrefix] = useState(true);
+	const [alertOpen, setAlertOpen] = useState(false);
+	const [alertMessage, setAlertMessage] = useState('Alert Message');
 
-	const handleToggle = (value) => {
-		const currentIndex = checked.indexOf(value);
-		const newChecked = [...checked];
-
-		if (currentIndex === -1) {
-			newChecked.push(value);
-		} else {
-			newChecked.splice(currentIndex, 1);
-		}
-
-		setChecked(newChecked);
-	}
+	useEffect(() => {
+		console.log('Running use effect');
+	}, [account, instance]);
 
 	const onChange = (e) => {
 		setCurrentEmail(e.target.value);
 	}
 
 	const onAdd = (e) => {
-		setCurrentEmail('');
+		if (currentEmail.length === 0) {
+			setAlertMessage('Cannot add empty email!');
+			setAlertOpen(true);
+			return;
+		}
+
+		// TODO: Check if email aleady has @stuentmail.ul.ie added, and dont add the prefix if so
+		// TODO: Check if email already has a prefix e.g. @ul.ie etc .split('@')[1] ...
 		let prefix = includeEmailPrefix ? '@studentmail.ul.ie' : '';
-		students.push(currentEmail + prefix);
+		let email = currentEmail + prefix;
+		let studentsList = [...students];
+		studentsList.push({id: studentsList.length, email: email});
+		setCurrentEmail('');
+		setStudents(studentsList);
 	}
 
 	const onAddBulk = (bulkStudents) => {
-		let studentsList = [...students].concat(bulkStudents);
-		setStudents(studentsList);
-	}
-
-	const onDelete = () => {
-		let studentsList = students.filter( (student) => !checked.includes(student));
-		setStudents(studentsList);
-		setChecked([]);
-	}
-
-	const deleteStudent = (student) => {
 		let studentsList = [...students];
-		studentsList.splice(studentsList.indexOf(student), 1);
-		setStudents(studentsList);
-	}
+		for (let student of bulkStudents) {
+			if (!student || student) {
 
-	const onSelectAll = () => {
-		if (checked.length === students.length) {
-			setChecked([]);
-		} else {
-			setChecked(students);
+			}
+			studentsList.push({
+				id: studentsList.length,
+				email: student
+			});
 		}
+		setStudents(studentsList);
 	}
 
 	const onUpload = async (e) => {
 
-		let body = {
-			studentEmails: []
+		if (students.length === 0) {
+			return console.log('Please enter some student emails before uploading');
 		}
 
-		if (checked.length > 0) {
-			console.log('Uploading these students: ' + checked);
-			body.studentEmails = checked;
-		} else {
-			console.log('Uploading these students: ' + students);
-			body.studentEmails = students;
+		let body = {
+			students: students
 		}
+
+		console.log('Uploading: ', body);
 
 		let request = {
       authority:
@@ -125,8 +117,6 @@ export default function StudentAssignment(props) {
         "Authorization": bearer
       }
 		};
-		
-		setChecked([]);
 
 		axios.post(`${config.endpoints.customApi}/students/assign`, body, options)
 			.then(res => {
@@ -134,25 +124,26 @@ export default function StudentAssignment(props) {
 					for (let i = 0; i < res.data.length; i++) {
 						let student = res.data[i];
 
-						console.log(student);
-
 						switch (student.status) {
 							case 'not_found':
-								alert(student.email + 'could not be found. Is the email address correct?');
+								console.log(student.email + 'could not be found. Is the email address correct?');
 								break;
 							case 'already_assigned':
-								deleteStudent(student.email);
+								console.log(student.email + ' is already assigned the student role');
 								break;
 							case 'assigned':
-								deleteStudent(student.email);
+								console.log(student.email + ' has been assinged the student role and added to the database');
+								break;
+							case 'exists':
+								console.log(student.email + ' is already assigned the student role');
 								break;
 							default:
-								console.log('Unknown student status');
 								console.log(student);
 								break
 						}
 					}
 				}
+				setStudents([]);
 			})
 			.catch(err => {
 				console.log(err);
@@ -163,52 +154,76 @@ export default function StudentAssignment(props) {
 		setIncludeEmailPrefix(e.target.checked);
 	}
 
-	const listStyle = {
-		maxWidth: 360
-	}
-
 	const endAdornment = includeEmailPrefix ? <span style={{fontSize: '10px', color: 'gray', marginRight: 10}}>@studentmail.ul.ie</span> : '';
+
+	const newStudentsColumns = [
+		{ field: 'email', headerName: 'Email', flex: 1 }
+	];
 
 	return (
 		<Container>
+			<Typography variant="h6">
+					Upload CSV file
+			</Typography>
 			<CSVUploader onAdd={onAddBulk} />
-			<Paper component="form" className={classes.root}>
-				<InputBase
-					className={classes.input}
-					placeholder="Student Email"
-					value={currentEmail}
-					inputProps={{ 'aria-label': 'Student Email' }}
-					endAdornment={endAdornment}
-					onChange={onChange}
-				/>
-				<Tooltip title="Include @studentmail prefix" aria-label="Include @studentmail prefix">
-					<Checkbox
-						edge="start"
-						disableRipple
-						checked={includeEmailPrefix}
-						onChange={onChangeEmailPrefix}
+			<Container maxWidth="md">
+				<Typography variant="h6">
+					Add Individual Student
+				</Typography>
+				<Paper component="form" className={classes.root}>
+					<InputBase
+						className={classes.input}
+						placeholder="Student Email"
+						value={currentEmail}
+						inputProps={{ 'aria-label': 'Student Email' }}
+						endAdornment={endAdornment}
+						onChange={onChange}
 					/>
-				</Tooltip>
-				<Divider className={classes.divider} orientation="vertical" />
-				<IconButton className={classes.iconButton} aria-label="search" onClick={onAdd}>
-					<AddCircleIcon />
-				</IconButton>
-			</Paper>
+					<Tooltip title="Include @studentmail prefix" aria-label="Include @studentmail prefix">
+						<Checkbox
+							edge="start"
+							disableRipple
+							checked={includeEmailPrefix}
+							onChange={onChangeEmailPrefix}
+						/>
+					</Tooltip>
+					<Divider className={classes.divider} orientation="vertical" />
+					<IconButton className={classes.iconButton} aria-label="search" onClick={onAdd}>
+						<AddCircleIcon />
+					</IconButton>
+				</Paper>
+				<Collapse in={alertOpen}>
+					<Alert
+						severity='error'
+						action={
+							<IconButton
+								aria-label="close"
+								color="inherit"
+								size="small"
+								onClick={() => {
+									setAlertOpen(false);
+								}}
+							>
+								<CloseIcon fontSize="inherit" />
+							</IconButton>
+						}
+					>
+						{alertMessage}
+					</Alert>
+				</Collapse>
 
-			<br />
-
-			<div>
-				<SelectAllButton onSelectAll={onSelectAll} checkedCount={checked.length} studentCount={students.length} />
-				<Button variant="outlined" color="secondary" startIcon={<DeleteSweepIcon />} onClick={onDelete}>Delete Selected ({checked.length})</Button>
-				<List style={listStyle}>
-				{students.map((student) => {
-					return (
-						<StudentListItem student={student} checked={checked} handleToggle={handleToggle} />
-					);
-				})}
-				</List>
-				<UploadButton checkedCount={checked.length} onUpload={onUpload}  />
-			</div>
+				<br />
+				<div style={{width: '100%', height: 400}}>
+					<DataGrid
+						rows={students}
+						columns={newStudentsColumns}
+						pageSize={5}
+					/>
+				</div>
+				<br />
+				<UploadButton disabled={students.length ? false : true} onUpload={onUpload}  />
+				<Button variant="outlined" color="secondary" onClick={() => { setStudents([]); }} >Clear Student List</Button>
+			</Container>
 		</Container>
 	);
 

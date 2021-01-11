@@ -19,7 +19,7 @@ export default function StudentListItem(props) {
 }
 
 StudentListItem.propTypes = {
-	student: PropTypes.object.isRequired,
-	checked: PropTypes.object.isRequired,
+	student: PropTypes.string.isRequired,
+	checked: PropTypes.array.isRequired,
 	handleToggle: PropTypes.func.isRequired
 }

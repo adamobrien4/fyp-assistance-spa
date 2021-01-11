@@ -1,23 +1,22 @@
 import React from 'react';
-import { useMsal } from "@azure/msal-react";
-
-import { config } from '../config/msal-config';
-
-import { getToken, getProfileData } from '../msalHelpers';
+import { AuthenticatedTemplate, UnauthenticatedTemplate } from "@azure/msal-react";
 
 function Welcome() {
 
-	console.log(config);
-
-	const { instance, accounts } = useMsal();
-
-	const account = accounts[0] || null;
+	// const [instance, accounts] = useMsal();
 
 	return (
 		<div>
-			<button onClick={() => alert('Hello World')}>Get Access Token</button>
-			<button onClick={() => getToken(instance, account)}>Get Access Token</button>
-			<button onClick={() => getProfileData(instance, account)}>Get Profile Data</button>
+			<AuthenticatedTemplate>
+				{/* <button onClick={() => alert('Hello World')}>Get Access Token</button>
+				<button onClick={() => getToken(instance, accounts[0])}>Get Access Token</button>
+				<button onClick={() => getProfileData(instance, accounts[0])}>Get Profile Data</button> */}
+				<h1>You are logged in</h1>
+			</AuthenticatedTemplate>
+
+			<UnauthenticatedTemplate>
+				<h4>Plesae login</h4>
+			</UnauthenticatedTemplate>
 		</div>
 	)
 }

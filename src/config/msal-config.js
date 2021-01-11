@@ -32,3 +32,16 @@ export const config = {
 		},
 	}
 }
+
+export const msalConfig = {
+	auth: {
+		clientId: config.auth.clientId,
+		redirectUri: "http://localhost:3000",
+		postLogoutRedirectUri: "http://localhost:3000"
+	}
+}
+
+export const loginRequest = {
+	authority: `${config.endpoints.login}/${config.auth.tenantId}`,
+	scopes: ['user.read', 'offline_access']
+};

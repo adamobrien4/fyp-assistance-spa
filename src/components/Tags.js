@@ -103,7 +103,7 @@ export default function Tags(props) {
 				// TODO: Remove unnecessary fields from these parent nodes before adding them to results
 				let parents = [];
 				nodePath.splice(0, nodePath.length - 1).map(parent => {
-					parents.push(parent.model.id);
+					return parents.push(parent.model.id);
 				});
 				results.push({self: node.model.id, parents: parents});
 			}
