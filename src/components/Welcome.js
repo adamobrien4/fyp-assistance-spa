@@ -1,24 +1,24 @@
-import React from 'react';
-import { AuthenticatedTemplate, UnauthenticatedTemplate } from "@azure/msal-react";
+import React from 'react'
+import { useMsal, AuthenticatedTemplate, UnauthenticatedTemplate } from '@azure/msal-react'
 
-function Welcome() {
+function Welcome () {
+  const { accounts } = useMsal()
+  const account = accounts[0] || {}
 
-	// const [instance, accounts] = useMsal();
+  return (
+    <div>
+      <AuthenticatedTemplate>
+        {/* <button onClick={() => alert('Hello World')}>Get Access Token</button>
+        <button onClick={() => getToken(instance, accounts[0])}>Get Access Token</button> */}
+        <button onClick={() => console.log(account)}>Get Profile Data</button>
+        <h1>You are logged in</h1>
+      </AuthenticatedTemplate>
 
-	return (
-		<div>
-			<AuthenticatedTemplate>
-				{/* <button onClick={() => alert('Hello World')}>Get Access Token</button>
-				<button onClick={() => getToken(instance, accounts[0])}>Get Access Token</button>
-				<button onClick={() => getProfileData(instance, accounts[0])}>Get Profile Data</button> */}
-				<h1>You are logged in</h1>
-			</AuthenticatedTemplate>
-
-			<UnauthenticatedTemplate>
-				<h4>Plesae login</h4>
-			</UnauthenticatedTemplate>
-		</div>
-	)
+      <UnauthenticatedTemplate>
+        <h4>Plesae login</h4>
+      </UnauthenticatedTemplate>
+    </div>
+  )
 }
 
-export default Welcome;
+export default Welcome

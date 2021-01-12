@@ -1,40 +1,29 @@
-import axios from 'axios';
-import { config } from './config/msal-config';
-import { getAccessToken } from './msalHelpers';
+import axios from 'axios'
+import { config } from './config/msal-config'
+import { getAccessToken } from './msalHelpers'
 
 const axiosConfig = {
-	baseURL: config.endpoints.graph,
-	timeout:2500
+  baseURL: config.endpoints.graph,
+  timeout: 2500
 }
 
-const axiosConfigured = axios.create(axiosConfig);
+const axiosGraphInstance = axios.create(axiosConfig)
 
-axiosConfigured.interceptors.request.use(request => {
+export const setupAxiosInstance = async (inst, acc) => {
+  let request = {
+    authority:
+      `${config.endpoints.login}//${config.auth.tenantId}`,
+    scopes: config.auth.scopes.graph,
+    account: acc
+  }
 
-	// get instance and do the token stuff there
-  
-  request.headers.common['Authorization'] = token;
-
-  return request
-})
-
-var setupAxiosInstance = async (inst, acc) => {
-
-	let request = {
-		authority:
-			`${config.endpoints.login}/${config.auth.tenantId}`,
-		scopes: config.auth.scopes,
-		account: acc,
-	};
-
-	var token = await getAccessToken(inst, request);
-	if (token) {
-		axiosConfigured.defaults.headers.common['Authorization'] = token;
-	} else {
-		delete axiosConfigured.defaults.headers.common['Authorization'];
-	}
-	console.log('Setup');
-	return axiosConfigured;
+  const accessToken = await getAccessToken(inst, request)
+  if (accessToken) {
+    axiosGraphInstance.defaults.headers.common.Authorization = accessToken
+  } else {
+    delete axiosGraphInstance.defaults.headers.common.Authorization
+  }
+  return axiosGraphInstance
 }
 
-export default axiosConfigured;
+export default axiosGraphInstance
