@@ -9,6 +9,8 @@ import { InteractionType } from '@azure/msal-browser'
 import { loginRequest, config } from './config/msal-config'
 
 import { AuthContext } from './contexts/AuthContext'
+import { AbilityContext } from './Can'
+import ability from './config/ability'
 import axiosGraphInstance, { setupAxiosInstance } from './Axios'
 
 import ErrorComponent from './components/Auth/ErrorComponent'
@@ -24,7 +26,7 @@ function App () {
   const { instance, accounts, inProgress } = useMsal()
   const account = useAccount(accounts[0] || {})
 
-  const { setAccountType } = useContext(AuthContext)
+  const { accountType, setAccountType } = useContext(AuthContext)
 
   const authRequest = {
     ...loginRequest
@@ -98,8 +100,10 @@ function App () {
       errorComponent={ErrorComponent}
       loadingComponent={Loading}
     >
-      <NavBar />
-      <Pages />
+      <AbilityContext.Provider value={ability(accountType)}>
+        <NavBar />
+        <Pages />
+      </AbilityContext.Provider>
     </MsalAuthenticationTemplate>
   )
 }
@@ -122,7 +126,7 @@ function Pages () {
         <Button variant='contained' color='primary' onClick={() => instance.logout({ onRedirectNavigate: 'http://localhost:3000/' })} >Logout</Button>
       </Route>
 
-      <Route path='/'>
+      <Route exact path='/'>
         <Welcome />
       </Route>
     </Switch>
