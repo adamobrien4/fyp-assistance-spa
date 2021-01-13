@@ -19,6 +19,7 @@ module.exports = {
     'only-warn'
   ],
   rules: {
-    'prefer-const': 0
+    'prefer-const': 0,
+    'multiline-ternary': 0
   }
 }

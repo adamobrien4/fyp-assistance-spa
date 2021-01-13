@@ -5,6 +5,7 @@ import { config } from '../../config/msal-config'
 import Typography from '@material-ui/core/Typography'
 import { makeStyles } from '@material-ui/core/styles'
 import { Container, Paper, InputBase, Divider, Button, IconButton, Checkbox, Tooltip, Collapse } from '@material-ui/core'
+import { DataGrid } from '@material-ui/data-grid'
 import Alert from '@material-ui/lab/Alert'
 import { AddCircle as AddCircleIcon, Close as CloseIcon } from '@material-ui/icons'
 
@@ -13,7 +14,6 @@ import { getAccessToken } from '../../msalHelpers'
 
 import UploadButton from './UploadButton'
 import CSVUploader from '../CSVUploader'
-import { DataGrid } from '@material-ui/data-grid'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -35,14 +35,14 @@ const useStyles = makeStyles((theme) => ({
   }
 }))
 
-export default function StudentAssignment (props) {
+export default function SupervisorAssignment (props) {
   const classes = useStyles()
 
   const { instance, accounts } = useMsal()
   const account = useAccount(accounts[0] || {})
 
   const [currentEmail, setCurrentEmail] = useState('')
-  const [students, setStudents] = useState([])
+  const [supervisors, setSupervisors] = useState([])
   const [includeEmailPrefix, setIncludeEmailPrefix] = useState(true)
   const [alertOpen, setAlertOpen] = useState(false)
   const [alertMessage, setAlertMessage] = useState('Alert Message')
@@ -64,36 +64,36 @@ export default function StudentAssignment (props) {
 
     // TODO: Check if email aleady has @stuentmail.ul.ie added, and dont add the prefix if so
     // TODO: Check if email already has a prefix e.g. @ul.ie etc .split('@')[1] ...
-    let prefix = includeEmailPrefix ? '@studentmail.ul.ie' : ''
+    let prefix = includeEmailPrefix ? '@ul.ie' : ''
     let email = currentEmail + prefix
-    let studentsList = [...students]
-    studentsList.push({ id: studentsList.length, email: email })
+    let supervisorsList = [...supervisors]
+    supervisorsList.push({ id: supervisorsList.length, email: email })
     setCurrentEmail('')
-    setStudents(studentsList)
+    setSupervisors(supervisorsList)
   }
 
-  const onAddBulk = (bulkStudents) => {
-    let studentsList = [...students]
-    for (let student of bulkStudents) {
+  const onAddBulk = (bulksupervisors) => {
+    let supervisorsList = [...supervisors]
+    for (let supervisor of bulksupervisors) {
       // Skip any empty rows or strings
-      if (!student || student.length === 0) {
+      if (!supervisor || supervisor.length === 0) {
         return
       }
-      studentsList.push({
-        id: studentsList.length,
-        email: student
+      supervisorsList.push({
+        id: supervisorsList.length,
+        email: supervisor
       })
     }
-    setStudents(studentsList)
+    setSupervisors(supervisorsList)
   }
 
   const onUpload = async (e) => {
-    if (students.length === 0) {
-      return console.log('Please enter some student emails before uploading')
+    if (supervisors.length === 0) {
+      return console.log('Please enter some supervisor emails before uploading')
     }
 
     let body = {
-      students: students
+      supervisors: supervisors
     }
 
     console.log('Uploading: ', body)
@@ -115,32 +115,32 @@ export default function StudentAssignment (props) {
       }
     }
 
-    axios.post(`${config.endpoints.customApi}/students/assign`, body, options)
+    axios.post(`${config.endpoints.customApi}/supervisors/assign`, body, options)
       .then(res => {
         if (res.data.length > 0) {
           for (let i = 0; i < res.data.length; i++) {
-            let student = res.data[i]
+            let supervisor = res.data[i]
 
-            switch (student.status) {
+            switch (supervisor.status) {
               case 'not_found':
-                console.log(student.email + 'could not be found. Is the email address correct?')
+                console.log(supervisor.email + 'could not be found. Is the email address correct?')
                 break
               case 'already_assigned':
-                console.log(student.email + ' is already assigned the student role')
+                console.log(supervisor.email + ' is already assigned the supervisor role')
                 break
               case 'assigned':
-                console.log(student.email + ' has been assinged the student role and added to the database')
+                console.log(supervisor.email + ' has been assinged the supervisor role and added to the database')
                 break
               case 'exists':
-                console.log(student.email + ' is already assigned the student role')
+                console.log(supervisor.email + ' is already assigned the supervisor role')
                 break
               default:
-                console.log(student)
+                console.log(supervisor)
                 break
             }
           }
         }
-        setStudents([])
+        setSupervisors([])
       })
       .catch(err => {
         console.log(err)
@@ -151,9 +151,9 @@ export default function StudentAssignment (props) {
     setIncludeEmailPrefix(e.target.checked)
   }
 
-  const endAdornment = includeEmailPrefix ? <span style={{ fontSize: '10px', color: 'gray', marginRight: 10 }}>@studentmail.ul.ie</span> : ''
+  const endAdornment = includeEmailPrefix ? <span style={{ fontSize: '10px', color: 'gray', marginRight: 10 }}>@ul.ie</span> : ''
 
-  const newStudentsColumns = [
+  const newsupervisorsColumns = [
     { field: 'email', headerName: 'Email', flex: 1 }
   ]
 
@@ -165,18 +165,18 @@ export default function StudentAssignment (props) {
       <CSVUploader onAdd={onAddBulk} />
       <Container maxWidth='md'>
         <Typography variant='h6'>
-          Add Individual Student
+          Add Individual Supervisor
         </Typography>
         <Paper component='form' className={classes.root}>
           <InputBase
             className={classes.input}
-            placeholder='Student Email'
+            placeholder='Supervisor Email'
             value={currentEmail}
-            inputProps={{ 'aria-label': 'Student Email' }}
+            inputProps={{ 'aria-label': 'Supervisor Email' }}
             endAdornment={endAdornment}
             onChange={onChange}
           />
-          <Tooltip title='Include @studentmail prefix' aria-label='Include @studentmail prefix'>
+          <Tooltip title='Include @ul prefix' aria-label='Include @ul prefix'>
             <Checkbox
               edge='start'
               disableRipple
@@ -212,15 +212,15 @@ export default function StudentAssignment (props) {
         <br />
         <div style={{ width: '100%', height: 400 }}>
           <DataGrid
-            rows={students}
-            columns={newStudentsColumns}
+            rows={supervisors}
+            columns={newsupervisorsColumns}
             pageSize={5}
           />
         </div>
         <br />
         {/* eslint-disable-next-line no-unneeded-ternary */}
-        <UploadButton disabled={ students.length ? false : true } onUpload={onUpload} />
-        <Button variant='outlined' color='secondary' onClick={() => { setStudents([]) }} >Clear Student List</Button>
+        <UploadButton disabled={ supervisors.length ? false : true } onUpload={onUpload} />
+        <Button variant='outlined' color='secondary' onClick={() => { setSupervisors([]) }} >Clear Supervisor List</Button>
       </Container>
     </Container>
   )
