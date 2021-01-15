@@ -4,6 +4,7 @@ import {
   BrowserRouter as Router
 } from 'react-router-dom'
 import App from './App'
+import './index.css'
 
 import { PublicClientApplication } from '@azure/msal-browser'
 import AuthContextProvider from './contexts/AuthContext'

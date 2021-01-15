@@ -101,7 +101,7 @@ export default function Tags (props) {
         // Add the 2nd last node from the current nodes path (it's parent node)
         // TODO: Remove unnecessary fields from these parent nodes before adding them to results
         let parents = []
-        nodePath.splice(0, nodePath.length - 1).map(parent => {
+        nodePath.splice(1, nodePath.length - 2).map(parent => {
           return parents.push(parent.model.id)
         })
         results.push({ self: node.model.id, parents: parents })

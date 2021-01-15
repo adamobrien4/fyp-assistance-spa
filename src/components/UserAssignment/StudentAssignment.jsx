@@ -1,19 +1,17 @@
 import React, { useState, useEffect } from 'react'
-import axios from 'axios'
 import { config } from '../../config/msal-config'
 
+import { useMsal, useAccount } from '@azure/msal-react'
 import Typography from '@material-ui/core/Typography'
 import { makeStyles } from '@material-ui/core/styles'
 import { Container, Paper, InputBase, Divider, Button, IconButton, Checkbox, Tooltip, Collapse } from '@material-ui/core'
+import { DataGrid } from '@material-ui/data-grid'
 import Alert from '@material-ui/lab/Alert'
 import { AddCircle as AddCircleIcon, Close as CloseIcon } from '@material-ui/icons'
 
-import { useMsal, useAccount } from '@azure/msal-react'
-import { getAccessToken } from '../../msalHelpers'
-
+import api from '../../utils/api.axios'
 import UploadButton from './UploadButton'
 import CSVUploader from '../CSVUploader'
-import { DataGrid } from '@material-ui/data-grid'
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -98,24 +96,7 @@ export default function StudentAssignment (props) {
 
     console.log('Uploading: ', body)
 
-    let request = {
-      authority:
-      `${config.endpoints.login}/${config.auth.tenantId}`,
-      scopes: config.auth.scopes.customApi,
-      account: accounts[0]
-    }
-
-    let accessResponse = await getAccessToken(instance, request)
-
-    const bearer = `Bearer ${accessResponse.accessToken}`
-
-    const options = {
-      headers: {
-        Authorization: bearer
-      }
-    }
-
-    axios.post(`${config.endpoints.customApi}/student/assign`, body, options)
+    api.post(`${config.endpoints.customApi}/student/assign`, body)
       .then(res => {
         if (res.data.length > 0) {
           for (let i = 0; i < res.data.length; i++) {

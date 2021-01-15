@@ -11,18 +11,20 @@ import { loginRequest, config } from './config/msal-config'
 import { AuthContext } from './contexts/AuthContext'
 import { AbilityContext } from './Auth/Can'
 import ability from './Auth/ability'
-import axiosGraphInstance, { setup } from './utils/api.axios'
+import { setup as apiSetup } from './utils/api.axios'
+import axiosGraphInstance, { setup as graphSetup } from './utils/graph.axios'
 
 import ErrorComponent from './components/Auth/ErrorComponent'
 import Loading from './components/Auth/Loading'
 import AppLoading from './components/AppLoading'
 
-import Suggestion from './components/Suggestion'
+import TopicManagement from './components/TopicManagement'
+import AddTopicForm from './components/AddTopicForm'
 import Welcome from './components/Welcome'
 import StudentAssignment from './components/UserAssignment/StudentAssignment'
 import SupervisorAssignment from './components/UserAssignment/SupervisorAssignment'
 import ManageCoordinator from './components/ManageCoordinator'
-import NavBar from './components/NavBar'
+import Header from './components/Header'
 import Button from '@material-ui/core/Button'
 
 function App () {
@@ -38,6 +40,8 @@ function App () {
 
   useEffect(() => {
     if (account && inProgress === 'none') {
+      apiSetup(instance, account)
+      graphSetup(instance, account)
       // TODO: Wait on this function to finish before allowing the user to continue to the website
       // This will ensure all profile data is ready to use throughout the app
       instance.acquireTokenSilent({
@@ -56,7 +60,6 @@ function App () {
           if (storedRoleObject.localAccountId === account.localAccountId) {
             console.log('Setting account role from local storage')
             setAccountType(storedRoleObject.role)
-            setup(instance, account)
             setAppReady(true)
             return
           }
@@ -71,6 +74,7 @@ function App () {
 
               if (!roleObject) {
                 console.log('Unknown role: ' + JSON.stringify(roleData))
+                instance.logout(account)
                 continue
               }
 
@@ -83,7 +87,6 @@ function App () {
 
             if (role) {
               setAccountType(role)
-              setup(instance, account)
               setAppReady(true)
 
               localStorage.setItem('fyp-assistance-role-type', JSON.stringify({
@@ -92,6 +95,7 @@ function App () {
               }))
             } else {
               alert('You have no assigned role')
+              instance.logout(account)
             }
           })
           .catch(err => {
@@ -110,7 +114,7 @@ function App () {
     >
       {appReady ? (
         <AbilityContext.Provider value={ability(accountType)}>
-          <NavBar />
+          <Header />
           <Pages />
       </AbilityContext.Provider>
       ) : (
@@ -123,17 +127,22 @@ function App () {
 function Pages () {
   const { instance } = useMsal()
 
+  // Implement Can functionality to only show available routes
   return (
     <Switch>
-      <Route path='/suggestion'>
-        <Suggestion />
+      <Route path='/topics/add'>
+        <AddTopicForm />
       </Route>
 
-      <Route path='/student/assignment'>
+      <Route path='/topics'>
+        <TopicManagement />
+      </Route>
+
+      <Route path='/student/assign'>
         <StudentAssignment />
       </Route>
 
-      <Route path='supervisor/assignment'>
+      <Route path='/supervisor/assign'>
         <SupervisorAssignment />
       </Route>
 

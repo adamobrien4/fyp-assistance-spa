@@ -13,15 +13,18 @@ export default function defineAbilityFor (userRole) {
       can('manage', 'Proposal', { publisher: 'me' })
       break
     case 'Supervisor':
-    case 'Coordinator':
       // FIXME: Rename 'publisher' to match the name of the user who created the proposal
       can('read', 'Topic')
       can('create', 'Topic')
       can('manage', 'Topic', { publisher: 'me' })
+      break
     // eslint-disable-next-line
     case 'Coordinator':
       can('manage', 'Student')
       can('manage', 'Supervisor')
+      can('read', 'Topic')
+      can('create', 'Topic')
+      can('manage', 'Topic', { publisher: 'me' })
       break
     case 'Administrator':
       can('manage', 'Coordinator')

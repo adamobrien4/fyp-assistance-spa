@@ -57,6 +57,8 @@ export default function ManageCoordinator (props) {
           switch (res.data) {
             case 'success':
               console.log('Sucessful Coordinator assign')
+              // TODO: Find out how to assign this role automatically
+              alert('Please assign "Privilaged Role Administrator" to uploaded Coordinator to continue, (Azure Admin Center)')
               refreshAssignedCoordinators()
               break
             default:
