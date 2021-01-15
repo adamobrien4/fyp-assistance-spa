@@ -26,6 +26,7 @@ import SupervisorAssignment from './components/UserAssignment/SupervisorAssignme
 import ManageCoordinator from './components/ManageCoordinator'
 import Header from './components/Header'
 import Button from '@material-ui/core/Button'
+import ManageStudent from './components/UserRemoval/ManageStudent'
 
 function App () {
   const [appReady, setAppReady] = useState(false)
@@ -140,6 +141,10 @@ function Pages () {
 
       <Route path='/student/assign'>
         <StudentAssignment />
+      </Route>
+
+      <Route path='/student/manage'>
+        <ManageStudent />
       </Route>
 
       <Route path='/supervisor/assign'>

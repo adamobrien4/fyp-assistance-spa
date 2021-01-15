@@ -1,5 +1,5 @@
 import React from 'react'
-import { List, ListItem, ListItemText } from '@material-ui/core'
+import { List, ListItem } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import { Link } from 'react-router-dom'
 import { AuthenticatedTemplate } from '@azure/msal-react'
@@ -51,6 +51,11 @@ export default function NavBar (props) {
           <Can I='create' a='Student'>
             <ListItem button>
               <Link to='/student/assign' className={styles.linkText}>Assign Students</Link>
+            </ListItem>
+          </Can>
+          <Can I='manage' a='Student'>
+            <ListItem button>
+              <Link to='/student/manage' className={styles.linkText}>Manage Students</Link>
             </ListItem>
           </Can>
           <Can I='create' a='Supervisor'>
