@@ -1,9 +1,13 @@
 import React from 'react'
-import { useMsal, AuthenticatedTemplate, UnauthenticatedTemplate } from '@azure/msal-react'
+import {
+  useMsal,
+  AuthenticatedTemplate,
+  UnauthenticatedTemplate
+} from '@azure/msal-react'
 import DropdownTreeSelect from 'react-dropdown-tree-select'
 import 'react-dropdown-tree-select/dist/styles.css'
 
-function Welcome () {
+function Welcome() {
   const { accounts } = useMsal()
   const account = accounts[0] || {}
 
@@ -33,7 +37,11 @@ function Welcome () {
         <button onClick={() => console.log(account)}>Get Profile Data</button>
         <h1>You are logged in</h1>
 
-        <DropdownTreeSelect data={data} onChange={onChange} showDropdown='always' />
+        <DropdownTreeSelect
+          data={data}
+          onChange={onChange}
+          showDropdown="always"
+        />
       </AuthenticatedTemplate>
 
       <UnauthenticatedTemplate>

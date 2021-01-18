@@ -5,15 +5,28 @@ import { config } from '../../config/msal-config'
 import api from '../../utils/api.axios'
 import Typography from '@material-ui/core/Typography'
 import { makeStyles } from '@material-ui/core/styles'
-import { Container, Paper, InputBase, Divider, Button, IconButton, Checkbox, Tooltip, Collapse } from '@material-ui/core'
+import {
+  Container,
+  Paper,
+  InputBase,
+  Divider,
+  Button,
+  IconButton,
+  Checkbox,
+  Tooltip,
+  Collapse
+} from '@material-ui/core'
 import { DataGrid } from '@material-ui/data-grid'
 import Alert from '@material-ui/lab/Alert'
-import { AddCircle as AddCircleIcon, Close as CloseIcon } from '@material-ui/icons'
+import {
+  AddCircle as AddCircleIcon,
+  Close as CloseIcon
+} from '@material-ui/icons'
 
 import UploadButton from './UploadButton'
 import CSVUploader from '../CSVUploader'
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(theme => ({
   root: {
     padding: '2px 0px',
     display: 'flex',
@@ -33,7 +46,7 @@ const useStyles = makeStyles((theme) => ({
   }
 }))
 
-export default function SupervisorAssignment (props) {
+export default function SupervisorAssignment(props) {
   const classes = useStyles()
 
   const { instance, accounts } = useMsal()
@@ -49,11 +62,11 @@ export default function SupervisorAssignment (props) {
     console.log('Running use effect')
   }, [account, instance])
 
-  const onChange = (e) => {
+  const onChange = e => {
     setCurrentEmail(e.target.value)
   }
 
-  const onAdd = (e) => {
+  const onAdd = e => {
     if (currentEmail.length === 0) {
       setAlertMessage('Cannot add empty email!')
       setAlertOpen(true)
@@ -70,7 +83,7 @@ export default function SupervisorAssignment (props) {
     setSupervisors(supervisorsList)
   }
 
-  const onAddBulk = (bulksupervisors) => {
+  const onAddBulk = bulksupervisors => {
     let supervisorsList = [...supervisors]
     for (let supervisor of bulksupervisors) {
       // Skip any empty rows or strings
@@ -85,7 +98,7 @@ export default function SupervisorAssignment (props) {
     setSupervisors(supervisorsList)
   }
 
-  const onUpload = async (e) => {
+  const onUpload = async e => {
     if (supervisors.length === 0) {
       return console.log('Please enter some supervisor emails before uploading')
     }
@@ -96,7 +109,8 @@ export default function SupervisorAssignment (props) {
 
     console.log('Uploading: ', body)
 
-    api.post('/supervisor/assign', body)
+    api
+      .post('/supervisor/assign', body)
       .then(res => {
         if (res.data.length > 0) {
           for (let i = 0; i < res.data.length; i++) {
@@ -104,16 +118,26 @@ export default function SupervisorAssignment (props) {
 
             switch (supervisor.status) {
               case 'not_found':
-                console.log(supervisor.email + 'could not be found. Is the email address correct?')
+                console.log(
+                  supervisor.email +
+                    'could not be found. Is the email address correct?'
+                )
                 break
               case 'already_assigned':
-                console.log(supervisor.email + ' is already assigned the supervisor role')
+                console.log(
+                  supervisor.email + ' is already assigned the supervisor role'
+                )
                 break
               case 'assigned':
-                console.log(supervisor.email + ' has been assinged the supervisor role and added to the database')
+                console.log(
+                  supervisor.email +
+                    ' has been assinged the supervisor role and added to the database'
+                )
                 break
               case 'exists':
-                console.log(supervisor.email + ' is already assigned the supervisor role')
+                console.log(
+                  supervisor.email + ' is already assigned the supervisor role'
+                )
                 break
               default:
                 console.log(supervisor)
@@ -128,11 +152,17 @@ export default function SupervisorAssignment (props) {
       })
   }
 
-  const onChangeEmailPrefix = (e) => {
+  const onChangeEmailPrefix = e => {
     setIncludeEmailPrefix(e.target.checked)
   }
 
-  const endAdornment = includeEmailPrefix ? <span style={{ fontSize: '10px', color: 'gray', marginRight: 10 }}>@ul.ie</span> : ''
+  const endAdornment = includeEmailPrefix ? (
+    <span style={{ fontSize: '10px', color: 'gray', marginRight: 10 }}>
+      @ul.ie
+    </span>
+  ) : (
+    ''
+  )
 
   const newsupervisorsColumns = [
     { field: 'email', headerName: 'Email', flex: 1 }
@@ -140,52 +170,49 @@ export default function SupervisorAssignment (props) {
 
   return (
     <Container>
-      <Typography variant='h6'>
-          Upload CSV file
-      </Typography>
+      <Typography variant="h6">Upload CSV file</Typography>
       <CSVUploader onAdd={onAddBulk} />
-      <Container maxWidth='md'>
-        <Typography variant='h6'>
-          Add Individual Supervisor
-        </Typography>
-        <Paper component='form' className={classes.root}>
+      <Container maxWidth="md">
+        <Typography variant="h6">Add Individual Supervisor</Typography>
+        <Paper component="form" className={classes.root}>
           <InputBase
             className={classes.input}
-            placeholder='Supervisor Email'
+            placeholder="Supervisor Email"
             value={currentEmail}
             inputProps={{ 'aria-label': 'Supervisor Email' }}
             endAdornment={endAdornment}
             onChange={onChange}
           />
-          <Tooltip title='Include @ul prefix' aria-label='Include @ul prefix'>
+          <Tooltip title="Include @ul prefix" aria-label="Include @ul prefix">
             <Checkbox
-              edge='start'
+              edge="start"
               disableRipple
               checked={includeEmailPrefix}
               onChange={onChangeEmailPrefix}
             />
           </Tooltip>
-          <Divider className={classes.divider} orientation='vertical' />
-          <IconButton className={classes.iconButton} aria-label='search' onClick={onAdd}>
+          <Divider className={classes.divider} orientation="vertical" />
+          <IconButton
+            className={classes.iconButton}
+            aria-label="search"
+            onClick={onAdd}>
             <AddCircleIcon />
           </IconButton>
         </Paper>
         <Collapse in={alertOpen}>
           <Alert
-            severity='error'
+            severity="error"
             action={
               <IconButton
-                aria-label='close'
-                color='inherit'
-                size='small'
+                aria-label="close"
+                color="inherit"
+                size="small"
                 onClick={() => {
                   setAlertOpen(false)
-                }}
-              >
-                <CloseIcon fontSize='inherit' />
+                }}>
+                <CloseIcon fontSize="inherit" />
               </IconButton>
-            }
-          >
+            }>
             {alertMessage}
           </Alert>
         </Collapse>
@@ -200,8 +227,18 @@ export default function SupervisorAssignment (props) {
         </div>
         <br />
         {/* eslint-disable-next-line no-unneeded-ternary */}
-        <UploadButton disabled={ supervisors.length ? false : true } onUpload={onUpload} />
-        <Button variant='outlined' color='secondary' onClick={() => { setSupervisors([]) }} >Clear Supervisor List</Button>
+        <UploadButton
+          disabled={supervisors.length ? false : true}
+          onUpload={onUpload}
+        />
+        <Button
+          variant="outlined"
+          color="secondary"
+          onClick={() => {
+            setSupervisors([])
+          }}>
+          Clear Supervisor List
+        </Button>
       </Container>
     </Container>
   )

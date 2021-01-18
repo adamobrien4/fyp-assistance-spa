@@ -4,10 +4,15 @@ import { useForm } from 'react-hook-form'
 
 import { PrimaryButton } from './PrimaryButton'
 import { Input } from './Input'
-import { Container, FormControlLabel, Checkbox, Collapse } from '@material-ui/core'
+import {
+  Container,
+  FormControlLabel,
+  Checkbox,
+  Collapse
+} from '@material-ui/core'
 import Autocomplete from '@material-ui/lab/AutoComplete'
 
-export default function AddTopicForm (props) {
+export default function AddTopicForm(props) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [requirements, setRequirements] = useState('')
@@ -62,41 +67,44 @@ export default function AddTopicForm (props) {
   // }
 
   return (
-    <Container component='main' maxWidth='md'>
-      <form autoComplete='off' onSubmit={handleSubmit((data) => console.log(JSON.stringify(data)))}>
+    <Container component="main" maxWidth="md">
+      <form
+        autoComplete="off"
+        onSubmit={handleSubmit(data => console.log(JSON.stringify(data)))}>
         <Input
-          type='text'
-          name='title'
-          label='Title'
+          type="text"
+          name="title"
+          label="Title"
           inputRef={register}
           value={title}
         />
         <Input
-          type='text'
-          name='description'
-          label='Description'
+          type="text"
+          name="description"
+          label="Description"
           multiline
           rows={2}
           rowsMax={6}
           inputRef={register}
         />
-        <Input
-          name='tags'
-          label='Tags'
-          inputRef={register}
-        />
+        <Input name="tags" label="Tags" inputRef={register} />
         <FormControlLabel
           control={
-            <Checkbox defaultChecked={false} color="primary" inputRef={register} name="hasRequirements" />
+            <Checkbox
+              defaultChecked={false}
+              color="primary"
+              inputRef={register}
+              name="hasRequirements"
+            />
           }
           label="Does your Topic have student requirements?"
         />
 
         <Collapse in={hasRequirements}>
           <Input
-            type='text'
-            name='requirements'
-            label='Requirements (optional)'
+            type="text"
+            name="requirements"
+            label="Requirements (optional)"
             multiline
             rows={2}
             rowsMax={6}
@@ -106,26 +114,36 @@ export default function AddTopicForm (props) {
 
         <FormControlLabel
           control={
-            <Checkbox defaultChecked={false} color="primary" inputRef={register} name="hasDesiredSkills" />
+            <Checkbox
+              defaultChecked={false}
+              color="primary"
+              inputRef={register}
+              name="hasDesiredSkills"
+            />
           }
           label="Students have desired skills?"
         />
 
         <Collapse in={hasDesiredSkills}>
           <Input
-              type='text'
-              name='desiredSkills'
-              label='Desired Skills (optional)'
-              multiline
-              rows={2}
-              rowsMax={6}
-              inputRef={register}
-            />
+            type="text"
+            name="desiredSkills"
+            label="Desired Skills (optional)"
+            multiline
+            rows={2}
+            rowsMax={6}
+            inputRef={register}
+          />
         </Collapse>
 
         <FormControlLabel
           control={
-            <Checkbox defaultChecked={false} color="primary" inputRef={register} name="hasTargetedCourses" />
+            <Checkbox
+              defaultChecked={false}
+              color="primary"
+              inputRef={register}
+              name="hasTargetedCourses"
+            />
           }
           label="Is your Topic course specific?"
         />
@@ -143,9 +161,9 @@ export default function AddTopicForm (props) {
               params.inputProps.onKeyDown = handleKeyDown
               return (
                 <Input
-                  name='targetedCourses'
+                  name="targetedCourses"
                   {...params}
-                  label='Select Targeted Courses'
+                  label="Select Targeted Courses"
                   inputRef={register}
                 />
               )

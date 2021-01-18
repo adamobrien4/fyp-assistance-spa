@@ -18,8 +18,13 @@ export default function AssignedUsers(props) {
   return (
     <div>
       <h4>Existing Students</h4>
-      <div style={{width: '100%', height: '400px'}}>
-        <DataGrid rows={rows} columns={columns} pageSize={10} checkboxSelection />
+      <div style={{ width: '100%', height: '400px' }}>
+        <DataGrid
+          rows={rows}
+          columns={columns}
+          pageSize={10}
+          checkboxSelection
+        />
       </div>
     </div>
   )

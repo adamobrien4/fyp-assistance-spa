@@ -4,16 +4,29 @@ import { config } from '../../config/msal-config'
 import { useMsal, useAccount } from '@azure/msal-react'
 import Typography from '@material-ui/core/Typography'
 import { makeStyles } from '@material-ui/core/styles'
-import { Container, Paper, InputBase, Divider, Button, IconButton, Checkbox, Tooltip, Collapse } from '@material-ui/core'
+import {
+  Container,
+  Paper,
+  InputBase,
+  Divider,
+  Button,
+  IconButton,
+  Checkbox,
+  Tooltip,
+  Collapse
+} from '@material-ui/core'
 import { DataGrid } from '@material-ui/data-grid'
 import Alert from '@material-ui/lab/Alert'
-import { AddCircle as AddCircleIcon, Close as CloseIcon } from '@material-ui/icons'
+import {
+  AddCircle as AddCircleIcon,
+  Close as CloseIcon
+} from '@material-ui/icons'
 
 import api from '../../utils/api.axios'
 import UploadButton from './UploadButton'
 import CSVUploader from '../CSVUploader'
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(theme => ({
   root: {
     padding: '2px 0px',
     display: 'flex',
@@ -33,7 +46,7 @@ const useStyles = makeStyles((theme) => ({
   }
 }))
 
-export default function StudentAssignment (props) {
+export default function StudentAssignment(props) {
   const classes = useStyles()
 
   const { instance, accounts } = useMsal()
@@ -49,11 +62,11 @@ export default function StudentAssignment (props) {
     console.log('Running use effect')
   }, [account, instance])
 
-  const onChange = (e) => {
+  const onChange = e => {
     setCurrentEmail(e.target.value)
   }
 
-  const onAdd = (e) => {
+  const onAdd = e => {
     if (currentEmail.length === 0) {
       setAlertMessage('Cannot add empty email!')
       setAlertOpen(true)
@@ -70,7 +83,7 @@ export default function StudentAssignment (props) {
     setStudents(studentsList)
   }
 
-  const onAddBulk = (bulkStudents) => {
+  const onAddBulk = bulkStudents => {
     let studentsList = [...students]
     for (let student of bulkStudents) {
       // Skip any empty rows or strings
@@ -85,7 +98,7 @@ export default function StudentAssignment (props) {
     setStudents(studentsList)
   }
 
-  const onUpload = async (e) => {
+  const onUpload = async e => {
     if (students.length === 0) {
       return console.log('Please enter some student emails before uploading')
     }
@@ -96,7 +109,8 @@ export default function StudentAssignment (props) {
 
     console.log('Uploading: ', body)
 
-    api.post(`${config.endpoints.customApi}/student/assign`, body)
+    api
+      .post(`${config.endpoints.customApi}/student/assign`, body)
       .then(res => {
         if (res.data.length > 0) {
           for (let i = 0; i < res.data.length; i++) {
@@ -104,16 +118,26 @@ export default function StudentAssignment (props) {
 
             switch (student.status) {
               case 'not_found':
-                console.log(student.email + 'could not be found. Is the email address correct?')
+                console.log(
+                  student.email +
+                    'could not be found. Is the email address correct?'
+                )
                 break
               case 'already_assigned':
-                console.log(student.email + ' is already assigned the student role')
+                console.log(
+                  student.email + ' is already assigned the student role'
+                )
                 break
               case 'assigned':
-                console.log(student.email + ' has been assinged the student role and added to the database')
+                console.log(
+                  student.email +
+                    ' has been assinged the student role and added to the database'
+                )
                 break
               case 'exists':
-                console.log(student.email + ' is already assigned the student role')
+                console.log(
+                  student.email + ' is already assigned the student role'
+                )
                 break
               default:
                 console.log(student)
@@ -128,80 +152,89 @@ export default function StudentAssignment (props) {
       })
   }
 
-  const onChangeEmailPrefix = (e) => {
+  const onChangeEmailPrefix = e => {
     setIncludeEmailPrefix(e.target.checked)
   }
 
-  const endAdornment = includeEmailPrefix ? <span style={{ fontSize: '10px', color: 'gray', marginRight: 10 }}>@studentmail.ul.ie</span> : ''
+  const endAdornment = includeEmailPrefix ? (
+    <span style={{ fontSize: '10px', color: 'gray', marginRight: 10 }}>
+      @studentmail.ul.ie
+    </span>
+  ) : (
+    ''
+  )
 
-  const newStudentsColumns = [
-    { field: 'email', headerName: 'Email', flex: 1 }
-  ]
+  const newStudentsColumns = [{ field: 'email', headerName: 'Email', flex: 1 }]
 
   return (
     <Container>
-      <Typography variant='h6'>
-          Upload CSV file
-      </Typography>
+      <Typography variant="h6">Upload CSV file</Typography>
       <CSVUploader onAdd={onAddBulk} />
-      <Container maxWidth='md'>
-        <Typography variant='h6'>
-          Add Individual Student
-        </Typography>
-        <Paper component='form' className={classes.root}>
+      <Container maxWidth="md">
+        <Typography variant="h6">Add Individual Student</Typography>
+        <Paper component="form" className={classes.root}>
           <InputBase
             className={classes.input}
-            placeholder='Student Email'
+            placeholder="Student Email"
             value={currentEmail}
             inputProps={{ 'aria-label': 'Student Email' }}
             endAdornment={endAdornment}
             onChange={onChange}
           />
-          <Tooltip title='Include @studentmail prefix' aria-label='Include @studentmail prefix'>
+          <Tooltip
+            title="Include @studentmail prefix"
+            aria-label="Include @studentmail prefix">
             <Checkbox
-              edge='start'
+              edge="start"
               disableRipple
               checked={includeEmailPrefix}
               onChange={onChangeEmailPrefix}
             />
           </Tooltip>
-          <Divider className={classes.divider} orientation='vertical' />
-          <IconButton className={classes.iconButton} aria-label='search' onClick={onAdd}>
+          <Divider className={classes.divider} orientation="vertical" />
+          <IconButton
+            className={classes.iconButton}
+            aria-label="search"
+            onClick={onAdd}>
             <AddCircleIcon />
           </IconButton>
         </Paper>
         <Collapse in={alertOpen}>
           <Alert
-            severity='error'
+            severity="error"
             action={
               <IconButton
-                aria-label='close'
-                color='inherit'
-                size='small'
+                aria-label="close"
+                color="inherit"
+                size="small"
                 onClick={() => {
                   setAlertOpen(false)
-                }}
-              >
-                <CloseIcon fontSize='inherit' />
+                }}>
+                <CloseIcon fontSize="inherit" />
               </IconButton>
-            }
-          >
+            }>
             {alertMessage}
           </Alert>
         </Collapse>
 
         <br />
         <div style={{ width: '100%', height: 400 }}>
-          <DataGrid
-            rows={students}
-            columns={newStudentsColumns}
-            pageSize={5}
-          />
+          <DataGrid rows={students} columns={newStudentsColumns} pageSize={5} />
         </div>
         <br />
         {/* eslint-disable-next-line no-unneeded-ternary */}
-        <UploadButton disabled={ students.length ? false : true } onUpload={onUpload} />
-        <Button variant='outlined' color='secondary' onClick={() => { setStudents([]) }} >Clear Student List</Button>
+        <UploadButton
+          disabled={students.length ? false : true}
+          onUpload={onUpload}
+        />
+        <Button
+          variant="outlined"
+          color="secondary"
+          onClick={() => {
+            setStudents([])
+          }}>
+          Clear Student List
+        </Button>
       </Container>
     </Container>
   )

@@ -3,7 +3,7 @@ import { AbilityBuilder, Ability, subject } from '@casl/ability'
 export const proposal = subject.bind(null, 'Article')
 export const topic = subject.bind(null, 'Topic')
 
-export default function defineAbilityFor (userRole) {
+export default function defineAbilityFor(userRole) {
   const { can, cannot, build } = new AbilityBuilder(Ability)
 
   switch (userRole) {

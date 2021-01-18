@@ -12,7 +12,7 @@ const service = axios.create({
   timeout: 4000
 })
 
-service.interceptors.request.use(async (req) => {
+service.interceptors.request.use(async req => {
   console.log('Sending request')
 
   let request = {

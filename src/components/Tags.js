@@ -12,7 +12,7 @@ import InputBase from '@material-ui/core/InputBase'
 import Divider from '@material-ui/core/Divider'
 import Paper from '@material-ui/core/Paper'
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(theme => ({
   root: {
     padding: '2px 4px',
     display: 'flex',
@@ -64,7 +64,8 @@ const tree = new TreeModel().parse({
           ]
         }
       ]
-    }, {
+    },
+    {
       id: 'A2',
       children: [
         {
@@ -75,21 +76,21 @@ const tree = new TreeModel().parse({
   ]
 })
 
-export default function Tags (props) {
+export default function Tags(props) {
   const classes = useStyles()
 
   const [searchTerm, setSearchTerm] = useState('')
   const [tags, setTags] = useState([])
   const [resultTags, setResultTags] = useState([])
 
-  const onInput = (e) => {
+  const onInput = e => {
     setSearchTerm(e.target.value.trim(0))
   }
 
   const onSearch = () => {
     let results = []
     // Walk the tags tree to find any nodes which match the searchTerm
-    tree.walk((node) => {
+    tree.walk(node => {
       // Check if the searchTerm is present in the current node's id
       // TODO: Consider adding an "additional" field which will allow for other search criteria, intead of just using the node's id
       // e.g. id: 'CNN', additional: 'Convolutional Neural Network CNN Perceptron ...'
@@ -116,7 +117,7 @@ export default function Tags (props) {
     }
   }
 
-  const onTagSelect = (tag) => {
+  const onTagSelect = tag => {
     for (let curTag of tags) {
       if (curTag.self === tag.self) {
         alert('Tag already added')
@@ -134,34 +135,39 @@ export default function Tags (props) {
   return (
     <div>
       <ul>
-        {tags.map((tag) => (
-          <li key={tag.self}>{tag.parents.join(' >> ')} {'>>'} {tag.self}</li>
+        {tags.map(tag => (
+          <li key={tag.self}>
+            {tag.parents.join(' >> ')} {'>>'} {tag.self}
+          </li>
         ))}
       </ul>
 
       <Paper component="form" className={classes.root}>
         <InputBase
           className={classes.input}
-          placeholder='Search'
+          placeholder="Search"
           inputProps={{ 'aria-label': 'Search' }}
           value={searchTerm}
           onInput={onInput}
         />
-        <Divider className={classes.divider} orientation='vertical' />
+        <Divider className={classes.divider} orientation="vertical" />
         <IconButton
-          color='primary'
+          color="primary"
           className={classes.iconButton}
-          onClick={onSearch}
-          >
-            <SearchIcon />
+          onClick={onSearch}>
+          <SearchIcon />
         </IconButton>
       </Paper>
 
       {resultTags.map(tag => (
         <div key={tag.self}>
-          <span style={{ color: 'gray', fontSize: '12px' }}>{tag.parents.join(' >> ')}</span>
+          <span style={{ color: 'gray', fontSize: '12px' }}>
+            {tag.parents.join(' >> ')}
+          </span>
           <br />
-          <Button variant='outlined' onClick={() => onTagSelect(tag)} >{tag.self}</Button>
+          <Button variant="outlined" onClick={() => onTagSelect(tag)}>
+            {tag.self}
+          </Button>
         </div>
       ))}
     </div>
