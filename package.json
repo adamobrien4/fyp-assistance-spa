@@ -2,6 +2,7 @@
   "name": "msal-react-app",
   "version": "0.1.0",
   "private": true,
+  "prettier": "prettier-config-standard",
   "dependencies": {
     "@azure/msal-browser": "^2.8.0",
     "@azure/msal-react": "^1.0.0-alpha.1",
@@ -26,6 +27,8 @@
     "web-vitals": "^0.2.4"
   },
   "scripts": {
+    "lint": "prettier --check .",
+    "format": "prettier --write .",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
@@ -56,6 +59,8 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-only-warn": "^1.0.2",
     "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-react": "^7.22.0"
+    "eslint-plugin-react": "^7.22.0",
+    "prettier": "^2.2.1",
+    "prettier-config-standard": "^1.0.1"
   }
 }
