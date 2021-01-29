@@ -1,17 +1,13 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 
-import Button from '@material-ui/core/Button'
+import PrimaryButton from '../PrimaryButton'
 
 export default function UploadButton(props) {
   return (
-    <Button
-      disabled={props.disabled}
-      variant="contained"
-      color="primary"
-      onClick={props.onUpload}>
+    <PrimaryButton disabled={props.disabled} onClick={props.onUpload}>
       Upload All
-    </Button>
+    </PrimaryButton>
   )
 }
 

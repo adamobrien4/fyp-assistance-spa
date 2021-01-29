@@ -52,8 +52,8 @@ export default function NavBar(props) {
         {/* Supervisor */}
         <Can I="manage" a="Topic">
           <ListItem button>
-            <Link to="/topics" className={styles.linkText}>
-              Topics
+            <Link to="/topics/manage" className={styles.linkText}>
+              Manage Topic List
             </Link>
           </ListItem>
         </Can>

@@ -1,18 +1,29 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
-import { Container, Button } from '@material-ui/core'
+import { Container, Button, Typography } from '@material-ui/core'
+
+import api from '../../utils/api.axios'
 
 export default function TopicManagement(props) {
-  const [topics, setTopics] = useState([
-    {
-      title: 'Topic #1',
-      code: 'AOB-001'
-    }
-  ])
+  const [topics, setTopics] = useState([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    console.log('Topic Management useEffect')
+    api
+      .get('/topic')
+      .then(res => {
+        console.log(res)
+        if (res.data?.topics) {
+          setTopics(res.data.topics)
+        }
+      })
+      .catch(err => {
+        console.log(err)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
   }, [])
 
   return (
@@ -24,11 +35,15 @@ export default function TopicManagement(props) {
         </Button>
       </Link>
 
-      <ul>
-        {topics.map(topic => {
-          return <li key={topic.code}>{topic.title}</li>
-        })}
-      </ul>
+      {loading ? (
+        <Typography variant="h4">Loading...</Typography>
+      ) : (
+        <ul>
+          {topics.map(topic => {
+            return <li key={topic.code}>{topic.title}</li>
+          })}
+        </ul>
+      )}
     </Container>
   )
 }

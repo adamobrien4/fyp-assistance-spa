@@ -4,30 +4,12 @@ import {
   AuthenticatedTemplate,
   UnauthenticatedTemplate
 } from '@azure/msal-react'
-import DropdownTreeSelect from 'react-dropdown-tree-select'
-import 'react-dropdown-tree-select/dist/styles.css'
+import { config } from '../config/msal-config'
+import { getAccessToken } from '../msalHelpers'
 
 function Welcome() {
-  const { accounts } = useMsal()
+  const { instance, accounts } = useMsal()
   const account = accounts[0] || {}
-
-  const onChange = (currentNode, selectedNodes) => {
-    console.log('path::', currentNode)
-  }
-
-  const data = [
-    {
-      label: 'Neural Networks',
-      children: [
-        {
-          label: 'ANN'
-        },
-        {
-          label: 'CNN'
-        }
-      ]
-    }
-  ]
 
   return (
     <div>
@@ -35,13 +17,19 @@ function Welcome() {
         {/* <button onClick={() => alert('Hello World')}>Get Access Token</button>
         <button onClick={() => getToken(instance, accounts[0])}>Get Access Token</button> */}
         <button onClick={() => console.log(account)}>Get Profile Data</button>
+        <button
+          onClick={async () => {
+            let request = {
+              authority: `${config.endpoints.login}/${config.auth.tenantId}`,
+              scopes: config.auth.scopes.customApi,
+              account: accounts[0]
+            }
+            let ac = await getAccessToken(instance, request)
+            console.log(ac)
+          }}>
+          Get Access Token
+        </button>
         <h1>You are logged in</h1>
-
-        <DropdownTreeSelect
-          data={data}
-          onChange={onChange}
-          showDropdown="always"
-        />
       </AuthenticatedTemplate>
 
       <UnauthenticatedTemplate>

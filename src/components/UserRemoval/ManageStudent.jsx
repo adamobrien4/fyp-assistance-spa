@@ -21,8 +21,8 @@ import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft'
 import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight'
 
 import { makeStyles } from '@material-ui/core/styles'
-import { Input } from '../Input'
-import { PrimaryButton } from '../PrimaryButton'
+import Input from '../Input'
+import PrimaryButton from '../PrimaryButton'
 
 const useStyles = makeStyles(theme => ({
   root: {

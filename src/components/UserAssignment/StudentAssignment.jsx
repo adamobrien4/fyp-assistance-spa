@@ -1,66 +1,24 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { config } from '../../config/msal-config'
 
-import { useMsal, useAccount } from '@azure/msal-react'
 import Typography from '@material-ui/core/Typography'
-import { makeStyles } from '@material-ui/core/styles'
-import {
-  Container,
-  Paper,
-  InputBase,
-  Divider,
-  Button,
-  IconButton,
-  Checkbox,
-  Tooltip,
-  Collapse
-} from '@material-ui/core'
+import { Container, IconButton, Collapse } from '@material-ui/core'
+import PrimaryButton from '../PrimaryButton'
 import { DataGrid } from '@material-ui/data-grid'
 import Alert from '@material-ui/lab/Alert'
-import {
-  AddCircle as AddCircleIcon,
-  Close as CloseIcon
-} from '@material-ui/icons'
+import { Close as CloseIcon } from '@material-ui/icons'
 
 import api from '../../utils/api.axios'
 import UploadButton from './UploadButton'
 import CSVUploader from '../CSVUploader'
-
-const useStyles = makeStyles(theme => ({
-  root: {
-    padding: '2px 0px',
-    display: 'flex',
-    alignItems: 'center',
-    width: '100%'
-  },
-  input: {
-    marginLeft: theme.spacing(1),
-    flex: 1
-  },
-  iconButton: {
-    padding: 10
-  },
-  divider: {
-    height: 28,
-    margin: 4
-  }
-}))
+import UserEmailInputField from './UserEmailInputField'
 
 export default function StudentAssignment(props) {
-  const classes = useStyles()
-
-  const { instance, accounts } = useMsal()
-  const account = useAccount(accounts[0] || {})
-
   const [currentEmail, setCurrentEmail] = useState('')
   const [students, setStudents] = useState([])
   const [includeEmailPrefix, setIncludeEmailPrefix] = useState(true)
   const [alertOpen, setAlertOpen] = useState(false)
   const [alertMessage, setAlertMessage] = useState('Alert Message')
-
-  useEffect(() => {
-    console.log('Running use effect')
-  }, [account, instance])
 
   const onChange = e => {
     setCurrentEmail(e.target.value)
@@ -73,9 +31,11 @@ export default function StudentAssignment(props) {
       return
     }
 
-    // TODO: Check if email aleady has @stuentmail.ul.ie added, and dont add the prefix if so
-    // TODO: Check if email already has a prefix e.g. @ul.ie etc .split('@')[1] ...
-    let prefix = includeEmailPrefix ? '@studentmail.ul.ie' : ''
+    // Only apply a email prefix if the checkbox is checked and there is no existing prefix already
+    let prefix =
+      currentEmail.indexOf('@') === -1 && includeEmailPrefix
+        ? '@studentmail.ul.ie'
+        : ''
     let email = currentEmail + prefix
     let studentsList = [...students]
     studentsList.push({ id: studentsList.length, email: email })
@@ -172,33 +132,15 @@ export default function StudentAssignment(props) {
       <CSVUploader onAdd={onAddBulk} />
       <Container maxWidth="md">
         <Typography variant="h6">Add Individual Student</Typography>
-        <Paper component="form" className={classes.root}>
-          <InputBase
-            className={classes.input}
-            placeholder="Student Email"
-            value={currentEmail}
-            inputProps={{ 'aria-label': 'Student Email' }}
-            endAdornment={endAdornment}
-            onChange={onChange}
-          />
-          <Tooltip
-            title="Include @studentmail prefix"
-            aria-label="Include @studentmail prefix">
-            <Checkbox
-              edge="start"
-              disableRipple
-              checked={includeEmailPrefix}
-              onChange={onChangeEmailPrefix}
-            />
-          </Tooltip>
-          <Divider className={classes.divider} orientation="vertical" />
-          <IconButton
-            className={classes.iconButton}
-            aria-label="search"
-            onClick={onAdd}>
-            <AddCircleIcon />
-          </IconButton>
-        </Paper>
+        <UserEmailInputField
+          email={currentEmail}
+          endAdornment={endAdornment}
+          onChange={onChange}
+          includeEmailPrefix={includeEmailPrefix}
+          onChangeEmailPrefix={onChangeEmailPrefix}
+          onAdd={onAdd}
+        />
+
         <Collapse in={alertOpen}>
           <Alert
             severity="error"
@@ -222,19 +164,15 @@ export default function StudentAssignment(props) {
           <DataGrid rows={students} columns={newStudentsColumns} pageSize={5} />
         </div>
         <br />
-        {/* eslint-disable-next-line no-unneeded-ternary */}
-        <UploadButton
-          disabled={students.length ? false : true}
-          onUpload={onUpload}
-        />
-        <Button
-          variant="outlined"
+        <UploadButton disabled={!students.length} onUpload={onUpload} />
+        <PrimaryButton
+          type="text"
           color="secondary"
           onClick={() => {
             setStudents([])
           }}>
           Clear Student List
-        </Button>
+        </PrimaryButton>
       </Container>
     </Container>
   )

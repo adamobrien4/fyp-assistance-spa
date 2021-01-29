@@ -20,6 +20,7 @@ import Loading from './components/Auth/Loading'
 import AppLoading from './components/AppLoading'
 
 import TopicManagement from './components/TopicManagement'
+import TopicList from './components/TopicList'
 import AddTopicForm from './components/AddTopicForm'
 import Welcome from './components/Welcome'
 import StudentAssignment from './components/UserAssignment/StudentAssignment'
@@ -139,11 +140,19 @@ function Pages() {
   // Implement Can functionality to only show available routes
   return (
     <Switch>
+      <Route exact path="/">
+        <Welcome />
+      </Route>
+
+      <Route exact path="/topics">
+        <TopicList />
+      </Route>
+
       <Route path="/topics/add">
         <AddTopicForm />
       </Route>
 
-      <Route path="/topics">
+      <Route path="/topics/manage">
         <TopicManagement />
       </Route>
 
@@ -173,10 +182,6 @@ function Pages() {
           }>
           Logout
         </Button>
-      </Route>
-
-      <Route exact path="/">
-        <Welcome />
       </Route>
     </Switch>
   )
