@@ -15,6 +15,8 @@ import ability from './Auth/ability'
 import { setup as apiSetup } from './utils/api.axios'
 import axiosGraphInstance, { setup as graphSetup } from './utils/graph.axios'
 
+import { CreateProposalContextProvider } from './contexts/CreateProposalContext'
+
 import ErrorComponent from './components/Auth/ErrorComponent'
 import Loading from './components/Auth/Loading'
 import AppLoading from './components/AppLoading'
@@ -29,6 +31,12 @@ import ManageCoordinator from './components/ManageCoordinator'
 import Header from './components/Header'
 import Button from '@material-ui/core/Button'
 import ManageStudent from './components/UserRemoval/ManageStudent'
+import ManageProposal from './components/Proposals/ManageProposal'
+
+import CreateProposal from './components/Proposals/CreateProposal'
+import CreateProposalStep2 from './components/Proposals/CreateProposalStep2'
+import CreateProposalStep3 from './components/Proposals/CreateProposalStep3'
+import CreateProposalFinish from './components/Proposals/CreateProposalFinish'
 
 function App() {
   const [appReady, setAppReady] = useState(false)
@@ -156,6 +164,34 @@ function Pages() {
         <TopicManagement />
       </Route>
 
+      <Route exact path="/proposals">
+        <ManageProposal />
+      </Route>
+
+      <Route exact path="/proposals/add">
+        <CreateProposalContextProvider>
+          <CreateProposal />
+        </CreateProposalContextProvider>
+      </Route>
+
+      <Route exact path="/proposals/add/step2">
+        <CreateProposalContextProvider>
+          <CreateProposalStep2 />
+        </CreateProposalContextProvider>
+      </Route>
+
+      <Route exact path="/proposals/add/step3">
+        <CreateProposalContextProvider>
+          <CreateProposalStep3 />
+        </CreateProposalContextProvider>
+      </Route>
+
+      <Route exact path="/proposals/add/finish">
+        <CreateProposalContextProvider>
+          <CreateProposalFinish />
+        </CreateProposalContextProvider>
+      </Route>
+
       <Route path="/student/assign">
         <StudentAssignment />
       </Route>
@@ -177,9 +213,10 @@ function Pages() {
         <Button
           variant="contained"
           color="primary"
-          onClick={() =>
+          onClick={() => {
+            localStorage.removeItem('fyp-assistance-role-type')
             instance.logout({ onRedirectNavigate: 'http://localhost:3000/' })
-          }>
+          }}>
           Logout
         </Button>
       </Route>
