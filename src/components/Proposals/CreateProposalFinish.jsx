@@ -80,6 +80,16 @@ const CreateProposal = props => {
 
     console.log('Submitting ', formData)
 
+    // TODO: Only submit data which will be used
+    /**
+     * title
+     * description
+     * additionalNotes
+     * environment
+     * languages
+     * topic._id
+     */
+
     api
       .post('/proposal/add', data)
       .then(res => {

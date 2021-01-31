@@ -84,7 +84,12 @@ export default function ManageCoordinator(props) {
 
     API.get('/coordinator')
       .then(res => {
-        let coordinatorList = res.data.map(coordinator => {
+        if (!res.data?.coordinators) {
+          setRefreshing(false)
+          return setAssignedCoordinators([])
+        }
+
+        let coordinatorList = res.data.coordinators.map(coordinator => {
           return {
             id: coordinator._id,
             displayName: coordinator.displayName,
