@@ -15,6 +15,7 @@ import {
   IconButton
 } from '@material-ui/core'
 import EditIcon from '@material-ui/icons/Edit'
+import VisibilityIcon from '@material-ui/icons/Visibility'
 import { makeStyles } from '@material-ui/styles'
 import api from '../../utils/api.axios'
 
@@ -93,64 +94,6 @@ export default function ManageProposal(props) {
 
   useEffect(() => {
     refreshProposals()
-
-    // setProposals(
-    //   [
-    //     {
-    //       title: 'Image Recognition',
-    //       description:
-    //         'The student will apply Google Cloud Vision API or Microsoft Azure Computer Vision API to solve a real problem (e.g., use the Vision API to develop an app to assist teaching staff for the lecture/lab sign-in process).',
-    //       status: 'draft',
-    //       type: 'supervisor',
-    //       topic: {
-    //         _id: '123-345',
-    //         code: 'ADC-001',
-    //         supervisor: {
-    //           abbr: 'JHN',
-    //           displayName: 'John James'
-    //         },
-    //         title: 'Mdhsfjds',
-    //         description: 'descrotion'
-    //       }
-    //     },
-    //     {
-    //       title: 'Various',
-    //       description:
-    //         'Annette is willing to supervise projects that the students themselves are interested in, in the broad area of software and software development, subject to vetting for academic-quality requirements. ',
-    //       additionalNotes: 'Some additional notes',
-    //       student: {
-    //         _id: '2784735934',
-    //         displayName: 'Adam OBrien'
-    //       },
-    //       status: 'draft',
-    //       type: 'supervisor',
-    //       topic: {
-    //         _id: '123-3455',
-    //         code: 'AME-001',
-    //         supervisor: {
-    //           abbr: 'JHN',
-    //           displayName: 'John James'
-    //         },
-    //         title: 'Mdhsfjds',
-    //         description: 'descrotion'
-    //       }
-    //     },
-    //     {
-    //       title: 'Image Recognition',
-    //       description:
-    //         'The student will apply Google Cloud Vision API or Microsoft Azure Computer Vision API to solve a real problem (e.g., use the Vision API to develop an app to assist teaching staff for the lecture/lab sign-in process).',
-    //       status: 'draft',
-    //       type: 'student',
-    //       environment: 'Linux, iMac',
-    //       languages: 'JavaScript, React'
-    //     }
-    //   ].map(proposal => {
-    //     return {
-    //       ...proposal,
-    //       isCustomProposal: proposal.type === 'studentDefined'
-    //     }
-    //   })
-    // )
     setLoading(false)
   }, [])
 
@@ -158,18 +101,17 @@ export default function ManageProposal(props) {
     setIsEditing(false)
     setSelectedProposal(null)
 
-    alert('Refreshing proposals list')
-
     api
       .get('/proposal/me')
       .then(res => {
-        console.log(res)
         let incomingProposals = res.data.proposals.map(proposal => {
           return {
             ...proposal,
             isCustomProposal: proposal.type === 'studentDefined'
           }
         })
+
+        console.log(incomingProposals)
         setProposals(incomingProposals)
       })
       .catch(err => {
@@ -255,9 +197,9 @@ export default function ManageProposal(props) {
             {selectedProposal.isCustomProposal ? null : (
               <>
                 <Typography hidden={isEditing}>Related Topic</Typography>
-                <PrimaryButton hidden={isEditing}>
-                  View {selectedProposal.topic.code}'s Details
-                </PrimaryButton>
+                <IconButton>
+                  <VisibilityIcon />
+                </IconButton>
               </>
             )}
           </>

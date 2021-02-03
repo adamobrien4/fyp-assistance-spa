@@ -1,30 +1,15 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
 
 import { useData } from '../../contexts/CreateProposalContext'
 import { useHistory } from 'react-router-dom'
 
 import { withStyles } from '@material-ui/core/styles'
-import {
-  Typography,
-  Container,
-  Grid,
-  Switch,
-  TableContainer,
-  Paper,
-  Table,
-  Button,
-  TableRow,
-  TableBody,
-  TableCell
-} from '@material-ui/core'
-import AddCircleIcon from '@material-ui/icons/AddCircle'
+import { Typography, Container } from '@material-ui/core'
 
 import api from '../../utils/api.axios'
 import * as yup from 'yup'
 
-import Input from '../Input'
-import MultiLineInput from '../MultiLineInput'
 import PrimaryButton from '../PrimaryButton'
 import Breadcrumb from './Breadcrumb'
 
