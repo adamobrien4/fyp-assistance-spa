@@ -10,7 +10,8 @@ import {
   FormControlLabel,
   List,
   ListItem,
-  ListItemText
+  ListItemText,
+  Button
 } from '@material-ui/core'
 
 import api from '../../utils/api.axios'
@@ -28,20 +29,7 @@ export default function TopicManagement(props) {
   const [selectedTopic, setSelectedTopic] = useState(null)
 
   useEffect(() => {
-    api
-      .get('/topic/me')
-      .then(res => {
-        console.log(res)
-        if (res.data?.topics) {
-          setTopics(res.data.topics)
-        }
-      })
-      .catch(err => {
-        console.log(err)
-      })
-      .finally(() => {
-        setLoading(false)
-      })
+    refreshTopicList()
 
     api
       .get('/supervisor/me')
@@ -52,6 +40,32 @@ export default function TopicManagement(props) {
         console.log(err)
       })
   }, [])
+
+  const refreshTopicList = () => {
+    api
+      .get('/topic/me')
+      .then(res => {
+        console.log(res)
+        if (res.data?.topics) {
+          setTopics(res.data.topics)
+        }
+
+        // If a topic is currently selected, update it to the newly returned topic
+        if (selectedTopic) {
+          setSelectedTopic(
+            res.data.topics.filter(topic => {
+              return topic._id === selectedTopic._id
+            })[0]
+          )
+        }
+      })
+      .catch(err => {
+        console.log(err)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+  }
 
   const handleToggleSuperviseCustomTopic = async e => {
     api
@@ -83,13 +97,16 @@ export default function TopicManagement(props) {
 
   return (
     <>
-      <TopicModal
-        dialogOpen={dialogOpen}
-        setDialogOpen={setDialogOpen}
-        topic={selectedTopic}
-      />
+      {selectedTopic ? (
+        <TopicModal
+          dialogOpen={dialogOpen}
+          setDialogOpen={setDialogOpen}
+          topic={selectedTopic}
+          refresh={refreshTopicList}
+        />
+      ) : null}
       <Container maxWidth="md">
-        <div>
+        {/* <div>
           <Typography>Student Defined Topics</Typography>
           <FormControl component="fieldset">
             <FormGroup>
@@ -105,7 +122,7 @@ export default function TopicManagement(props) {
               />
             </FormGroup>
           </FormControl>
-        </div>
+        </div> */}
 
         <List>
           {topics.map(topic => {
@@ -123,9 +140,7 @@ export default function TopicManagement(props) {
         </List>
 
         <Link to="/topics/add">
-          <PrimaryButton variant="outlined">
-            Create new Topic / Suggestion
-          </PrimaryButton>
+          <Button variant="outlined">Create new Topic / Suggestion</Button>
         </Link>
 
         <PrimaryButton onClick={handleSubmitTopics}>

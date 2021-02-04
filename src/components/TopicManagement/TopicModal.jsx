@@ -11,15 +11,20 @@ import {
   DialogActions,
   Divider,
   FormControl,
-  InputLabel,
   Select,
-  MenuItem
+  MenuItem,
+  CircularProgress
 } from '@material-ui/core'
 import { Edit, Cancel } from '@material-ui/icons'
 import { makeStyles } from '@material-ui/core/styles'
+import { green } from '@material-ui/core/colors'
+
+import api from '../../utils/api.axios'
 
 import MultiLineInput from '../MultiLineInput'
+import PrimaryButton from '../PrimaryButton'
 import Tags from '../Tags'
+import TargetedCoursesInput from '../TargetedCoursesInput'
 
 const useStyles = makeStyles(theme => ({
   formControl: {
@@ -34,30 +39,99 @@ const useStyles = makeStyles(theme => ({
     '&.Mui-disabled option': {
       color: 'black'
     }
+  },
+  buttonProgress: {
+    color: green[500],
+    position: 'absolute',
+    left: '50%'
   }
 }))
 
 const TopicModal = props => {
   const classes = useStyles()
 
-  const [status, setStatus] = useState('')
+  const [status, setStatus] = useState(props.topic.status)
   const [editMode, setEditMode] = useState(false)
-  const [tags, setTags] = useState([])
+  const [tags, setTags] = useState(
+    props.topic?.tags ? [...props.topic?.tags] : []
+  )
 
-  const topic = { ...props.topic }
+  // Create state for each entry box
+  const [title, setTitle] = useState(props.topic.title)
+  const [description, setDescription] = useState(props.topic.title)
+  const [requirements, setRequirements] = useState(props.topic.requirements)
+  const [desiredSkills, setDesiredSkills] = useState(props.topic.desiredSkills)
+  const [targetCourses, setTargetCourses] = useState([])
+  const [edits, setEdits] = useState({})
+
+  const [savingChanges, setSavingChanges] = useState(false)
+
+  const onChangeTitle = e => {
+    setTitle(e.target.value)
+    if (editMode) setEdits({ title: e.target.value })
+  }
+
+  const onChangeDescription = e => {
+    setDescription(e.target.value)
+    if (editMode) setEdits({ description: e.target.value })
+  }
+
+  const onChangeRequirements = e => {
+    setRequirements(e.target.value)
+    if (editMode) setEdits({ requirements: e.target.value })
+  }
+
+  const onChangeDesiredSkills = e => {
+    setDesiredSkills(e.target.value)
+    if (editMode) setEdits({ desiredSkills: e.target.value })
+  }
 
   const handleDialogClose = () => {
     setEditMode(false)
     props.setDialogOpen(false)
   }
 
-  const handleStatusChange = e => {
+  const onChangeStatus = e => {
     setStatus(e.target.value)
+    if (editMode) setEdits({ status: e.target.value })
   }
 
   const toggleEditMode = () => {
+    if (Object.keys(edits).length !== 0 && edits.constructor === Object) {
+      // Object has been edited
+      // TODO: Ask the user if they want to discard their changes or save
+      console.log('Ask to discard edits')
+    }
+
     let edtmd = !editMode
     setEditMode(edtmd)
+    setEdits({})
+  }
+
+  const handleSaveChanges = e => {
+    console.log('Save Changes')
+
+    if (Object.keys(edits).length > 0) {
+      setSavingChanges(true)
+
+      let currentEdits = { ...edits, tags: [...tags] }
+
+      api
+        .post(`/topic/edit/${props.topic._id}`, currentEdits)
+        .then(res => {
+          console.log(res)
+          props.refresh()
+        })
+        .catch(err => {
+          console.log(err)
+        })
+        .finally(() => {
+          setSavingChanges(false)
+          toggleEditMode()
+        })
+    } else {
+      toggleEditMode()
+    }
   }
 
   return (
@@ -67,12 +141,13 @@ const TopicModal = props => {
       open={props.dialogOpen}
       onClose={handleDialogClose}
       aria-labelledby="max-width-dialog-title"
-      style={{ zIndex: '900 !important' }}>
+      style={{ zIndex: '900 !important' }}
+      disableBackdropClick>
       <DialogTitle id="max-width-dialog-title">
         <IconButton onClick={toggleEditMode}>
           <Edit />
         </IconButton>
-        <IconButton edge="end">
+        <IconButton edge="end" onClick={handleDialogClose}>
           <Cancel />
         </IconButton>
         <Divider />
@@ -87,54 +162,72 @@ const TopicModal = props => {
           }}>
           <TextField
             label="Title"
-            value={topic?.title}
+            value={title}
+            onChange={onChangeTitle}
             disabled={!editMode}
             variant="outlined"
             style={{ flex: '3', marginRight: '40px' }}
           />
           <FormControl variant="outlined" className={classes.formControl}>
             {/* Fix Status label from intercepting with input outline */}
-            <InputLabel
-              id="demo-simple-select-outlined-label"
-              variant="outlined">
-              {topic?.status}
-            </InputLabel>
+
             <Select
-              labelId="demo-simple-select-outlined-label"
-              id="demo-simple-select-outlined"
-              value={status}
-              onChange={handleStatusChange}
-              label="Age"
+              onChange={onChangeStatus}
               disabled={!editMode}
-              className={editMode ? null : classes.readOnlySelect}>
-              <MenuItem value={'suggestion'}>Draft</MenuItem>
-              <MenuItem value={'pending'}>Pending</MenuItem>
-              <MenuItem value={'active'}>Active</MenuItem>
-              <MenuItem value={'archived'}>Archived</MenuItem>
+              value={status}>
+              <MenuItem value="draft">Draft</MenuItem>
+              <MenuItem value="suggestion">Ready for Submission</MenuItem>
+              <MenuItem value="archived" style={{ color: 'red' }}>
+                Archived
+              </MenuItem>
+              <MenuItem value="active" disabled>
+                Active
+              </MenuItem>
+              <MenuItem value="assigned" disabled>
+                Assigned
+              </MenuItem>
+              <MenuItem value="prev_term" disabled>
+                From Previous Term
+              </MenuItem>
             </Select>
           </FormControl>
         </div>
         <MultiLineInput
           label="Description"
-          value={topic?.description}
+          value={description}
+          onChange={onChangeDescription}
           disabled={!editMode}
         />
-        <Tags tags={tags} setTags={setTags} />
+        <Tags tags={tags} setTags={setTags} disabled={!editMode} />
         <MultiLineInput
           label="Requirements"
-          value={topic?.requirements}
+          value={requirements}
+          onChange={onChangeRequirements}
           disabled={!editMode}
         />
         <MultiLineInput
           label="Desired Skills"
-          value={topic?.desiredSkills}
+          value={desiredSkills}
+          onChange={onChangeDesiredSkills}
+          disabled={!editMode}
+        />
+        <TargetedCoursesInput
+          targetCourses={targetCourses}
+          setTargetCourses={setTargetCourses}
           disabled={!editMode}
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleDialogClose} color="primary">
-          Close
-        </Button>
+        {editMode ? (
+          <>
+            <PrimaryButton onClick={handleSaveChanges} disabled={savingChanges}>
+              Save Changes
+            </PrimaryButton>
+            {savingChanges && (
+              <CircularProgress size={24} className={classes.buttonProgress} />
+            )}
+          </>
+        ) : null}
       </DialogActions>
     </Dialog>
   )
@@ -143,7 +236,8 @@ const TopicModal = props => {
 TopicModal.propTypes = {
   topic: PropTypes.object.isRequired,
   dialogOpen: PropTypes.bool.isRequired,
-  setDialogOpen: PropTypes.func.isRequired
+  setDialogOpen: PropTypes.func.isRequired,
+  refresh: PropTypes.func.isRequired
 }
 
 export default TopicModal

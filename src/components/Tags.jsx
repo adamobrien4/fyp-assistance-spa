@@ -12,10 +12,10 @@ const Tags = props => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    console.log(props)
     api
       .get('/tag')
       .then(res => {
-        console.log(res)
         setTreeData(res.data)
       })
       .catch(err => {
@@ -41,7 +41,8 @@ const Tags = props => {
       width: '100%'
     },
     bordered: true,
-    showSearch: true
+    showSearch: true,
+    disabled: props.disabled
   }
 
   if (loading) {
@@ -52,14 +53,13 @@ const Tags = props => {
     )
   }
 
-  console.log(treeData)
-
   return <TreeSelect treeData={treeData} {...tProps} />
 }
 
 Tags.propTypes = {
   setTags: PropTypes.func.isRequired,
-  tags: PropTypes.array.isRequired
+  tags: PropTypes.array.isRequired,
+  disabled: PropTypes.bool.isRequired
 }
 
 export default Tags

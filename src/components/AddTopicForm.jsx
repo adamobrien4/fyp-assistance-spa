@@ -15,6 +15,8 @@ import {
 import { TreeSelect } from 'antd'
 import Autocomplete from '@material-ui/lab/AutoComplete'
 
+import TargetedCoursesInput from './TargetedCoursesInput'
+
 import * as yup from 'yup'
 
 import 'antd/dist/antd.css'
@@ -149,6 +151,8 @@ export default function AddTopicForm(props) {
       .then(resp => {
         console.log(resp)
         alert('Topic has been sucessfully added')
+
+        // TODO: Redirect user to topic management screen
       })
       .catch(err => console.log(err))
   }
@@ -269,27 +273,12 @@ export default function AddTopicForm(props) {
         />
 
         <Collapse in={hasTargetedCourses}>
-          <Autocomplete
-            multiple
-            freeSolo
-            options={courses}
-            getOptionLabel={option => option.code + ' ' + option.title}
-            value={targetCourses}
-            onChange={onAutocompleteChange}
-            filterSelectedOptions
-            renderInput={params => {
-              params.inputProps.onKeyDown = handleKeyDown
-              return (
-                <Input
-                  name="targetedCourses"
-                  {...params}
-                  label="Select Targeted Courses"
-                  error={!!errors.targetedCourses}
-                  helperText={errors?.targetedCourses?.message}
-                  inputRef={register}
-                />
-              )
-            }}
+          <TargetedCoursesInput
+            courses={courses}
+            targetCourses={targetCourses}
+            setTargetCourses={setTargetCourses}
+            register={register}
+            errors={errors}
           />
         </Collapse>
         <PrimaryButton>Add Topic</PrimaryButton>
@@ -298,6 +287,7 @@ export default function AddTopicForm(props) {
   )
 }
 
+// TODO: Load courses from DB
 const courses = [
   { code: 'LM051', title: 'Computer Systems' },
   { code: 'LM052', title: 'Course 2' },
