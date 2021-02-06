@@ -8,8 +8,6 @@ import { withStyles } from '@material-ui/core/styles'
 import {
   Typography,
   Container,
-  Grid,
-  Switch,
   TableContainer,
   Paper,
   Table,
@@ -25,6 +23,7 @@ import {
   FormControl
 } from '@material-ui/core'
 import AddCircleIcon from '@material-ui/icons/AddCircle'
+import HistoryIcon from '@material-ui/icons/History'
 import * as yup from 'yup'
 import { useForm } from 'react-hook-form'
 
@@ -34,40 +33,6 @@ import Input from '../Input'
 import PrimaryButton from '../PrimaryButton'
 import Breadcrumb from './Breadcrumb'
 import Form from '../Form'
-
-const AntSwitch = withStyles(theme => ({
-  root: {
-    width: 44,
-    height: 20,
-    padding: 0,
-    display: 'flex'
-  },
-  switchBase: {
-    padding: 2,
-    color: theme.palette.grey[500],
-    '&$checked': {
-      transform: 'translateX(24px)',
-      color: theme.palette.common.white,
-      '& + $track': {
-        opacity: 1,
-        backgroundColor: theme.palette.primary.main,
-        borderColor: theme.palette.primary.main
-      }
-    }
-  },
-  thumb: {
-    width: 16,
-    height: 16,
-    boxShadow: 'none'
-  },
-  track: {
-    border: `1px solid ${theme.palette.grey[500]}`,
-    borderRadius: 20 / 2,
-    opacity: 1,
-    backgroundColor: theme.palette.common.white
-  },
-  checked: {}
-}))(Switch)
 
 const CreateProposal = props => {
   // CreateProposal Context
@@ -84,6 +49,7 @@ const CreateProposal = props => {
   const [topics, setTopics] = useState([])
   const [displayedTopics, setDisplayedTopics] = useState([])
   const [selectedTopic, setSelectedTopic] = useState(data?.topic)
+  // TODO: Set loading to false if topics are in data.topics
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
 
@@ -97,18 +63,16 @@ const CreateProposal = props => {
       api
         .get('/topic')
         .then(res => {
+          console.log(res.data.topics)
           setContextValues({ ...data, topics: res.data.topics })
           setTopics(res.data.topics)
         })
         .catch(err => {
           console.log(err)
+          // TODO: Only allow student defined topics to be created as no topics could be retrieved
         })
         .finally(() => {
           setLoading(false)
-
-          if (!data?.step) {
-            setContextValues({ step: 1 })
-          }
         })
     }
   }, [])
@@ -147,6 +111,10 @@ const CreateProposal = props => {
     let formData = {
       ...data,
       isCustomProposal: isCustomProposal
+    }
+
+    if (data?.step === 0) {
+      formData.step = 1
     }
 
     if (isCustomProposal) {
@@ -204,6 +172,7 @@ const CreateProposal = props => {
             label="Search Topic Code"
             value={searchTerm}
             onChange={handleInput}
+            disabled={data.topics.length === 0}
           />
 
           <TableContainer component={Paper}>
@@ -234,15 +203,22 @@ const CreateProposal = props => {
           <div>
             {selectedTopic ? (
               <Typography>Selected Topic: {selectedTopic.title}</Typography>
+            ) : topics.length === 0 ? (
+              <Typography>
+                Could not retrieve any Topics, please try again later or create
+                a student defined proposal
+              </Typography>
             ) : (
-              <Typography>Please select a topic to continue</Typography>
+              <Typography>
+                Please search and select a topic to continue
+              </Typography>
             )}
           </div>
         </div>
       )}
 
       <PrimaryButton disabled={!selectedTopic} onClick={handleNextStep}>
-        Next Step
+        Save and Continue
       </PrimaryButton>
     </Container>
   )

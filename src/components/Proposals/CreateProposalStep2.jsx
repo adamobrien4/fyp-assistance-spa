@@ -24,6 +24,9 @@ const CreateProposal = props => {
   const [additionalNotes, setAdditionalNotes] = useState(
     data?.additionalNotes || ''
   )
+  const [chooseMeMessage, setChooseMeMessage] = useState(
+    data?.chooseMeMessage || ''
+  )
 
   useEffect(() => {}, [])
 
@@ -41,6 +44,10 @@ const CreateProposal = props => {
     setAdditionalNotes(e.target.value)
   }
 
+  const handleOnChooseMeMessageChange = e => {
+    setChooseMeMessage(e.target.value)
+  }
+
   const handleNextStep = () => {
     // Get data from form and store in context
 
@@ -48,7 +55,12 @@ const CreateProposal = props => {
       ...data,
       title: projectTitle,
       description: projectDescription,
-      additionalNotes: additionalNotes
+      additionalNotes: additionalNotes,
+      chooseMeMessage: chooseMeMessage
+    }
+
+    if (data?.step === 1) {
+      formData.step = 2
     }
 
     if (data?.isCustomProposal) {
@@ -62,24 +74,31 @@ const CreateProposal = props => {
 
   return (
     <Container component="main" maxWidth="md">
-      <Breadcrumb
-        step={data.step}
-        customProposal={data.formType === 'student_defined'}
-      />
+      <Breadcrumb />
       <Typography>Create Proposal - Step 2</Typography>
 
       <Input
         label="Project Title"
         onChange={handleOnTitleChange}
         value={projectTitle}
+        required
       />
       <MultiLineInput
         label="Project Description"
         onChange={handleOnDescriptionChange}
         value={projectDescription}
+        required
       />
+
       <MultiLineInput
-        label="Additional Notes"
+        label="Why choose me for this topic? (Optional)"
+        placeholder="Why should the topic supervisor choose your project for this topic?"
+        onChange={handleOnChooseMeMessageChange}
+        value={chooseMeMessage}
+      />
+
+      <MultiLineInput
+        label="Additional Notes (Optional)"
         onChange={handleOnNotesChange}
         value={additionalNotes}
       />
@@ -87,7 +106,7 @@ const CreateProposal = props => {
       <PrimaryButton
         disabled={projectTitle.length === 0 || projectDescription.length === 0}
         onClick={handleNextStep}>
-        Next Step
+        Save and Continue
       </PrimaryButton>
     </Container>
   )

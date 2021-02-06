@@ -4,7 +4,9 @@ import React, { createContext, useState, useContext } from 'react'
 const CreateProposalContext = createContext()
 
 export const CreateProposalContextProvider = ({ children }) => {
-  const [data, setData] = useState({})
+  const [data, setData] = useState({
+    step: 0
+  })
 
   const setContextValues = values => {
     setData(prevData => ({

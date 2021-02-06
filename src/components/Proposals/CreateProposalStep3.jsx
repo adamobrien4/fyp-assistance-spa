@@ -68,11 +68,6 @@ const CreateProposal = props => {
   const [environment, setEnvironment] = useState(data?.environment || '')
   const [languages, setLanguages] = useState(data?.languages || '')
 
-  useEffect(() => {
-    let step = data?.step || 3
-    setContextValues({ step })
-  }, [])
-
   const history = useHistory()
 
   const handleOnEnvironmentChange = e => {
@@ -90,6 +85,10 @@ const CreateProposal = props => {
       ...data,
       environment: environment,
       languages: languages
+    }
+
+    if (data?.step === 2) {
+      formData.step = 3
     }
 
     history.push('./finish')
@@ -115,7 +114,7 @@ const CreateProposal = props => {
       <PrimaryButton
         disabled={!environment || !languages}
         onClick={handleNextStep}>
-        Next Step
+        Save and Continue
       </PrimaryButton>
     </Container>
   )

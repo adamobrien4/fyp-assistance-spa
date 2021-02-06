@@ -36,7 +36,7 @@ const CreateProposal = props => {
   // CreateProposal Context
   const { setContextValues, data } = useData()
 
-  useEffect(() => {}, [])
+  const history = useHistory()
 
   const handleNextStep = () => {
     // Get data from form and store in context
@@ -45,7 +45,8 @@ const CreateProposal = props => {
       isCustomProposal: data.isCustomProposal,
       title: data.title,
       description: data.description,
-      additionalNotes: data.additionalNotes
+      additionalNotes: data.additionalNotes,
+      chooseMessage: data.chooseMeMessage
     }
 
     if (data.isCustomProposal) {
@@ -65,20 +66,12 @@ const CreateProposal = props => {
 
     console.log('Submitting ', formData)
 
-    // TODO: Only submit data which will be used
-    /**
-     * title
-     * description
-     * additionalNotes
-     * environment
-     * languages
-     * topic._id
-     */
-
     api
-      .post('/proposal/add', data)
+      .post('/proposal/add', formData)
       .then(res => {
         console.log(res)
+        setContextValues({})
+        history.push('/proposals')
       })
       .catch(err => {
         console.log(err)
