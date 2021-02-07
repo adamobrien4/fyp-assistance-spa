@@ -11,13 +11,65 @@ import {
   List,
   ListItem,
   ListItemText,
-  Button
+  Button,
+  TableContainer,
+  Table,
+  TableHead,
+  TableCell,
+  TableRow,
+  TableBody,
+  Paper,
+  Link as MuiLink,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions
 } from '@material-ui/core'
 
 import api from '../../utils/api.axios'
+import { topicStatusToHumanFriendlyString } from '../../utils/topic'
 
 import PrimaryButton from '../PrimaryButton'
 import TopicModal from './TopicModal'
+
+const SubmissionDialog = props => {
+  return (
+    <Dialog open={props.open} aria-labelledby="form-dialog-title">
+      <DialogTitle id="form-dialog-title">Submit Topic Suggestions</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          Are you sure you want to submit your topic suggestions?
+          <br />
+          <b>This can not be reverted</b>
+        </DialogContentText>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={props.checked}
+              onChange={e => props.setChecked(e.target.checked)}
+            />
+          }
+          label="I understand"
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => props.setOpen(false)} color="primary">
+          Cancel
+        </Button>
+        <Button
+          onClick={() => {
+            props.setOpen(false)
+            props.proceed()
+          }}
+          color="primary"
+          disabled={!props.checked}>
+          Proceed
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+}
 
 export default function TopicManagement(props) {
   const [topics, setTopics] = useState([])
@@ -27,6 +79,12 @@ export default function TopicManagement(props) {
   )
   const [dialogOpen, setDialogOpen] = useState(false)
   const [selectedTopic, setSelectedTopic] = useState(null)
+
+  const [submissionDialogOpen, setSubmissionDialogOpen] = useState(false)
+  const [proceedSubmissionChecked, setProceedSubmissionChecked] = useState(
+    false
+  )
+  const [submittingTopics, setSubmittingTopics] = useState(false)
 
   useEffect(() => {
     refreshTopicList()
@@ -81,8 +139,26 @@ export default function TopicManagement(props) {
       })
   }
 
-  const handleSubmitTopics = e => {
-    console.log('Submitting Topics')
+  const handlePreSubmitTopics = e => {
+    setSubmissionDialogOpen(true)
+  }
+
+  const handleSubmitTopics = () => {
+    if (proceedSubmissionChecked) {
+      console.log('Submit topics')
+
+      setSubmittingTopics(true)
+
+      api
+        .post('/topic/submit')
+        .then(res => {
+          console.log(res)
+        })
+        .catch(err => console.log(err))
+        .finally(() => {
+          setSubmittingTopics(false)
+        })
+    }
   }
 
   const openTopicDetailsDialog = topic => {
@@ -95,6 +171,10 @@ export default function TopicManagement(props) {
     return <Typography>Loading ...</Typography>
   }
 
+  if (submittingTopics) {
+    return <Typography>Submitting Topics ...</Typography>
+  }
+
   return (
     <>
       {selectedTopic ? (
@@ -105,45 +185,56 @@ export default function TopicManagement(props) {
           refresh={refreshTopicList}
         />
       ) : null}
-      <Container maxWidth="md">
-        {/* <div>
-          <Typography>Student Defined Topics</Typography>
-          <FormControl component="fieldset">
-            <FormGroup>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={willSuperviseCustomTopic}
-                    onChange={handleToggleSuperviseCustomTopic}
-                    name="superviseCustomTopic"
-                  />
-                }
-                label="Supervise Custom Student Topics"
-              />
-            </FormGroup>
-          </FormControl>
-        </div> */}
-
-        <List>
-          {topics.map(topic => {
-            return (
-              <ListItem
-                key={topic._id}
-                button
-                onClick={() => openTopicDetailsDialog(topic)}>
-                <ListItemText>{topic.title}</ListItemText>
-                {/* TODO: Style status text as badge box etc */}
-                <Typography>{topic.status}</Typography>
-              </ListItem>
-            )
-          })}
-        </List>
+      <SubmissionDialog
+        open={submissionDialogOpen}
+        setOpen={setSubmissionDialogOpen}
+        checked={proceedSubmissionChecked}
+        setChecked={setProceedSubmissionChecked}
+        proceed={handleSubmitTopics}
+      />
+      <Container maxWidth="lg">
+        <TableContainer component={Paper} style={{ margin: '20px 0' }}>
+          <Table style={{ minWidth: '650px' }} size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Title</TableCell>
+                <TableCell align="center">Status</TableCell>
+                <TableCell align="right">Proposals</TableCell>
+              </TableRow>
+            </TableHead>
+            {topics.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  component="th"
+                  scope="row"
+                  align="center"
+                  colSpan={3}>
+                  <Typography>No Topics to display</Typography>
+                </TableCell>
+              </TableRow>
+            ) : (
+              topics.map(topic => (
+                <TableRow key={topic._id} button>
+                  <TableCell component="th" scope="row">
+                    <MuiLink onClick={() => openTopicDetailsDialog(topic)}>
+                      {topic.title}
+                    </MuiLink>
+                  </TableCell>
+                  <TableCell align="center">
+                    {topicStatusToHumanFriendlyString(topic.status)}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+            <TableBody></TableBody>
+          </Table>
+        </TableContainer>
 
         <Link to="/topics/add">
           <Button variant="outlined">Create new Topic / Suggestion</Button>
         </Link>
 
-        <PrimaryButton onClick={handleSubmitTopics}>
+        <PrimaryButton onClick={handlePreSubmitTopics}>
           Submit Suggestions
         </PrimaryButton>
       </Container>

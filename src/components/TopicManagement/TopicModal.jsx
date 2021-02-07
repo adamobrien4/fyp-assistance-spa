@@ -24,7 +24,7 @@ import api from '../../utils/api.axios'
 import MultiLineInput from '../MultiLineInput'
 import PrimaryButton from '../PrimaryButton'
 import Tags from '../Tags'
-import TargetedCoursesInput from '../TargetedCoursesInput'
+import TargetedCoursesInput from '../TargetCoursesInput'
 
 const useStyles = makeStyles(theme => ({
   formControl: {
@@ -48,6 +48,7 @@ const useStyles = makeStyles(theme => ({
 }))
 
 const TopicModal = props => {
+  console.log(props.topic)
   const classes = useStyles()
 
   const [status, setStatus] = useState(props.topic.status)
@@ -59,9 +60,12 @@ const TopicModal = props => {
   // Create state for each entry box
   const [title, setTitle] = useState(props.topic.title)
   const [description, setDescription] = useState(props.topic.title)
-  const [requirements, setRequirements] = useState(props.topic.requirements)
-  const [desiredSkills, setDesiredSkills] = useState(props.topic.desiredSkills)
-  const [targetCourses, setTargetCourses] = useState([])
+  const [additionalNotes, setAdditionalNotes] = useState(
+    props.topic.additionalNotes
+  )
+  const [targetCourses, setTargetCourses] = useState([
+    ...props.topic.targetedCourses
+  ])
   const [edits, setEdits] = useState({})
 
   const [savingChanges, setSavingChanges] = useState(false)
@@ -76,17 +80,20 @@ const TopicModal = props => {
     if (editMode) setEdits({ description: e.target.value })
   }
 
-  const onChangeRequirements = e => {
-    setRequirements(e.target.value)
-    if (editMode) setEdits({ requirements: e.target.value })
-  }
-
-  const onChangeDesiredSkills = e => {
-    setDesiredSkills(e.target.value)
-    if (editMode) setEdits({ desiredSkills: e.target.value })
+  const onChangeAdditionalNotes = e => {
+    setAdditionalNotes(e.target.value)
+    if (editMode) setEdits({ additionalNotes: e.target.value })
   }
 
   const handleDialogClose = () => {
+    setTitle(props.topic.title)
+    setDescription(props.topic.description)
+    setStatus(props.topic.status)
+    setTags(props.topic.tags)
+    setAdditionalNotes(props.topic.additionalNotes)
+    setTargetCourses(props.topic.targetedCourses)
+    setEdits({})
+
     setEditMode(false)
     props.setDialogOpen(false)
   }
@@ -200,15 +207,9 @@ const TopicModal = props => {
         />
         <Tags tags={tags} setTags={setTags} disabled={!editMode} />
         <MultiLineInput
-          label="Requirements"
-          value={requirements}
-          onChange={onChangeRequirements}
-          disabled={!editMode}
-        />
-        <MultiLineInput
-          label="Desired Skills"
-          value={desiredSkills}
-          onChange={onChangeDesiredSkills}
+          label="Additional Notes"
+          value={additionalNotes}
+          onChange={onChangeAdditionalNotes}
           disabled={!editMode}
         />
         <TargetedCoursesInput

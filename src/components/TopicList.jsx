@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 
 import {
   Container,
-  Button,
   InputBase,
   Paper,
   Divider,
@@ -16,11 +15,11 @@ import {
   Box
 } from '@material-ui/core'
 import SearchIcon from '@material-ui/icons/Search'
-import Input from './Input'
-import { TreeSelect } from 'antd'
 import { makeStyles } from '@material-ui/styles'
 
 import api from '../utils/api.axios'
+import Tags from './Tags'
+import PrimaryButton from './PrimaryButton'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -41,8 +40,6 @@ const useStyles = makeStyles(theme => ({
     margin: 4
   }
 }))
-
-const { SHOW_PARENT } = TreeSelect
 
 export default function TopicList(props) {
   const classes = useStyles()
@@ -89,12 +86,20 @@ export default function TopicList(props) {
   }, [])
 
   const handleSearch = () => {
-    console.log('Searching ', searchTerm)
-  }
+    console.log('Searching for tags ', tags)
 
-  const onTreeSelectChange = value => {
-    console.log('onChange: ', value)
-    setTags(value)
+    if (tags.length) {
+      api
+        .get('/topic/search', { tags: [...tags] })
+        .then(res => {
+          console.log(res)
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    } else {
+      // No tags selected
+    }
   }
 
   return (
@@ -107,7 +112,7 @@ export default function TopicList(props) {
         <Typography variant="h4">Loading...</Typography>
       ) : (
         <>
-          <Paper component="form" className={classes.root}>
+          {/* <Paper component="form" className={classes.root}>
             <InputBase
               className={classes.input}
               placeholder="Search"
@@ -124,24 +129,12 @@ export default function TopicList(props) {
               onClick={handleSearch}>
               <SearchIcon />
             </IconButton>
-          </Paper>
+          </Paper> */}
 
           {tagLoading || loading ? (
             <Typography>Loading Tags ...</Typography>
           ) : (
-            <TreeSelect
-              treeData={treeData}
-              value={tags}
-              onChange={onTreeSelectChange}
-              treeCheckable={true}
-              showCheckedStrategy={SHOW_PARENT}
-              placeholder="Search Topic Tags"
-              style={{
-                width: '100%'
-              }}
-              bordered={true}
-              showSearch={true}
-            />
+            <Tags tags={tags} setTags={setTags} style={{ margin: '20px 0' }} />
           )}
 
           <FormControlLabel
@@ -157,9 +150,10 @@ export default function TopicList(props) {
             }
             label="Advanced Search"
           />
-          <Collapse in={advancedSearch}>
+          {/* <Collapse in={advancedSearch}>
             <Typography>Advanced Search Settings</Typography>
-          </Collapse>
+          </Collapse> */}
+          <PrimaryButton onClick={handleSearch}>Search</PrimaryButton>
           <ul>
             {topics.map(topic => {
               return (
