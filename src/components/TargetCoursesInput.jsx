@@ -1,5 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { Controller } from 'react-hook-form'
 
 import Autocomplete from '@material-ui/lab/AutoComplete'
 import Input from './Input'
@@ -11,49 +12,39 @@ const courses = [
   'Lm053 - Course 3'
 ]
 
-const TargetCoursesInput = props => {
-  const handleKeyDown = event => {
-    switch (event.key) {
-      case ',':
-      case ' ': {
-        event.preventDefault()
-        event.stopPropagation()
-        if (event.target.value.length > 0) {
-          props.onChange([...props.value, event.target.value])
-        }
-        break
-      }
-      default:
-    }
-  }
-
+const TargetCoursesInput = ({ control, error, helperText, disabled }) => {
   return (
-    <Autocomplete
-      value={props.value}
-      onChange={props.onChange}
-      multiple
-      freeSolo
-      options={courses}
-      getOptionLabel={option => option}
-      filterSelectedOptions
-      renderInput={params => {
-        params.inputProps.onKeyDown = handleKeyDown
-        return (
-          <Input
-            {...params}
-            label="Search & Select Targeted Courses (Optional)"
-            error={props.error}
-            helperText={props.helperText}
-          />
-        )
-      }}
+    <Controller
+      render={({ onChange, value }) => (
+        <Autocomplete
+          multiple
+          value={value}
+          options={courses}
+          getOptionLabel={option => option}
+          defaultValue={value}
+          disabled={disabled}
+          filterSelectedOptions
+          renderInput={params => (
+            <Input
+              {...params}
+              variant="outlined"
+              label="Choose a Course"
+              placeholder="Course"
+              error={error}
+              helperText={helperText}
+            />
+          )}
+          onChange={(_, data) => onChange(data)}
+        />
+      )}
+      name="targetCourses"
+      control={control}
     />
   )
 }
 
 TargetCoursesInput.propTypes = {
-  value: PropTypes.array.isRequired,
-  onChange: PropTypes.func.isRequired,
+  control: PropTypes.object.isRequired,
   error: PropTypes.bool,
   disabled: PropTypes.bool,
   helperText: PropTypes.string

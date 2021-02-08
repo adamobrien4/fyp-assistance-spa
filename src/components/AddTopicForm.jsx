@@ -1,34 +1,17 @@
 import React from 'react'
 import api from '../utils/api.axios'
 import { useForm, Controller } from 'react-hook-form'
-import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
 
 import { Container, Typography } from '@material-ui/core'
+
+import { formSchema, defaultValues } from '../utils/yupSchemas/yupTopicSchema'
 
 import PrimaryButton from './PrimaryButton'
 import Input from './Input'
 import MultiLineInput from './MultiLineInput'
 import Tags from './Tags'
 import TargetCoursesInput from './TargetCoursesInput'
-
-const defaultValues = {
-  title: '',
-  description: '',
-  additionalNotes: '',
-  tags: [],
-  targetCourses: []
-}
-
-const formSchema = yup.object().shape({
-  title: yup.string().required('Topic must have a title'),
-  description: yup.string().required('Toic must have a description'),
-  tags: yup
-    .array(yup.string())
-    .min(1, 'You must specify at least one tag for your Topic'),
-  additionalNotes: yup.string(),
-  targetCourses: yup.array(yup.string())
-})
 
 const AddTopicForm = props => {
   const { register, handleSubmit, errors, control } = useForm({
@@ -103,9 +86,8 @@ const AddTopicForm = props => {
           name="targetCourses"
           render={({ onChange, value }) => (
             <TargetCoursesInput
-              courses={courses}
               value={value}
-              onChange={(_, newVal) => onChange(newVal)}
+              onChange={onChange}
               error={!!errors.targetCourses}
               helperText={errors?.targetCourses?.message}
             />
@@ -117,12 +99,5 @@ const AddTopicForm = props => {
     </Container>
   )
 }
-
-// TODO: Load courses from DB
-const courses = [
-  { code: 'LM051', title: 'Computer Systems' },
-  { code: 'LM052', title: 'Course 2' },
-  { code: 'Lm053', title: 'Course 3' }
-]
 
 export default AddTopicForm

@@ -24,7 +24,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogContentText,
-  DialogActions
+  DialogActions,
+  Divider
 } from '@material-ui/core'
 
 import api from '../../utils/api.axios'
@@ -140,7 +141,21 @@ export default function TopicManagement(props) {
   }
 
   const handlePreSubmitTopics = e => {
-    setSubmissionDialogOpen(true)
+    let hasSuggestion = false
+    for (let topic of topics) {
+      if (topic.status === 'suggestion') {
+        hasSuggestion = true
+        break
+      }
+    }
+
+    if (hasSuggestion) {
+      setSubmissionDialogOpen(true)
+    } else {
+      alert(
+        'You must have at least one topic marked as "Ready for Submision" before you submit your topics'
+      )
+    }
   }
 
   const handleSubmitTopics = () => {
@@ -157,6 +172,7 @@ export default function TopicManagement(props) {
         .catch(err => console.log(err))
         .finally(() => {
           setSubmittingTopics(false)
+          refreshTopicList()
         })
     }
   }
@@ -179,6 +195,7 @@ export default function TopicManagement(props) {
     <>
       {selectedTopic ? (
         <TopicModal
+          key={selectedTopic._id}
           dialogOpen={dialogOpen}
           setDialogOpen={setDialogOpen}
           topic={selectedTopic}
@@ -202,31 +219,38 @@ export default function TopicManagement(props) {
                 <TableCell align="right">Proposals</TableCell>
               </TableRow>
             </TableHead>
-            {topics.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  component="th"
-                  scope="row"
-                  align="center"
-                  colSpan={3}>
-                  <Typography>No Topics to display</Typography>
-                </TableCell>
-              </TableRow>
-            ) : (
-              topics.map(topic => (
-                <TableRow key={topic._id} button>
-                  <TableCell component="th" scope="row">
-                    <MuiLink onClick={() => openTopicDetailsDialog(topic)}>
-                      {topic.title}
-                    </MuiLink>
-                  </TableCell>
-                  <TableCell align="center">
-                    {topicStatusToHumanFriendlyString(topic.status)}
+            <TableBody>
+              {topics.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    component="th"
+                    scope="row"
+                    align="center"
+                    colSpan={3}>
+                    <Typography>No Topics to display</Typography>
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-            <TableBody></TableBody>
+              ) : (
+                topics.map(topic => (
+                  <>
+                    <TableRow key={topic._id}>
+                      <TableCell component="th" scope="row">
+                        <MuiLink onClick={() => openTopicDetailsDialog(topic)}>
+                          {topic.title}
+                        </MuiLink>
+                      </TableCell>
+                      <TableCell align="center">
+                        {topicStatusToHumanFriendlyString(topic.status)}
+                      </TableCell>
+                      <TableCell align="right">6 Submissions</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell colSpan={3}></TableCell>
+                    </TableRow>
+                  </>
+                ))
+              )}
+            </TableBody>
           </Table>
         </TableContainer>
 
