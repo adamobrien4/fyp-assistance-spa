@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 
 import { useData } from '../../contexts/CreateProposalContext'
-import { useHistory } from 'react-router-dom'
+import { useHistory, useParams } from 'react-router-dom'
 
 import { withStyles } from '@material-ui/core/styles'
 import {
@@ -24,47 +24,65 @@ import {
 } from '@material-ui/core'
 import AddCircleIcon from '@material-ui/icons/AddCircle'
 import HistoryIcon from '@material-ui/icons/History'
-import * as yup from 'yup'
-import { useForm } from 'react-hook-form'
 
 import api from '../../utils/api.axios'
 
 import Input from '../Input'
 import PrimaryButton from '../PrimaryButton'
 import Breadcrumb from './Breadcrumb'
-import Form from '../Form'
 
 const CreateProposal = props => {
   // CreateProposal Context
-  const { setContextValues, data } = useData()
+  const { setContextData, contextData } = useData()
+  let { topicCode } = useParams()
 
   const history = useHistory()
-  const { register, handleSubmit, errors } = useForm({
-    mode: 'onBlur'
-  })
   // State hooks
   const [isCustomProposal, setIsCustomProposal] = useState(
-    data?.isCustomProposal || false
+    contextData?.isCustomProposal || false
   )
   const [topics, setTopics] = useState([])
   const [displayedTopics, setDisplayedTopics] = useState([])
-  const [selectedTopic, setSelectedTopic] = useState(data?.topic)
+  const [selectedTopic, setSelectedTopic] = useState(contextData?.topic)
   // TODO: Set loading to false if topics are in data.topics
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
-    if (data?.topics) {
+    if (topicCode) {
+      console.log('Loading from topicCode')
+      api
+        .get('/topic/' + topicCode)
+        .then(res => {
+          console.log(res)
+          setLoading(false)
+          setTopics([])
+          setContextData({
+            referredFromTopic: true,
+            isCustomProposal: false,
+            topic: res.data.topic,
+            topics: [],
+            step: 2
+          })
+          history.push('./step2')
+        })
+        .catch(err => {
+          console.log(err)
+        })
+      return
+    }
+
+    if (contextData?.topics?.length > 0) {
       console.log('Loading topics from context')
-      console.log(data.topics)
-      setTopics(data.topics)
+      console.log(contextData.topics)
+      setTopics(contextData.topics)
       setLoading(false)
     } else {
       api
         .get('/topic')
         .then(res => {
           console.log(res.data.topics)
-          setContextValues({ ...data, topics: res.data.topics })
+          setContextData({ ...contextData, topics: res.data.topics })
           setTopics(res.data.topics)
         })
         .catch(err => {
@@ -109,11 +127,11 @@ const CreateProposal = props => {
     // Get data from form and store in context
 
     let formData = {
-      ...data,
+      ...contextData,
       isCustomProposal: isCustomProposal
     }
 
-    if (data?.step === 0) {
+    if (contextData?.step === 0) {
       formData.step = 1
     }
 
@@ -124,8 +142,8 @@ const CreateProposal = props => {
       formData.topic = selectedTopic
     }
 
+    setContextData(formData)
     history.push('/proposals/add/step2')
-    setContextValues(formData)
   }
 
   if (loading) {
@@ -172,7 +190,7 @@ const CreateProposal = props => {
             label="Search Topic Code"
             value={searchTerm}
             onChange={handleInput}
-            disabled={data.topics.length === 0}
+            disabled={contextData.topics.length === 0}
           />
 
           <TableContainer component={Paper}>

@@ -4,19 +4,22 @@ import React, { createContext, useState, useContext } from 'react'
 const CreateProposalContext = createContext()
 
 export const CreateProposalContextProvider = ({ children }) => {
-  const [data, setData] = useState({
-    step: 0
+  const [contextData, setCntxData] = useState({
+    step: 0,
+    referredFromTopic: false,
+    isCustomProposal: false,
+    topics: []
   })
 
-  const setContextValues = values => {
-    setData(prevData => ({
+  const setContextData = values => {
+    setCntxData(prevData => ({
       ...prevData,
       ...values
     }))
   }
 
   return (
-    <CreateProposalContext.Provider value={{ data, setContextValues }}>
+    <CreateProposalContext.Provider value={{ contextData, setContextData }}>
       {children}
     </CreateProposalContext.Provider>
   )

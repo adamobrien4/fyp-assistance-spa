@@ -179,12 +179,6 @@ function Pages() {
         <ManageProposal />
       </Route>
 
-      <Route exact path="/proposals/add/:topicCode">
-        <CreateProposalContextProvider>
-          <CreateProposal />
-        </CreateProposalContextProvider>
-      </Route>
-
       <Route exact path="/proposals/add/step2">
         <CreateProposalContextProvider>
           <CreateProposalStep2 />
@@ -200,6 +194,12 @@ function Pages() {
       <Route exact path="/proposals/add/finish">
         <CreateProposalContextProvider>
           <CreateProposalFinish />
+        </CreateProposalContextProvider>
+      </Route>
+
+      <Route path="/proposals/add/:topicCode?">
+        <CreateProposalContextProvider>
+          <CreateProposal />
         </CreateProposalContextProvider>
       </Route>
 
