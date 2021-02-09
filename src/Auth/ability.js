@@ -10,7 +10,8 @@ export default function defineAbilityFor(userRole) {
     case 'Student':
       can('read', 'Topic')
       // FIXME: Rename 'publisher' to match the name of the user who created the proposal
-      can('manage', 'Proposal', { publisher: 'me' })
+      can('create', 'Proposal')
+      can('manage', 'Proposal', { student: 'me' })
       break
     case 'Supervisor':
       // FIXME: Rename 'publisher' to match the name of the user who created the proposal

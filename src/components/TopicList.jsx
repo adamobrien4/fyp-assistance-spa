@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-
+import { Link } from 'react-router-dom'
 import {
   Container,
   InputBase,
@@ -12,7 +12,14 @@ import {
   Collapse,
   Checkbox,
   FormControlLabel,
-  Box
+  Box,
+  TableContainer,
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+  Link as MuiLink,
+  Avatar
 } from '@material-ui/core'
 import SearchIcon from '@material-ui/icons/Search'
 import { makeStyles } from '@material-ui/styles'
@@ -45,11 +52,9 @@ export default function TopicList(props) {
   const classes = useStyles()
 
   const [tags, setTags] = useState([])
-  const [treeData, setTreeData] = useState([])
   const [error, setError] = useState('')
   const [topics, setTopics] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [tagLoading, setTagLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [advancedSearch, setAdvancedSearch] = useState(false)
 
@@ -68,20 +73,6 @@ export default function TopicList(props) {
       })
       .finally(() => {
         setLoading(false)
-      })
-
-    api
-      .get('/tag')
-      .then(res => {
-        console.log(res.data)
-        setTreeData(res.data)
-      })
-      .catch(err => {
-        console.log(err)
-        setError(err)
-      })
-      .finally(() => {
-        setTagLoading(false)
       })
   }, [])
 
@@ -131,11 +122,7 @@ export default function TopicList(props) {
             </IconButton>
           </Paper> */}
 
-          {tagLoading || loading ? (
-            <Typography>Loading Tags ...</Typography>
-          ) : (
-            <Tags tags={tags} setTags={setTags} style={{ margin: '20px 0' }} />
-          )}
+          <Tags value={tags} onChange={setTags} style={{ margin: '20px 0' }} />
 
           <FormControlLabel
             control={
@@ -154,35 +141,77 @@ export default function TopicList(props) {
             <Typography>Advanced Search Settings</Typography>
           </Collapse> */}
           <PrimaryButton onClick={handleSearch}>Search</PrimaryButton>
-          <ul>
-            {topics.map(topic => {
-              return (
-                <Card key={topic._id}>
-                  <CardContent>
-                    <Typography variant="h6">{topic.title}</Typography>
-                    <Typography variant="body1">Super McVisor</Typography>
-                    <Box display="flex" flexWrap="wrap">
-                      {topic.tags.map(tag => {
-                        return (
-                          <Box
-                            key={tag._id}
-                            p={0.5}
-                            m={0.25}
-                            bgcolor="primary.main"
-                            style={{
-                              borderRadius: '5px',
-                              textAlign: 'center'
-                            }}>
-                            {tag}
-                          </Box>
-                        )
-                      })}
-                    </Box>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </ul>
+
+          <TableContainer component={Paper} style={{ margin: '20px 0' }}>
+            <Table style={{ minWidth: '650px' }} size="medium">
+              <TableBody>
+                {topics.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      component="th"
+                      scope="row"
+                      align="center"
+                      colSpan={3}>
+                      <Typography>No Topics to display</Typography>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  topics.map(topic => (
+                    <TableRow key={topic.code}>
+                      <TableCell component="th" scope="row">
+                        <Link to={'./topics/view/' + topic.code}>
+                          <MuiLink component="p">{topic.title}</MuiLink>
+                        </Link>
+                      </TableCell>
+                      <TableCell align="center">
+                        {topic.supervisor.displayName} - {topic.supervisor.abbr}
+                      </TableCell>
+                      <TableCell align="center">{topic.code}</TableCell>
+                      <TableCell>
+                        <div
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'row',
+                            alignContent: 'center',
+                            justifyContent: 'right'
+                          }}>
+                          {topic.tags.slice(0, 3).map(tag => (
+                            <Box
+                              key={tag}
+                              style={{
+                                backgroundColor: '#dbdbdb',
+                                color: '#5b5b5b',
+                                margin: '0 3px',
+                                padding: '4px',
+                                borderRadius: '3px'
+                              }}>
+                              {tag}
+                            </Box>
+                          ))}
+                          {topic.tags.length > 3 ? (
+                            <Box
+                              key={'additional_tags'}
+                              style={{
+                                backgroundColor: '#dbdbdb',
+                                color: '#5b5b5b',
+                                margin: '0 3px',
+                                padding: '4px',
+                                borderRadius: '3px'
+                              }}>
+                              {'+ ' + (topic.tags.length - 3) + ' more'}
+                            </Box>
+                          ) : null}
+                        </div>
+                      </TableCell>
+                      <TableCell align="right">
+                        7 Students have shown interest
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </>
       )}
     </Container>

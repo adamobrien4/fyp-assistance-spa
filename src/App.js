@@ -32,6 +32,7 @@ import Header from './components/Header'
 import Button from '@material-ui/core/Button'
 import ManageStudent from './components/UserRemoval/ManageStudent'
 import ManageProposal from './components/Proposals/ManageProposal'
+import ViewTopic from './components/ViewTopic'
 
 import CreateProposal from './components/Proposals/CreateProposal'
 import CreateProposalStep2 from './components/Proposals/CreateProposalStep2'
@@ -116,6 +117,7 @@ function App() {
                 )
               } else {
                 alert('You have no assigned role')
+                localStorage.removeItem('fyp-assistance-role-type')
                 instance.logout(account)
               }
             })
@@ -161,6 +163,10 @@ function Pages() {
         <TopicList />
       </Route>
 
+      <Route path="/topics/view/:code">
+        <ViewTopic />
+      </Route>
+
       <Route path="/topics/add">
         <AddTopicForm />
       </Route>
@@ -173,7 +179,7 @@ function Pages() {
         <ManageProposal />
       </Route>
 
-      <Route exact path="/proposals/add">
+      <Route exact path="/proposals/add/:topicCode">
         <CreateProposalContextProvider>
           <CreateProposal />
         </CreateProposalContextProvider>
