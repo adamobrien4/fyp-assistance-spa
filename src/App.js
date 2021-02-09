@@ -1,30 +1,52 @@
-import React, { useEffect, useContext } from 'react'
+import React, { useEffect, useState, useContext } from 'react'
+import { Switch, Route } from 'react-router-dom'
 import {
-  Switch,
-  Route
-} from 'react-router-dom'
-import { MsalAuthenticationTemplate, useMsal, useAccount } from '@azure/msal-react'
+  MsalAuthenticationTemplate,
+  useMsal,
+  useAccount
+} from '@azure/msal-react'
 import { InteractionType } from '@azure/msal-browser'
 
 import { loginRequest, config } from './config/msal-config'
 
 import { AuthContext } from './contexts/AuthContext'
-import axiosGraphInstance, { setupAxiosInstance } from './Axios'
+import { AbilityContext } from './Auth/Can'
+import ability from './Auth/ability'
+import { setup as apiSetup } from './utils/api.axios'
+import axiosGraphInstance, { setup as graphSetup } from './utils/graph.axios'
+
+import { CreateProposalContextProvider } from './contexts/CreateProposalContext'
 
 import ErrorComponent from './components/Auth/ErrorComponent'
 import Loading from './components/Auth/Loading'
+import AppLoading from './components/AppLoading'
 
-import Suggestion from './components/Suggestion'
+import TopicManagement from './components/TopicManagement'
+import TopicList from './components/TopicList'
+import AddTopicForm from './components/AddTopicForm'
 import Welcome from './components/Welcome'
-import StudentAssignment from './components/StudentAssignment'
-import NavBar from './components/NavBar'
+import StudentAssignment from './components/UserAssignment/StudentAssignment'
+import SupervisorAssignment from './components/UserAssignment/SupervisorAssignment'
+import ManageCoordinator from './components/ManageCoordinator'
+import Header from './components/Header'
 import Button from '@material-ui/core/Button'
+import ManageStudent from './components/UserRemoval/ManageStudent'
+import ManageProposal from './components/Proposals/ManageProposal'
+import ViewTopic from './components/ViewTopic'
 
-function App () {
+import CreateProposal from './components/Proposals/CreateProposal'
+import CreateProposalStep2 from './components/Proposals/CreateProposalStep2'
+import CreateProposalStep3 from './components/Proposals/CreateProposalStep3'
+import CreateProposalFinish from './components/Proposals/CreateProposalFinish'
+
+import Test from './components/Test'
+
+function App() {
+  const [appReady, setAppReady] = useState(false)
   const { instance, accounts, inProgress } = useMsal()
   const account = useAccount(accounts[0] || {})
 
-  const { setAccountType } = useContext(AuthContext)
+  const { accountType, setAccountType } = useContext(AuthContext)
 
   const authRequest = {
     ...loginRequest
@@ -32,62 +54,77 @@ function App () {
 
   useEffect(() => {
     if (account && inProgress === 'none') {
-      instance.acquireTokenSilent({
-        ...loginRequest,
-        account: account
-      }).then(async (response) => {
-        // User is logged in
-        // FIXME: This is being called twice on user login, 2 requests to ms graph
-        console.log('User is logged in')
+      apiSetup(instance, account)
+      graphSetup(instance, account)
+      // TODO: Wait on this function to finish before allowing the user to continue to the website
+      // This will ensure all profile data is ready to use throughout the app
+      instance
+        .acquireTokenSilent({
+          ...loginRequest,
+          account: account
+        })
+        .then(async response => {
+          // User is logged in
+          // FIXME: This is being called twice on user login, 2 requests to ms graph
+          console.log('User is logged in')
 
-        await setupAxiosInstance(instance, account)
+          // TODO: If role is stored in localstorage pull from here instead of querying MS graph
 
-        // TODO: If role is stored in localstorage pull from here instead of querying MS graph
-
-        const localStorageAccountRole = localStorage.getItem('fyp-assistance-role-type')
-        if (localStorageAccountRole) {
-          const storedRoleObject = JSON.parse(localStorageAccountRole)
-          if (storedRoleObject.localAccountId === account.localAccountId) {
-            console.log('Setting account role from local storage')
-            setAccountType(storedRoleObject.role)
-            return
+          const localStorageAccountRole = localStorage.getItem(
+            'fyp-assistance-role-type'
+          )
+          if (localStorageAccountRole) {
+            const storedRoleObject = JSON.parse(localStorageAccountRole)
+            if (storedRoleObject.localAccountId === account.localAccountId) {
+              console.log('Setting account role from local storage')
+              setAccountType(storedRoleObject.role)
+              setAppReady(true)
+              return
+            }
           }
-        }
 
-        axiosGraphInstance.get(`${config.endpoints.graph}/me/appRoleAssignments`)
-          .then(resp => {
-            let rolePriority = -1
-            let role = null
-            for (const roleData of resp.data.value) {
-              const roleObject = config.appRoles[roleData.appRoleId]
+          axiosGraphInstance
+            .get(`${config.endpoints.graph}/me/appRoleAssignments`)
+            .then(resp => {
+              let rolePriority = -1
+              let role = null
+              for (const roleData of resp.data.value) {
+                const roleObject = config.appRoles[roleData.appRoleId]
 
-              if (!roleObject) {
-                console.log('Unknown role: ' + roleData)
-                continue
+                if (!roleObject) {
+                  console.log('Unknown role: ' + JSON.stringify(roleData))
+                  instance.logout(account)
+                  continue
+                }
+
+                const { priority, displayName } = roleObject
+                if (priority > rolePriority) {
+                  rolePriority = priority
+                  role = displayName
+                }
               }
 
-              const { priority, displayName } = roleObject
-              if (priority > rolePriority) {
-                rolePriority = priority
-                role = displayName
+              if (role) {
+                setAccountType(role)
+                setAppReady(true)
+
+                localStorage.setItem(
+                  'fyp-assistance-role-type',
+                  JSON.stringify({
+                    localAccountId: account.localAccountId,
+                    role: role
+                  })
+                )
+              } else {
+                alert('You have no assigned role')
+                localStorage.removeItem('fyp-assistance-role-type')
+                instance.logout(account)
               }
-            }
-
-            if (role) {
-              setAccountType(role)
-
-              localStorage.setItem('fyp-assistance-role-type', JSON.stringify({
-                localAccountId: account.localAccountId,
-                role: role
-              }))
-            } else {
-              alert('You have no assigned role')
-            }
-          })
-          .catch(err => {
-            console.log(err)
-          })
-      })
+            })
+            .catch(err => {
+              console.log(err)
+            })
+        })
     }
   }, [account, inProgress, instance])
 
@@ -96,34 +133,103 @@ function App () {
       interactionType={InteractionType.Redirect}
       authenticationRequest={authRequest}
       errorComponent={ErrorComponent}
-      loadingComponent={Loading}
-    >
-      <NavBar />
-      <Pages />
+      loadingComponent={Loading}>
+      {appReady ? (
+        <AbilityContext.Provider value={ability(accountType)}>
+          <Header />
+          <Pages />
+        </AbilityContext.Provider>
+      ) : (
+        <AppLoading />
+      )}
     </MsalAuthenticationTemplate>
   )
 }
 
-function Pages () {
+function Pages() {
   const { instance } = useMsal()
 
+  // Implement Can functionality to only show available routes
   return (
     <Switch>
-      <Route path='/suggestion'>
-        <Suggestion />
+      <Route path="/test">
+        <Test />
+      </Route>
+      <Route exact path="/">
+        <Welcome />
       </Route>
 
-      <Route path='/student/assignment'>
+      <Route exact path="/topics">
+        <TopicList />
+      </Route>
+
+      <Route path="/topics/view/:code">
+        <ViewTopic />
+      </Route>
+
+      <Route path="/topics/add">
+        <AddTopicForm />
+      </Route>
+
+      <Route path="/topics/manage">
+        <TopicManagement />
+      </Route>
+
+      <Route exact path="/proposals">
+        <ManageProposal />
+      </Route>
+
+      <Route exact path="/proposals/add/:topicCode">
+        <CreateProposalContextProvider>
+          <CreateProposal />
+        </CreateProposalContextProvider>
+      </Route>
+
+      <Route exact path="/proposals/add/step2">
+        <CreateProposalContextProvider>
+          <CreateProposalStep2 />
+        </CreateProposalContextProvider>
+      </Route>
+
+      <Route exact path="/proposals/add/step3">
+        <CreateProposalContextProvider>
+          <CreateProposalStep3 />
+        </CreateProposalContextProvider>
+      </Route>
+
+      <Route exact path="/proposals/add/finish">
+        <CreateProposalContextProvider>
+          <CreateProposalFinish />
+        </CreateProposalContextProvider>
+      </Route>
+
+      <Route path="/student/assign">
         <StudentAssignment />
       </Route>
 
-      <Route path='/logout'>
-        { /* Tidy up logout methodology */ }
-        <Button variant='contained' color='primary' onClick={() => instance.logout({ onRedirectNavigate: 'http://localhost:3000/' })} >Logout</Button>
+      <Route path="/student/manage">
+        <ManageStudent />
       </Route>
 
-      <Route path='/'>
-        <Welcome />
+      <Route path="/supervisor/assign">
+        <SupervisorAssignment />
+      </Route>
+
+      <Route path="/coordinator">
+        <ManageCoordinator />
+      </Route>
+
+      <Route path="/logout">
+        {/* TODO: Delete localStorage of user role on logout 'fyp-assistance-role-type , Tidy up logout methodology  */}
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            localStorage.removeItem('fyp-assistance-role-type')
+            instance.logout({ onRedirectNavigate: 'http://localhost:3000/' })
+          }}>
+          Logout
+        </Button>
       </Route>
     </Switch>
   )

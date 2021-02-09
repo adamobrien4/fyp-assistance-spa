@@ -10,15 +10,15 @@ const papaParseConfig = {
   header: true
 }
 
-export default function CSVUploader (props) {
-  const handleOpenDialog = (e) => {
+export default function CSVUploader(props) {
+  const handleOpenDialog = e => {
     // Note that the ref is set async, so it might be null at some point
     if (buttonRef.current) {
       buttonRef.current.open(e)
     }
   }
 
-  const handleOnFileLoaded = (data) => {
+  const handleOnFileLoaded = data => {
     console.log(data)
 
     let studentsArray = []
@@ -40,13 +40,13 @@ export default function CSVUploader (props) {
     console.log('---------------------------')
   }
 
-  const handleOnRemoveFile = (data) => {
+  const handleOnRemoveFile = data => {
     console.log('---------------------------')
     console.log(data)
     console.log('---------------------------')
   }
 
-  const handleRemoveFile = (e) => {
+  const handleRemoveFile = e => {
     // Note that the ref is set async, so it might be null at some point
     if (buttonRef.current) {
       buttonRef.current.removeFile(e)
@@ -63,20 +63,18 @@ export default function CSVUploader (props) {
         noClick
         noDrag
         noProgressBar
-        onRemoveFile={handleOnRemoveFile}
-      >
+        onRemoveFile={handleOnRemoveFile}>
         {({ file }) => (
           <aside
             style={{
               display: 'flex',
               flexDirection: 'row',
               marginBottom: 10
-            }}
-          >
+            }}>
             <Button
               onClick={handleOpenDialog}
-              variant='contained'
-              color='primary'
+              variant="contained"
+              color="primary"
               style={{
                 borderRadius: 0,
                 marginTop: 5,
@@ -86,8 +84,7 @@ export default function CSVUploader (props) {
                 height: 50,
                 paddingLeft: 0,
                 paddingRight: 0
-              }}
-            >
+              }}>
               Browse file
             </Button>
             <div
@@ -102,12 +99,11 @@ export default function CSVUploader (props) {
                 paddingLeft: 13,
                 paddingTop: 3,
                 width: '60%'
-              }}
-            >
+              }}>
               {file && file.name}
             </div>
             <Button
-              variant='contained'
+              variant="contained"
               onClick={handleRemoveFile}
               style={{
                 borderRadius: 0,
@@ -118,8 +114,7 @@ export default function CSVUploader (props) {
                 height: 50,
                 paddingLeft: 0,
                 paddingRight: 0
-              }}
-            >
+              }}>
               Remove
             </Button>
           </aside>

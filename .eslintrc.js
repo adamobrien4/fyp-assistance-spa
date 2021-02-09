@@ -4,8 +4,10 @@ module.exports = {
     es2021: true
   },
   extends: [
+    "react-app",
+    "react-app/jest",
     'plugin:react/recommended',
-    'standard'
+    'standard',
   ],
   parserOptions: {
     ecmaFeatures: {
@@ -14,11 +16,10 @@ module.exports = {
     ecmaVersion: 12,
     sourceType: 'module'
   },
-  plugins: [
-    'react',
-    'only-warn'
-  ],
+  plugins: ['react', 'only-warn'],
   rules: {
-    'prefer-const': 0
+    'prefer-const': 0,
+    'multiline-ternary': 0,
+    'space-before-function-paren': ['error', 'never']
   }
 }

@@ -26,8 +26,7 @@ export const config = {
       displayName: 'Coordinator',
       priority: 3
     },
-    // eslint-disable-next-line quote-props
-    'not_yet_added': {
+    '141cfda0-c415-4aba-a6af-20bfc1a639f7': {
       displayName: 'Administrator',
       priority: 4
     }
