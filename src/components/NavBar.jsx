@@ -59,13 +59,6 @@ export default function NavBar(props) {
         </Can>
 
         {/* Coordinator */}
-        <Can I="create" a="Student">
-          <ListItem button>
-            <Link to="/student/assign" className={styles.linkText}>
-              Assign Students
-            </Link>
-          </ListItem>
-        </Can>
         <Can I="manage" a="Student">
           <ListItem button>
             <Link to="/student/manage" className={styles.linkText}>
@@ -73,10 +66,10 @@ export default function NavBar(props) {
             </Link>
           </ListItem>
         </Can>
-        <Can I="create" a="Supervisor">
+        <Can I="manage" a="Supervisor">
           <ListItem button>
-            <Link to="/supervisor/assign" className={styles.linkText}>
-              Assign Supervisors
+            <Link to="/supervisor/manage" className={styles.linkText}>
+              Manage Supervisors
             </Link>
           </ListItem>
         </Can>

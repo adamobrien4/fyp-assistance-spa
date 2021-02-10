@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { useMsal, useAccount } from '@azure/msal-react'
-import { config } from '../../config/msal-config'
+import { config } from '../../../config/msal-config'
 
-import api from '../../utils/api.axios'
+import api from '../../../utils/api.axios'
 import Typography from '@material-ui/core/Typography'
 import { makeStyles } from '@material-ui/core/styles'
 import {
@@ -24,7 +24,7 @@ import {
 } from '@material-ui/icons'
 
 import UploadButton from './UploadButton'
-import CSVUploader from '../CSVUploader'
+import CSVUploader from '../../CSVUploader'
 
 const useStyles = makeStyles(theme => ({
   root: {

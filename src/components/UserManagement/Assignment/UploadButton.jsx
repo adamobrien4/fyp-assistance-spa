@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 
-import PrimaryButton from '../PrimaryButton'
+import PrimaryButton from '../../PrimaryButton'
 
 export default function UploadButton(props) {
   return (

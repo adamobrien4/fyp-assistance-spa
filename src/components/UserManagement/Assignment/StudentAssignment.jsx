@@ -1,16 +1,16 @@
 import React, { useState } from 'react'
-import { config } from '../../config/msal-config'
+import { config } from '../../../config/msal-config'
 
 import Typography from '@material-ui/core/Typography'
 import { Container, IconButton, Collapse } from '@material-ui/core'
-import PrimaryButton from '../PrimaryButton'
+import PrimaryButton from '../../PrimaryButton'
 import { DataGrid } from '@material-ui/data-grid'
 import Alert from '@material-ui/lab/Alert'
 import { Close as CloseIcon } from '@material-ui/icons'
 
-import api from '../../utils/api.axios'
+import api from '../../../utils/api.axios'
 import UploadButton from './UploadButton'
-import CSVUploader from '../CSVUploader'
+import CSVUploader from '../../CSVUploader'
 import UserEmailInputField from './UserEmailInputField'
 
 export default function StudentAssignment(props) {

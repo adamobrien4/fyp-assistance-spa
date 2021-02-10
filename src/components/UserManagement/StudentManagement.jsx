@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
+import { Link } from 'react-router-dom'
 
 import {
   Container,
@@ -15,7 +16,9 @@ import {
   Checkbox,
   IconButton
 } from '@material-ui/core'
-import { Edit } from '@material-ui/icons'
+import { Edit, Delete } from '@material-ui/icons'
+
+import api from '../../utils/api.axios'
 
 import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft'
 import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight'
@@ -68,16 +71,34 @@ TablePaginationActions.propTypes = {
   rowsPerPage: PropTypes.number.isRequired
 }
 
-export default function ManageStudent(props) {
+const StudentManagement = props => {
   const [students, setStudents] = useState([])
   const [visableStudents, setVisableStudents] = useState([])
   const [selected, setSelected] = useState([])
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(5)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Get students from DB
+    refreshStudentList()
   }, [])
+
+  const refreshStudentList = () => {
+    // Get students from DB
+    api
+      .get('/student')
+      .then(res => {
+        console.log(res)
+        setStudents(res.data.students)
+        setVisableStudents(res.data.students)
+      })
+      .catch(err => {
+        console.log(err)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
+  }
 
   const handleSelected = studentId => {
     let studentList = [...selected]
@@ -110,13 +131,35 @@ export default function ManageStudent(props) {
     setVisableStudents(searched)
   }
 
+  const handleRemoveSingle = id => {
+    console.log('removing student w/ id', id)
+
+    api
+      .post('/student/delete', { studentId: id })
+      .then(res => {
+        console.log(res)
+        refreshStudentList()
+      })
+      .catch(err => {
+        // TODO: Inform user of error
+        console.log(err)
+      })
+  }
+
   const handleRemove = () => {
     console.log('Removing Students')
     console.log(selected)
   }
 
+  if (loading) {
+    return <p>Loading...</p>
+  }
+
   return (
     <Container maxwidth="md">
+      <Link to="/student/assign">
+        <PrimaryButton>Assign Students</PrimaryButton>
+      </Link>
       <Input label="Search" onChange={handleSearch} />
 
       <TableContainer component={Paper}>
@@ -153,9 +196,16 @@ export default function ManageStudent(props) {
                   <TableCell align="right">{student.email}</TableCell>
                   <TableCell align="right">
                     <PrimaryButton
-                      style={{ width: '50%', margin: 0 }}
+                      style={{ width: '25%', margin: 0 }}
                       startIcon={<Edit />}>
                       View
+                    </PrimaryButton>
+                    <PrimaryButton
+                      onClick={() => handleRemoveSingle(student._id)}
+                      style={{ width: '25%', margin: '0 0 0 5px' }}
+                      color="secondary"
+                      startIcon={<Delete />}>
+                      Delete
                     </PrimaryButton>
                   </TableCell>
                 </TableRow>
@@ -189,3 +239,5 @@ export default function ManageStudent(props) {
     </Container>
   )
 }
+
+export default StudentManagement

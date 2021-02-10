@@ -25,12 +25,19 @@ import TopicManagement from './components/TopicManagement'
 import TopicList from './components/TopicList'
 import AddTopicForm from './components/AddTopicForm'
 import Welcome from './components/Welcome'
-import StudentAssignment from './components/UserAssignment/StudentAssignment'
-import SupervisorAssignment from './components/UserAssignment/SupervisorAssignment'
+
+// Student Imports
+import StudentAssignment from './components/UserManagement/Assignment/StudentAssignment'
+import StudentManagement from './components/UserManagement/StudentManagement'
+
+// Supervisor Imports
+import SupervisorAssignment from './components/UserManagement/Assignment/SupervisorAssignment'
+import SupervisorManagement from './components/UserManagement/SupervisorManagement'
+
+// Coordinator Imports
 import ManageCoordinator from './components/ManageCoordinator'
 import Header from './components/Header'
 import Button from '@material-ui/core/Button'
-import ManageStudent from './components/UserRemoval/ManageStudent'
 import ManageProposal from './components/Proposals/ManageProposal'
 import ViewTopic from './components/ViewTopic'
 
@@ -208,11 +215,15 @@ function Pages() {
       </Route>
 
       <Route path="/student/manage">
-        <ManageStudent />
+        <StudentManagement />
       </Route>
 
       <Route path="/supervisor/assign">
         <SupervisorAssignment />
+      </Route>
+
+      <Route path="/supervisor/manage">
+        <SupervisorManagement />
       </Route>
 
       <Route path="/coordinator">
