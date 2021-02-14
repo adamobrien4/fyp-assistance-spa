@@ -54,7 +54,7 @@ export default function TopicList(props) {
   const [tags, setTags] = useState([])
   const [error, setError] = useState('')
   const [topics, setTopics] = useState([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [advancedSearch, setAdvancedSearch] = useState(false)
 
@@ -81,9 +81,11 @@ export default function TopicList(props) {
 
     if (tags.length) {
       api
-        .get('/topic/search', { tags: [...tags] })
+        .post('/topic/search', { tags: [...tags] })
         .then(res => {
           console.log(res)
+
+          setTopics(res.data.topics)
         })
         .catch(err => {
           console.log(err)
@@ -99,121 +101,98 @@ export default function TopicList(props) {
         Topic List
       </Typography>
 
-      {loading ? (
-        <Typography variant="h4">Loading...</Typography>
-      ) : (
-        <>
-          {/* <Paper component="form" className={classes.root}>
-            <InputBase
-              className={classes.input}
-              placeholder="Search"
-              value={searchTerm}
-              inputProps={{ 'aria-label': 'Search' }}
-              onChange={e => {
-                setSearchTerm(e.target.value)
-              }}
-            />
-            <Divider className={classes.divider} orientation="vertical" />
-            <IconButton
-              className={classes.iconButton}
-              aria-label="search"
-              onClick={handleSearch}>
-              <SearchIcon />
-            </IconButton>
-          </Paper> */}
+      <Tags value={tags} onChange={setTags} style={{ margin: '20px 0' }} />
 
-          <Tags value={tags} onChange={setTags} style={{ margin: '20px 0' }} />
-
-          <FormControlLabel
-            control={
-              <Checkbox
-                defaultChecked={advancedSearch}
-                color="primary"
-                name="advancedSearch"
-                onChange={e => {
-                  setAdvancedSearch(e.target.checked)
-                }}
-              />
-            }
-            label="Advanced Search"
+      <FormControlLabel
+        control={
+          <Checkbox
+            defaultChecked={advancedSearch}
+            color="primary"
+            name="advancedSearch"
+            onChange={e => {
+              setAdvancedSearch(e.target.checked)
+            }}
           />
-          {/* <Collapse in={advancedSearch}>
+        }
+        label="Advanced Search"
+      />
+      {/* <Collapse in={advancedSearch}>
             <Typography>Advanced Search Settings</Typography>
           </Collapse> */}
-          <PrimaryButton onClick={handleSearch}>Search</PrimaryButton>
+      <PrimaryButton onClick={handleSearch}>Search</PrimaryButton>
 
-          <TableContainer component={Paper} style={{ margin: '20px 0' }}>
-            <Table style={{ minWidth: '650px' }} size="medium">
-              <TableBody>
-                {topics.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      component="th"
-                      scope="row"
-                      align="center"
-                      colSpan={3}>
-                      <Typography>No Topics to display</Typography>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  topics.map(topic => (
-                    <TableRow key={topic.code}>
-                      <TableCell component="th" scope="row">
-                        <Link to={'./topics/view/' + topic.code}>
-                          <MuiLink component="p">{topic.title}</MuiLink>
-                        </Link>
-                      </TableCell>
-                      <TableCell align="center">
-                        {topic.supervisor.displayName} - {topic.supervisor.abbr}
-                      </TableCell>
-                      <TableCell align="center">{topic.code}</TableCell>
-                      <TableCell>
-                        <div
+      <TableContainer component={Paper} style={{ margin: '20px 0' }}>
+        <Table style={{ minWidth: '650px' }} size="medium">
+          <TableBody>
+            {topics.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  component="th"
+                  scope="row"
+                  align="center"
+                  colSpan={3}>
+                  <Typography>
+                    {loading ? 'Loading Topics ...' : 'No Topics to display'}
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            ) : (
+              topics.map(topic => (
+                <TableRow key={topic.code}>
+                  <TableCell component="th" scope="row">
+                    <Link to={'./topics/view/' + topic.code}>
+                      <MuiLink component="p">{topic.title}</MuiLink>
+                    </Link>
+                  </TableCell>
+                  <TableCell align="center">
+                    {topic.supervisor.displayName} - {topic.supervisor.abbr}
+                  </TableCell>
+                  <TableCell align="center">{topic.code}</TableCell>
+                  <TableCell>
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignContent: 'center',
+                        justifyContent: 'right'
+                      }}>
+                      {topic.tags.slice(0, 3).map(tag => (
+                        <Box
+                          key={tag}
                           style={{
-                            display: 'flex',
-                            flexDirection: 'row',
-                            alignContent: 'center',
-                            justifyContent: 'right'
+                            backgroundColor: '#dbdbdb',
+                            color: '#5b5b5b',
+                            margin: '0 3px',
+                            padding: '4px',
+                            borderRadius: '3px'
                           }}>
-                          {topic.tags.slice(0, 3).map(tag => (
-                            <Box
-                              key={tag}
-                              style={{
-                                backgroundColor: '#dbdbdb',
-                                color: '#5b5b5b',
-                                margin: '0 3px',
-                                padding: '4px',
-                                borderRadius: '3px'
-                              }}>
-                              {tag}
-                            </Box>
-                          ))}
-                          {topic.tags.length > 3 ? (
-                            <Box
-                              key={'additional_tags'}
-                              style={{
-                                backgroundColor: '#dbdbdb',
-                                color: '#5b5b5b',
-                                margin: '0 3px',
-                                padding: '4px',
-                                borderRadius: '3px'
-                              }}>
-                              {'+ ' + (topic.tags.length - 3) + ' more'}
-                            </Box>
-                          ) : null}
-                        </div>
-                      </TableCell>
-                      <TableCell align="right">
-                        7 Students have shown interest
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </>
-      )}
+                          {tag}
+                        </Box>
+                      ))}
+                      {topic.tags.length > 3 ? (
+                        <Box
+                          key={'additional_tags'}
+                          style={{
+                            backgroundColor: '#dbdbdb',
+                            color: '#5b5b5b',
+                            margin: '0 3px',
+                            padding: '4px',
+                            borderRadius: '3px'
+                          }}>
+                          {'+ ' + (topic.tags.length - 3) + ' more'}
+                        </Box>
+                      ) : null}
+                    </div>
+                  </TableCell>
+                  <TableCell align="right">
+                    7 Students have shown interest
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </Container>
   )
 }

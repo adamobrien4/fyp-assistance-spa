@@ -16,13 +16,18 @@ const ViewTopic = props => {
 
   const [loading, setLoading] = useState(true)
   const [topic, setTopic] = useState(null)
+  const [invalidCode, setInvalidCode] = useState(false)
 
   useEffect(() => {
     api
       .get(`/topic/${code}`)
       .then(res => {
-        console.log(res)
-        setTopic(res.data.topic)
+        if (res.data.topic) {
+          console.log(res)
+          setTopic(res.data.topic)
+        } else {
+          setInvalidCode(true)
+        }
       })
       .catch(err => {
         console.log(err)
@@ -34,6 +39,10 @@ const ViewTopic = props => {
 
   if (loading) {
     return <h1>loading ...</h1>
+  }
+
+  if (invalidCode) {
+    return <h1>Invalid Topic Code</h1>
   }
 
   return (

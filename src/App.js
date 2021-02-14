@@ -46,7 +46,7 @@ import CreateProposalStep2 from './components/Proposals/CreateProposalStep2'
 import CreateProposalStep3 from './components/Proposals/CreateProposalStep3'
 import CreateProposalFinish from './components/Proposals/CreateProposalFinish'
 
-import Test from './components/UserManagement/Assignment/TestAssignment'
+import Test from './components/Test'
 
 function App() {
   const [appReady, setAppReady] = useState(false)
