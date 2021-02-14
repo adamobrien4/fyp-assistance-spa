@@ -1,66 +1,23 @@
-import React, { useState, useEffect } from 'react'
-import { useMsal, useAccount } from '@azure/msal-react'
-import { config } from '../../../config/msal-config'
-
+import React, { useState } from 'react'
 import api from '../../../utils/api.axios'
-import Typography from '@material-ui/core/Typography'
-import { makeStyles } from '@material-ui/core/styles'
-import {
-  Container,
-  Paper,
-  InputBase,
-  Divider,
-  Button,
-  IconButton,
-  Checkbox,
-  Tooltip,
-  Collapse
-} from '@material-ui/core'
-import { DataGrid } from '@material-ui/data-grid'
-import Alert from '@material-ui/lab/Alert'
-import {
-  AddCircle as AddCircleIcon,
-  Close as CloseIcon
-} from '@material-ui/icons'
 
+import { Typography, Container, IconButton, Collapse } from '@material-ui/core'
+
+import Alert from '@material-ui/lab/Alert'
+import { Close as CloseIcon } from '@material-ui/icons'
+
+import PrimaryButton from '../../PrimaryButton'
 import UploadButton from './UploadButton'
 import CSVUploader from '../../CSVUploader'
+import UserEmailInputField from './UserEmailInputField'
+import PaginatedTable from '../../PaginatedTable'
 
-const useStyles = makeStyles(theme => ({
-  root: {
-    padding: '2px 0px',
-    display: 'flex',
-    alignItems: 'center',
-    width: '100%'
-  },
-  input: {
-    marginLeft: theme.spacing(1),
-    flex: 1
-  },
-  iconButton: {
-    padding: 10
-  },
-  divider: {
-    height: 28,
-    margin: 4
-  }
-}))
-
-export default function SupervisorAssignment(props) {
-  const classes = useStyles()
-
-  const { instance, accounts } = useMsal()
-  const account = useAccount(accounts[0] || {})
-
+const SupervisorAssignment = props => {
   const [currentEmail, setCurrentEmail] = useState('')
-  const [supervisors, setSupervisors] = useState([])
+  const [supervisors, setsupervisors] = useState([])
   const [includeEmailPrefix, setIncludeEmailPrefix] = useState(true)
   const [alertOpen, setAlertOpen] = useState(false)
   const [alertMessage, setAlertMessage] = useState('Alert Message')
-
-  useEffect(() => {
-    console.log('Running use effect')
-  }, [account, instance])
 
   const onChange = e => {
     setCurrentEmail(e.target.value)
@@ -73,14 +30,31 @@ export default function SupervisorAssignment(props) {
       return
     }
 
-    // TODO: Check if email aleady has @ul.ie added, and dont add the prefix if so
-    // TODO: Check if email already has a prefix e.g. @ul.ie etc .split('@')[1] ...
-    let prefix = includeEmailPrefix ? '@ul.ie' : ''
-    let email = currentEmail + prefix
+    if (
+      supervisors.filter(supervisor => supervisor.email === currentEmail)
+        .length > 0
+    ) {
+      setAlertMessage('Cannot add duplicate email!')
+      setAlertOpen(true)
+      return
+    }
+
+    // Only apply a email prefix if the checkbox is checked and there is no existing prefix already
+    let prefix =
+      currentEmail.indexOf('@') === -1 && includeEmailPrefix ? '@ul.ie' : ''
+    let email = currentEmail.trim() + prefix
+
+    let re = /\S+@\S+\.\S+/
+    if (!re.test(email)) {
+      setAlertMessage('Cannot add invalid email!')
+      setAlertOpen(true)
+      return
+    }
+
     let supervisorsList = [...supervisors]
-    supervisorsList.push({ id: supervisorsList.length, email: email })
+    supervisorsList.push({ email: email })
     setCurrentEmail('')
-    setSupervisors(supervisorsList)
+    setsupervisors(supervisorsList)
   }
 
   const onAddBulk = bulksupervisors => {
@@ -95,7 +69,7 @@ export default function SupervisorAssignment(props) {
         email: supervisor
       })
     }
-    setSupervisors(supervisorsList)
+    setsupervisors(supervisorsList)
   }
 
   const onUpload = async e => {
@@ -112,40 +86,36 @@ export default function SupervisorAssignment(props) {
     api
       .post('/supervisor/assign', body)
       .then(res => {
-        if (res.data.length > 0) {
-          for (let i = 0; i < res.data.length; i++) {
-            let supervisor = res.data[i]
+        console.log(res.data.supervisors)
+        if (res.data.supervisors.length > 0) {
+          let supervisorsMap = [...supervisors]
+          let emailsMap = supervisors.map(supervisor => supervisor.email)
 
-            switch (supervisor.status) {
-              case 'not_found':
-                console.log(
-                  supervisor.email +
-                    'could not be found. Is the email address correct?'
-                )
-                break
-              case 'already_assigned':
-                console.log(
-                  supervisor.email + ' is already assigned the supervisor role'
-                )
-                break
-              case 'assigned':
-                console.log(
-                  supervisor.email +
-                    ' has been assinged the supervisor role and added to the database'
-                )
-                break
-              case 'exists':
-                console.log(
-                  supervisor.email + ' is already assigned the supervisor role'
-                )
-                break
-              default:
-                console.log(supervisor)
-                break
+          for (let supervisor of res.data.supervisors) {
+            let index = emailsMap.indexOf(supervisor.email)
+
+            if (index < 0) {
+              // Couldn't find supervisor email address returned from api
+              continue
             }
+
+            supervisorsMap[index].status = supervisor.status
           }
+
+          let remainingsupervisors = supervisorsMap.filter(
+            supervisor =>
+              !['assigned', 'exists', undefined].includes(supervisor?.status)
+          )
+          console.log(remainingsupervisors)
+          if (remainingsupervisors.length > 0) {
+            setAlertMessage(
+              'The following supervisor email addresses could not be linked to a supervisor'
+            )
+            setAlertOpen(true)
+          }
+          return setsupervisors(remainingsupervisors)
         }
-        setSupervisors([])
+        setsupervisors([])
       })
       .catch(err => {
         console.log(err)
@@ -164,41 +134,21 @@ export default function SupervisorAssignment(props) {
     ''
   )
 
-  const newsupervisorsColumns = [
-    { field: 'email', headerName: 'Email', flex: 1 }
-  ]
-
   return (
     <Container>
       <Typography variant="h6">Upload CSV file</Typography>
       <CSVUploader onAdd={onAddBulk} />
       <Container maxWidth="md">
         <Typography variant="h6">Add Individual Supervisor</Typography>
-        <Paper component="form" className={classes.root}>
-          <InputBase
-            className={classes.input}
-            placeholder="Supervisor Email"
-            value={currentEmail}
-            inputProps={{ 'aria-label': 'Supervisor Email' }}
-            endAdornment={endAdornment}
-            onChange={onChange}
-          />
-          <Tooltip title="Include @ul prefix" aria-label="Include @ul prefix">
-            <Checkbox
-              edge="start"
-              disableRipple
-              checked={includeEmailPrefix}
-              onChange={onChangeEmailPrefix}
-            />
-          </Tooltip>
-          <Divider className={classes.divider} orientation="vertical" />
-          <IconButton
-            className={classes.iconButton}
-            aria-label="search"
-            onClick={onAdd}>
-            <AddCircleIcon />
-          </IconButton>
-        </Paper>
+        <UserEmailInputField
+          email={currentEmail}
+          endAdornment={endAdornment}
+          onChange={onChange}
+          includeEmailPrefix={includeEmailPrefix}
+          onChangeEmailPrefix={onChangeEmailPrefix}
+          onAdd={onAdd}
+        />
+
         <Collapse in={alertOpen}>
           <Alert
             severity="error"
@@ -218,28 +168,21 @@ export default function SupervisorAssignment(props) {
         </Collapse>
 
         <br />
-        <div style={{ width: '100%', height: 400 }}>
-          <DataGrid
-            rows={supervisors}
-            columns={newsupervisorsColumns}
-            pageSize={5}
-          />
-        </div>
-        <br />
-        {/* eslint-disable-next-line no-unneeded-ternary */}
-        <UploadButton
-          disabled={supervisors.length ? false : true}
-          onUpload={onUpload}
-        />
-        <Button
-          variant="outlined"
+
+        <PaginatedTable value={supervisors} />
+
+        <UploadButton disabled={!supervisors.length} onUpload={onUpload} />
+        <PrimaryButton
+          type="text"
           color="secondary"
           onClick={() => {
-            setSupervisors([])
+            setsupervisors([])
           }}>
           Clear Supervisor List
-        </Button>
+        </PrimaryButton>
       </Container>
     </Container>
   )
 }
+
+export default SupervisorAssignment

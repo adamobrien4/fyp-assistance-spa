@@ -1,19 +1,18 @@
 import React, { useState } from 'react'
-import { config } from '../../../config/msal-config'
+import api from '../../../utils/api.axios'
 
-import Typography from '@material-ui/core/Typography'
-import { Container, IconButton, Collapse } from '@material-ui/core'
-import PrimaryButton from '../../PrimaryButton'
-import { DataGrid } from '@material-ui/data-grid'
+import { Typography, Container, IconButton, Collapse } from '@material-ui/core'
+
 import Alert from '@material-ui/lab/Alert'
 import { Close as CloseIcon } from '@material-ui/icons'
 
-import api from '../../../utils/api.axios'
+import PrimaryButton from '../../PrimaryButton'
 import UploadButton from './UploadButton'
 import CSVUploader from '../../CSVUploader'
 import UserEmailInputField from './UserEmailInputField'
+import PaginatedTable from '../../PaginatedTable'
 
-export default function StudentAssignment(props) {
+const StudentAssignment = props => {
   const [currentEmail, setCurrentEmail] = useState('')
   const [students, setStudents] = useState([])
   const [includeEmailPrefix, setIncludeEmailPrefix] = useState(true)
@@ -31,14 +30,28 @@ export default function StudentAssignment(props) {
       return
     }
 
+    if (students.filter(student => student.email === currentEmail).length > 0) {
+      setAlertMessage('Cannot add duplicate email!')
+      setAlertOpen(true)
+      return
+    }
+
     // Only apply a email prefix if the checkbox is checked and there is no existing prefix already
     let prefix =
       currentEmail.indexOf('@') === -1 && includeEmailPrefix
         ? '@studentmail.ul.ie'
         : ''
-    let email = currentEmail + prefix
+    let email = currentEmail.trim() + prefix
+
+    let re = /\S+@\S+\.\S+/
+    if (!re.test(email)) {
+      setAlertMessage('Cannot add invalid email!')
+      setAlertOpen(true)
+      return
+    }
+
     let studentsList = [...students]
-    studentsList.push({ id: studentsList.length, email: email })
+    studentsList.push({ email: email })
     setCurrentEmail('')
     setStudents(studentsList)
   }
@@ -70,40 +83,36 @@ export default function StudentAssignment(props) {
     console.log('Uploading: ', body)
 
     api
-      .post(`${config.endpoints.customApi}/student/assign`, body)
+      .post('/student/assign', body)
       .then(res => {
-        if (res.data.length > 0) {
-          for (let i = 0; i < res.data.length; i++) {
-            let student = res.data[i]
+        console.log(res.data.students)
+        if (res.data.students.length > 0) {
+          let studentsMap = [...students]
+          let emailsMap = students.map(student => student.email)
 
-            switch (student.status) {
-              case 'not_found':
-                console.log(
-                  student.email +
-                    'could not be found. Is the email address correct?'
-                )
-                break
-              case 'already_assigned':
-                console.log(
-                  student.email + ' is already assigned the student role'
-                )
-                break
-              case 'assigned':
-                console.log(
-                  student.email +
-                    ' has been assinged the student role and added to the database'
-                )
-                break
-              case 'exists':
-                console.log(
-                  student.email + ' is already assigned the student role'
-                )
-                break
-              default:
-                console.log(student)
-                break
+          for (let student of res.data.students) {
+            let index = emailsMap.indexOf(student.email)
+
+            if (index < 0) {
+              // Couldn't find student email address returned from api
+              continue
             }
+
+            studentsMap[index].status = student.status
           }
+
+          let remainingStudents = studentsMap.filter(
+            student =>
+              !['assigned', 'exists', undefined].includes(student?.status)
+          )
+          console.log(remainingStudents)
+          if (remainingStudents.length > 0) {
+            setAlertMessage(
+              'The following student email addresses could not be linked to a student'
+            )
+            setAlertOpen(true)
+          }
+          return setStudents(remainingStudents)
         }
         setStudents([])
       })
@@ -123,8 +132,6 @@ export default function StudentAssignment(props) {
   ) : (
     ''
   )
-
-  const newStudentsColumns = [{ field: 'email', headerName: 'Email', flex: 1 }]
 
   return (
     <Container>
@@ -160,10 +167,9 @@ export default function StudentAssignment(props) {
         </Collapse>
 
         <br />
-        <div style={{ width: '100%', height: 400 }}>
-          <DataGrid rows={students} columns={newStudentsColumns} pageSize={5} />
-        </div>
-        <br />
+
+        <PaginatedTable value={students} />
+
         <UploadButton disabled={!students.length} onUpload={onUpload} />
         <PrimaryButton
           type="text"
@@ -177,3 +183,5 @@ export default function StudentAssignment(props) {
     </Container>
   )
 }
+
+export default StudentAssignment
