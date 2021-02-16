@@ -1,5 +1,5 @@
 import React from 'react'
-import { List, ListItem } from '@material-ui/core'
+import { List, ListItem, Button } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import { Link } from 'react-router-dom'
 import { AuthenticatedTemplate } from '@azure/msal-react'
@@ -13,8 +13,11 @@ const useStyles = makeStyles(theme => ({
   },
   linkText: {
     textDecoration: 'none',
-    color: 'white',
-    width: '30%'
+    textTransform: 'none',
+    color: 'white'
+  },
+  linkButton: {
+    margin: '0 5px'
   }
 }))
 
@@ -23,72 +26,52 @@ export default function NavBar(props) {
 
   return (
     <AuthenticatedTemplate>
-      <List
-        component="nav"
-        aria-labelledby="main navigation"
-        className={styles.navDisplayFlex}>
-        <ListItem button>
-          <Link to="/" className={styles.linkText}>
-            Home
-          </Link>
-        </ListItem>
+      <Link to="/" className={styles.linkButton}>
+        <Button className={styles.linkText} color="inherit">
+          Home
+        </Button>
+      </Link>
 
-        {/* Student */}
-        <Can I="read" a="Topic">
-          <ListItem button>
-            <Link to="/topics" className={styles.linkText}>
-              View Topics List
-            </Link>
-          </ListItem>
-        </Can>
-        <Can I="manage" a="Proposal">
-          <ListItem button>
-            <Link to="/proposals" className={styles.linkText}>
-              Manage Proposals
-            </Link>
-          </ListItem>
-        </Can>
+      <Can I="read" a="Topic">
+        <Link to="/topics" className={styles.linkButton}>
+          <Button className={styles.linkText}>View Topics List</Button>
+        </Link>
+      </Can>
+      <Can I="manage" a="Proposal">
+        <Link to="/proposals" className={styles.linkButton}>
+          <Button className={styles.linkText}>Manage Proposals</Button>
+        </Link>
+      </Can>
 
-        {/* Supervisor */}
-        <Can I="manage" a="Topic">
-          <ListItem button>
-            <Link to="/topics/manage" className={styles.linkText}>
-              Manage Topic List
-            </Link>
-          </ListItem>
-        </Can>
+      {/* Supervisor */}
+      <Can I="manage" a="Topic">
+        <Link to="/topics/manage" className={styles.linkButton}>
+          <Button className={styles.linkText}>Manage Topic List</Button>
+        </Link>
+      </Can>
 
-        {/* Coordinator */}
-        <Can I="manage" a="Student">
-          <ListItem button>
-            <Link to="/student/manage" className={styles.linkText}>
-              Manage Students
-            </Link>
-          </ListItem>
-        </Can>
-        <Can I="manage" a="Supervisor">
-          <ListItem button>
-            <Link to="/supervisor/manage" className={styles.linkText}>
-              Manage Supervisors
-            </Link>
-          </ListItem>
-        </Can>
+      {/* Coordinator */}
+      <Can I="manage" a="Student">
+        <Link to="/student/manage" className={styles.linkButton}>
+          <Button className={styles.linkText}>Manage Students</Button>
+        </Link>
+      </Can>
+      <Can I="manage" a="Supervisor">
+        <Link to="/supervisor/manage" className={styles.linkButton}>
+          <Button className={styles.linkText}>Manage Supervisors</Button>
+        </Link>
+      </Can>
 
-        {/* Administrator */}
-        <Can I="create" a="Coordinator">
-          <ListItem button>
-            <Link to="/coordinator" className={styles.linkText}>
-              Manage Coordinators
-            </Link>
-          </ListItem>
-        </Can>
+      {/* Administrator */}
+      <Can I="create" a="Coordinator">
+        <Link to="/coordinator" className={styles.linkButton}>
+          <Button className={styles.linkText}>Manage Coordinators</Button>
+        </Link>
+      </Can>
 
-        <ListItem button>
-          <Link to="/logout" className={styles.linkText}>
-            Logout
-          </Link>
-        </ListItem>
-      </List>
+      <Link to="/logout" className={styles.linkButton}>
+        <Button className={styles.linkText}>Logout</Button>
+      </Link>
     </AuthenticatedTemplate>
   )
 }

@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useContext } from 'react'
-import { Switch, Route } from 'react-router-dom'
+import { Switch, Route, useHistory } from 'react-router-dom'
 import {
   MsalAuthenticationTemplate,
   useMsal,
   useAccount
 } from '@azure/msal-react'
 import { InteractionType } from '@azure/msal-browser'
+import PropTypes from 'prop-types'
 
 import { loginRequest, config } from './config/msal-config'
 
@@ -14,6 +15,8 @@ import { AbilityContext } from './Auth/Can'
 import ability from './Auth/ability'
 import { setup as apiSetup } from './utils/api.axios'
 import axiosGraphInstance, { setup as graphSetup } from './utils/graph.axios'
+
+import { Toolbar } from '@material-ui/core'
 
 import { CreateProposalContextProvider } from './contexts/CreateProposalContext'
 
@@ -46,6 +49,8 @@ import CreateProposalStep2 from './components/Proposals/CreateProposalStep2'
 import CreateProposalStep3 from './components/Proposals/CreateProposalStep3'
 import CreateProposalFinish from './components/Proposals/CreateProposalFinish'
 
+import NoRole from './components/NoRole'
+
 import Test from './components/Test'
 
 function App() {
@@ -54,6 +59,8 @@ function App() {
   const account = useAccount(accounts[0] || {})
 
   const { accountType, setAccountType } = useContext(AuthContext)
+
+  const history = useHistory()
 
   const authRequest = {
     ...loginRequest
@@ -74,21 +81,6 @@ function App() {
           // User is logged in
           // FIXME: This is being called twice on user login, 2 requests to ms graph
           console.log('User is logged in')
-
-          // TODO: If role is stored in localstorage pull from here instead of querying MS graph
-
-          const localStorageAccountRole = localStorage.getItem(
-            'fyp-assistance-role-type'
-          )
-          if (localStorageAccountRole) {
-            const storedRoleObject = JSON.parse(localStorageAccountRole)
-            if (storedRoleObject.localAccountId === account.localAccountId) {
-              console.log('Setting account role from local storage')
-              setAccountType(storedRoleObject.role)
-              setAppReady(true)
-              return
-            }
-          }
 
           axiosGraphInstance
             .get(`${config.endpoints.graph}/me/appRoleAssignments`)
@@ -114,18 +106,10 @@ function App() {
               if (role) {
                 setAccountType(role)
                 setAppReady(true)
-
-                localStorage.setItem(
-                  'fyp-assistance-role-type',
-                  JSON.stringify({
-                    localAccountId: account.localAccountId,
-                    role: role
-                  })
-                )
               } else {
-                alert('You have no assigned role')
-                localStorage.removeItem('fyp-assistance-role-type')
-                instance.logout(account)
+                // User has no assigned role
+                setAccountType(null)
+                setAppReady(true)
               }
             })
             .catch(err => {
@@ -144,7 +128,8 @@ function App() {
       {appReady ? (
         <AbilityContext.Provider value={ability(accountType)}>
           <Header />
-          <Pages />
+          <Toolbar />
+          <Pages accountType={accountType} />
         </AbilityContext.Provider>
       ) : (
         <AppLoading />
@@ -153,7 +138,7 @@ function App() {
   )
 }
 
-function Pages() {
+function Pages(props) {
   const { instance } = useMsal()
 
   // Implement Can functionality to only show available routes
@@ -163,7 +148,7 @@ function Pages() {
         <Test />
       </Route>
       <Route exact path="/">
-        <Welcome />
+        {props?.accountType ? <Welcome /> : <NoRole />}
       </Route>
 
       <Route exact path="/topics">
@@ -244,6 +229,10 @@ function Pages() {
       </Route>
     </Switch>
   )
+}
+
+Pages.propTypes = {
+  accountType: PropTypes.string.isRequired
 }
 
 export default App

@@ -20,6 +20,6 @@ module.exports = {
   rules: {
     'prefer-const': 0,
     'multiline-ternary': 0,
-    'space-before-function-paren': ['error', 'never']
+    'space-before-function-paren': 0
   }
 }

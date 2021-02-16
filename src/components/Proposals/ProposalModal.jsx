@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import { useForm, Controller } from 'react-hook-form'
 import * as _ from 'lodash'
@@ -11,9 +11,9 @@ import {
   DialogActions,
   Divider,
   FormControl,
+  CircularProgress,
   Select,
-  MenuItem,
-  CircularProgress
+  MenuItem
 } from '@material-ui/core'
 import { Edit, Cancel } from '@material-ui/icons'
 import { makeStyles } from '@material-ui/core/styles'
@@ -21,13 +21,13 @@ import { green } from '@material-ui/core/colors'
 
 import api from '../../utils/api.axios'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { editFormSchema } from '../../utils/yupSchemas/yupTopicSchema.js'
+import { editFormSchema } from '../../utils/yupSchemas/yupProposalSchema'
+
+import { proposalStatuses } from '../../utils/proposal.js'
 
 import Input from '../Input'
 import MultiLineInput from '../MultiLineInput'
 import PrimaryButton from '../PrimaryButton'
-import Tags from '../Tags'
-import TargetCoursesInput from '../TargetCoursesInput'
 
 const useStyles = makeStyles(theme => ({
   formControl: {
@@ -50,24 +50,28 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const TopicModal = props => {
+const ProposalModal = props => {
   const classes = useStyles()
 
-  const defaultValues = (({
-    title,
+  let defaultValues = (({
+    status,
     description,
-    tags,
+    chooseMessage,
     additionalNotes,
-    targetCourses,
-    status
+    environment,
+    languages,
+    type
   }) => ({
-    title,
+    status,
     description,
-    tags,
+    chooseMessage: chooseMessage || '',
     additionalNotes: additionalNotes || '',
-    targetCourses: targetCourses || [],
-    status
-  }))(props.topic)
+    environment,
+    languages,
+    type
+  }))(props.proposal)
+
+  console.log(props.proposal)
 
   const [editMode, setEditMode] = useState(false)
   const [savingChanges, setSavingChanges] = useState(false)
@@ -87,8 +91,8 @@ const TopicModal = props => {
     let differences = _.reduce(
       data,
       function (result, value, key) {
-        // Compare data and props.topics properties
-        if (!_.isEqual(value, props.topic[key])) result[key] = value
+        // Compare data and props.proposal properties
+        if (!_.isEqual(value, props.proposal[key])) result[key] = value
         return result
       },
       {}
@@ -100,13 +104,14 @@ const TopicModal = props => {
   }
 
   const onSubmit = data => {
+    console.log('Submitting', data)
     let differences = compareDiffs(data)
 
-    console.log(differences)
-
     if (differences) {
+      // TODO: Send differences object to api
+
       api
-        .post(`/topic/edit/${props.topic._id}`, differences)
+        .post(`/proposal/edit/${props.proposal._id}`, differences)
         .then(res => {
           console.log(res)
           props.refresh()
@@ -141,15 +146,6 @@ const TopicModal = props => {
         <IconButton
           edge="end"
           onClick={() => {
-            if (
-              editMode &&
-              confirm(
-                'Unsaved changes will be lost!. Are you sure you want to exit?'
-              ) === false
-            ) {
-              return
-            }
-
             props.setDialogOpen(false)
           }}
           disabled={savingChanges}>
@@ -158,55 +154,40 @@ const TopicModal = props => {
         <Divider />
       </DialogTitle>
       <DialogContent>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'stretch',
-              width: '100%'
-            }}>
-            <Input
-              ref={register}
-              name="title"
-              label="Title"
-              disabled={!editMode}
-              variant="outlined"
-              margin="none"
-              style={{ flex: '3', marginRight: '40px' }}
-              error={!!errors.title}
-              helperText={errors?.title?.message}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'stretch',
+            width: '100%'
+          }}>
+          <Input
+            value={props.proposal.title}
+            label="Title"
+            disabled
+            variant="outlined"
+            margin="none"
+            style={{ flex: '3', marginRight: '40px' }}
+          />
+          <FormControl variant="outlined" className={classes.formControl}>
+            <Controller
+              render={({ onChange, value }) => (
+                <Select disabled={!editMode} value={value} onChange={onChange}>
+                  {Object.keys(proposalStatuses).map(status => (
+                    <MenuItem key={status} value={status}>
+                      {proposalStatuses[status]}
+                    </MenuItem>
+                  ))}
+                </Select>
+              )}
+              name="status"
+              control={control}
+              error={!!errors.status}
+              helperText={errors?.status?.message}
             />
-            <FormControl variant="outlined" className={classes.formControl}>
-              <Controller
-                render={({ onChange, value }) => (
-                  <Select
-                    disabled={!editMode}
-                    value={value}
-                    onChange={onChange}>
-                    <MenuItem value="draft">Draft</MenuItem>
-                    <MenuItem value="suggestion">Ready for Submission</MenuItem>
-                    <MenuItem value="archived" style={{ color: 'red' }}>
-                      Archived
-                    </MenuItem>
-                    <MenuItem value="active" disabled>
-                      Active
-                    </MenuItem>
-                    <MenuItem value="assigned" disabled>
-                      Assigned
-                    </MenuItem>
-                    <MenuItem value="prev_term" disabled>
-                      From Previous Term
-                    </MenuItem>
-                  </Select>
-                )}
-                name="status"
-                control={control}
-                error={!!errors.status}
-                helperText={errors?.status?.message}
-              />
-            </FormControl>
-          </div>
+          </FormControl>
+        </div>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <MultiLineInput
             inputRef={register}
             name="description"
@@ -216,20 +197,13 @@ const TopicModal = props => {
             helperText={errors?.description?.message}
           />
 
-          <Controller
-            control={control}
-            name="tags"
-            render={({ onChange, value }) => (
-              <Tags
-                value={value}
-                onChange={vals => {
-                  onChange(vals)
-                }}
-                error={!!errors?.tags}
-                helperText={errors?.tags?.message}
-                disabled={!editMode}
-              />
-            )}
+          <MultiLineInput
+            inputRef={register}
+            label="Choose Me Message"
+            name="chooseMessage"
+            disabled={!editMode}
+            error={!!errors.chooseMessage}
+            helperText={errors?.chooseMessage?.message}
           />
 
           <MultiLineInput
@@ -241,12 +215,26 @@ const TopicModal = props => {
             helperText={errors?.additionalNotes?.message}
           />
 
-          <TargetCoursesInput
-            control={control}
-            error={!!errors.targetCourses}
-            helperText={errors?.targetCourses?.message}
-            disabled={!editMode}
-          />
+          {defaultValues.type === 'studentDefined' ? (
+            <>
+              <MultiLineInput
+                inputRef={register}
+                label="Environment"
+                name="environment"
+                disabled={!editMode}
+                error={!!errors.environment}
+                helperText={errors?.environment?.message}
+              />
+              <MultiLineInput
+                inputRef={register}
+                label="Languages"
+                name="languages"
+                disabled={!editMode}
+                error={!!errors.languages}
+                helperText={errors?.languages?.message}
+              />
+            </>
+          ) : null}
 
           {editMode && (
             <PrimaryButton disabled={savingChanges}>Save Changes</PrimaryButton>
@@ -266,18 +254,18 @@ const TopicModal = props => {
   )
 }
 
-TopicModal.defaultProps = {
-  topic: {},
-  dialogOpen: false,
+ProposalModal.defaultProps = {
+  proposal: {},
   setDialogOpen: () => {},
+  dialogOpen: true,
   refresh: () => {}
 }
 
-TopicModal.propTypes = {
-  topic: PropTypes.object.isRequired,
+ProposalModal.propTypes = {
+  proposal: PropTypes.object.isRequired,
   dialogOpen: PropTypes.bool.isRequired,
   setDialogOpen: PropTypes.func.isRequired,
   refresh: PropTypes.func.isRequired
 }
 
-export default TopicModal
+export default ProposalModal
