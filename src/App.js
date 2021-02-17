@@ -51,6 +51,9 @@ import CreateProposalFinish from './components/Proposals/CreateProposalFinish'
 
 import NoRole from './components/NoRole'
 
+import TopicProposals from './components/TopicManagement/Proposals'
+import ViewProposal from './components/Proposals/ViewProposal'
+
 import Test from './components/Test'
 
 function App() {
@@ -167,6 +170,10 @@ function Pages(props) {
         <TopicManagement />
       </Route>
 
+      <Route path="/topic/:id">
+        <TopicProposals />
+      </Route>
+
       <Route exact path="/proposals">
         <ManageProposal />
       </Route>
@@ -193,6 +200,10 @@ function Pages(props) {
         <CreateProposalContextProvider>
           <CreateProposal />
         </CreateProposalContextProvider>
+      </Route>
+
+      <Route exact path="/proposal/view/:id">
+        <ViewProposal />
       </Route>
 
       <Route path="/student/assign">

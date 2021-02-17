@@ -2,17 +2,25 @@ import React, { useState, useEffect } from 'react'
 import { useParams, Link, useHistory } from 'react-router-dom'
 import { Can } from '../Auth/Can'
 
-import { Container, IconButton, Typography, Box } from '@material-ui/core'
-import ArrowForwardIosIcon from '@material-ui/icons/ArrowForwardIos'
+import { Container, Typography, Box } from '@material-ui/core'
+import { makeStyles } from '@material-ui/core/styles'
 
 import PrimaryButton from './PrimaryButton'
+import BackButton from './Buttons/BackButton'
 
 import api from '../utils/api.axios'
+
+const useStyles = makeStyles(theme => ({
+  class1: {
+    marginLeft: theme.spacing(4)
+  }
+}))
 
 const ViewTopic = props => {
   let { code } = useParams()
 
   const history = useHistory()
+  const classes = useStyles()
 
   const [loading, setLoading] = useState(true)
   const [topic, setTopic] = useState(null)
@@ -47,27 +55,26 @@ const ViewTopic = props => {
 
   return (
     <Container maxWidth="md">
-      <IconButton
-        onClick={() => {
-          history.goBack()
-        }}>
-        <ArrowForwardIosIcon style={{ transform: 'rotate(180deg)' }} />
-      </IconButton>
+      <BackButton dense />
 
       <Typography variant="h4">{topic.title}</Typography>
-      <Typography variant="subtitle">
+      <Typography variant="subtitle" className={classes.class1}>
         Supervisor: {topic.supervisor.displayName}
       </Typography>
 
       <br />
 
       <Typography variant="overline">Description</Typography>
-      <Typography variant="body1">{topic.description}</Typography>
+      <Typography variant="body1" className={classes.class1}>
+        {topic.description}
+      </Typography>
 
       {topic.additionalNotes === '' ? null : (
         <>
           <Typography variant="overline">Additional Notes</Typography>
-          <Typography variant="body1">{topic.additionalNotes}</Typography>
+          <Typography variant="body1" className={classes.class1}>
+            {topic.additionalNotes}
+          </Typography>
         </>
       )}
 

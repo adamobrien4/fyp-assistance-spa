@@ -242,7 +242,9 @@ export default function TopicManagement(props) {
                       <TableCell align="center">
                         {topicStatusToHumanFriendlyString(topic.status)}
                       </TableCell>
-                      <TableCell align="right">6 Submissions</TableCell>
+                      <TableCell align="right">
+                        <Link to={`/topic/${topic._id}`}>6 Submissions</Link>
+                      </TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell colSpan={3}></TableCell>

@@ -57,7 +57,14 @@ const Tags = props => {
 
   return (
     <div style={style}>
-      <TreeSelect {...tProps} treeData={treeData} style={{ width: '100%' }} />
+      <TreeSelect
+        {...tProps}
+        treeData={treeData}
+        style={{
+          width: '100%',
+          pointerEvents: props.disabled ? 'none' : 'auto'
+        }}
+      />
       {props.error && (
         <FormHelperText error={props.error}>{props.helperText}</FormHelperText>
       )}

@@ -71,8 +71,6 @@ const ProposalModal = props => {
     type
   }))(props.proposal)
 
-  console.log(props.proposal)
-
   const [editMode, setEditMode] = useState(false)
   const [savingChanges, setSavingChanges] = useState(false)
 
@@ -140,9 +138,12 @@ const ProposalModal = props => {
       style={{ zIndex: '900 !important' }}
       disableBackdropClick>
       <DialogTitle id="max-width-dialog-title">
-        <IconButton onClick={toggleEditMode} disabled={savingChanges}>
-          <Edit />
-        </IconButton>
+        {['draft', 'pending_edits'].includes(props.proposal.status) ? (
+          <IconButton onClick={toggleEditMode} disabled={savingChanges}>
+            <Edit />
+          </IconButton>
+        ) : null}
+
         <IconButton
           edge="end"
           onClick={() => {
