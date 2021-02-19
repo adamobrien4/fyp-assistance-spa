@@ -6,6 +6,12 @@ export const topic = subject.bind(null, 'Topic')
 export default function defineAbilityFor(userRole) {
   const { can, cannot, build } = new AbilityBuilder(Ability)
 
+  // Setup to allow specific actions to be taken during each phase
+  can('takeActionPhaseOne', 'Phase', { phase: 1 })
+  can('takeActionPhaseTwo', 'Phase', { phase: 2 })
+  can('takeActionPhaseThree', 'Phase', { phase: 3 })
+  can('takeActionPhaseFour', 'Phase', { phase: 4 })
+
   switch (userRole) {
     case 'Student':
       can('read', 'Topic')
@@ -29,6 +35,7 @@ export default function defineAbilityFor(userRole) {
       break
     case 'Administrator':
       can('manage', 'Coordinator')
+      can('manage', 'Phase')
       break
     default:
       cannot('read', '*')

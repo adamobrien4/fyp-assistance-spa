@@ -6,6 +6,7 @@ import './index.css'
 
 import { PublicClientApplication } from '@azure/msal-browser'
 import AuthContextProvider from './contexts/AuthContext'
+import PhaseContextProvider from './contexts/PhaseContext'
 import { msalConfig } from './config/msal-config'
 
 import { ThemeProvider } from '@material-ui/core/styles'
@@ -20,9 +21,11 @@ const AppProvider = () => (
     <ThemeProvider theme={theme}>
       <MsalProvider instance={msalInstance}>
         <AuthContextProvider>
-          <React.StrictMode>
-            <App />
-          </React.StrictMode>
+          <PhaseContextProvider>
+            <React.StrictMode>
+              <App />
+            </React.StrictMode>
+          </PhaseContextProvider>
         </AuthContextProvider>
       </MsalProvider>
     </ThemeProvider>

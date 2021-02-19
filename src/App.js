@@ -11,6 +11,7 @@ import PropTypes from 'prop-types'
 import { loginRequest, config } from './config/msal-config'
 
 import { AuthContext } from './contexts/AuthContext'
+import { PhaseContext } from './contexts/PhaseContext'
 import { AbilityContext } from './Auth/Can'
 import ability from './Auth/ability'
 import { setup as apiSetup } from './utils/api.axios'
@@ -51,8 +52,13 @@ import CreateProposalFinish from './components/Proposals/CreateProposalFinish'
 
 import NoRole from './components/NoRole'
 
-import TopicProposals from './components/TopicManagement/Proposals'
+import TopicProposals from './components/TopicManagement/TopicProposals'
 import ViewProposal from './components/Proposals/ViewProposal'
+import Settings from './components/Settings'
+
+import PhaseManagement from './components/PhaseManagement'
+
+import Phase from './Auth/Phase'
 
 import Test from './components/Test'
 
@@ -62,6 +68,7 @@ function App() {
   const account = useAccount(accounts[0] || {})
 
   const { accountType, setAccountType } = useContext(AuthContext)
+  const { setCurrentPhase } = useContext(PhaseContext)
 
   const history = useHistory()
 
@@ -95,7 +102,6 @@ function App() {
 
                 if (!roleObject) {
                   console.log('Unknown role: ' + JSON.stringify(roleData))
-                  instance.logout(account)
                   continue
                 }
 
@@ -105,6 +111,15 @@ function App() {
                   role = displayName
                 }
               }
+
+              // TODO: Get current system phase
+              setCurrentPhase(
+                new Phase({
+                  phase: 2,
+                  startDate: new Date('2021-02-18T11:30:00.000Z'),
+                  endDate: new Date('2021-02-20T11:30:00.000Z')
+                })
+              )
 
               if (role) {
                 setAccountType(role)
@@ -170,7 +185,7 @@ function Pages(props) {
         <TopicManagement />
       </Route>
 
-      <Route path="/topic/:id">
+      <Route path="/topic/:topicId">
         <TopicProposals />
       </Route>
 
@@ -224,6 +239,14 @@ function Pages(props) {
 
       <Route path="/coordinator">
         <ManageCoordinator />
+      </Route>
+
+      <Route path="/settings">
+        <Settings />
+      </Route>
+
+      <Route path="/phase/manage">
+        <PhaseManagement />
       </Route>
 
       <Route path="/logout">

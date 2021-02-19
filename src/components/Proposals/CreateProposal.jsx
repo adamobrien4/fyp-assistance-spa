@@ -20,7 +20,9 @@ import {
   Radio,
   RadioGroup,
   FormLabel,
-  FormControl
+  FormControl,
+  Select,
+  MenuItem
 } from '@material-ui/core'
 import AddCircleIcon from '@material-ui/icons/AddCircle'
 import HistoryIcon from '@material-ui/icons/History'
@@ -47,6 +49,12 @@ const CreateProposal = props => {
   // TODO: Set loading to false if topics are in data.topics
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+
+  // Custom Topic Available Supervisors
+  const [customTopicSupervisors, setCustomTopicSupervisors] = useState(
+    contextData?.customTopicSupervisors
+  )
+  const [selectedCustomSupervisor, setSelectedCustomSupervisor] = useState()
 
   useEffect(() => {
     if (topicCode) {
@@ -88,6 +96,27 @@ const CreateProposal = props => {
         .catch(err => {
           console.log(err)
           // TODO: Only allow student defined topics to be created as no topics could be retrieved
+        })
+        .finally(() => {
+          setLoading(false)
+        })
+    }
+
+    if (contextData?.customTopicSupervisors?.length > 0) {
+      console.log('Loading supervisors from context')
+      console.log(contextData.customTopicSupervisors)
+      setCustomTopicSupervisors(contextData.customTopicSupervisors)
+      setLoading(false)
+    } else {
+      api
+        .get('/supervisor/availableCustomTopic')
+        .then(res => {
+          console.log(res.data.supervisors)
+          setContextData({ ...contextData, topics: res.data.supervisors })
+          setCustomTopicSupervisors(res.data.supervisors)
+        })
+        .catch(err => {
+          console.log(err)
         })
         .finally(() => {
           setLoading(false)
@@ -176,7 +205,64 @@ const CreateProposal = props => {
         </RadioGroup>
       </FormControl>
 
-      {isCustomProposal ? null : props?.selectedTopic ? (
+      {isCustomProposal ? (
+        <div>
+          <br />
+          <Divider />
+          <Select
+            value="unselected"
+            /*value={value}
+            //onChange={e => onChange(e.target.value)}
+            //style={{ marginTop: '16px' }}*/
+          >
+            <MenuItem value="unselected" selected disabled>
+              Choose A Supervisor
+            </MenuItem>
+            {customTopicSupervisors.map(supervisor => (
+              <MenuItem key={supervisor._id} value={supervisor._id}>
+                {supervisor.displayName}
+              </MenuItem>
+            ))}
+          </Select>
+
+          <TableContainer component={Paper}>
+            <Table aria-label="simple table">
+              <TableBody>
+                {customTopicSupervisors.map(supervisor => (
+                  <TableRow
+                    key={supervisor._id}
+                    selected={supervisor._id === selectedCustomSupervisor?._id}>
+                    <TableCell component="th" scope="row">
+                      <Button
+                        startIcon={<AddCircleIcon />}
+                        onClick={() => setSelectedCustomSupervisor(supervisor)}>
+                        Select
+                      </Button>
+                    </TableCell>
+                    <TableCell align="right">
+                      {supervisor.displayName}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+
+          <div>
+            {selectedCustomSupervisor ? (
+              <Typography>
+                Selected Supervisor: {selectedCustomSupervisor.displayName}
+              </Typography>
+            ) : customTopicSupervisors.length === 0 ? (
+              <Typography>
+                Could not retrieve any Supervisors, please try again later
+              </Typography>
+            ) : (
+              <Typography>Please select a Supervisor to continue</Typography>
+            )}
+          </div>
+        </div>
+      ) : props?.selectedTopic ? (
         <Typography>
           User has selected a topic from a previous page and was redirectedd
           here

@@ -1,16 +1,11 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import { Link } from 'react-router-dom'
 
 import {
   Container,
   Typography,
-  FormControl,
   Checkbox,
-  FormGroup,
   FormControlLabel,
-  List,
-  ListItem,
-  ListItemText,
   Button,
   TableContainer,
   Table,
@@ -25,14 +20,28 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  Divider
+  Box
 } from '@material-ui/core'
+import { makeStyles } from '@material-ui/core/styles'
+
+import { PhaseContext } from '../../contexts/PhaseContext'
 
 import api from '../../utils/api.axios'
 import { topicStatusToHumanFriendlyString } from '../../utils/topic'
 
+import { Can } from '../../Auth/Can'
+
 import PrimaryButton from '../PrimaryButton'
 import TopicModal from './TopicModal'
+
+const useStyles = makeStyles(theme => ({
+  studentSupervisionCard: {
+    marginTop: theme.spacing(2),
+    padding: theme.spacing(2),
+    display: 'flex',
+    justifyContent: 'space-between'
+  }
+}))
 
 const SubmissionDialog = props => {
   return (
@@ -86,6 +95,10 @@ export default function TopicManagement(props) {
     false
   )
   const [submittingTopics, setSubmittingTopics] = useState(false)
+
+  const { currentPhase } = useContext(PhaseContext)
+
+  const classes = useStyles()
 
   useEffect(() => {
     refreshTopicList()
@@ -256,13 +269,15 @@ export default function TopicManagement(props) {
           </Table>
         </TableContainer>
 
-        <Link to="/topics/add">
-          <Button variant="outlined">Create new Topic / Suggestion</Button>
-        </Link>
+        <Can I="takeActionPhaseTwo" this={currentPhase}>
+          <Link to="/topics/add">
+            <Button variant="outlined">Create new Topic / Suggestion</Button>
+          </Link>
 
-        <PrimaryButton onClick={handlePreSubmitTopics}>
-          Submit Suggestions
-        </PrimaryButton>
+          <PrimaryButton onClick={handlePreSubmitTopics}>
+            Submit Suggestions
+          </PrimaryButton>
+        </Can>
       </Container>
     </>
   )

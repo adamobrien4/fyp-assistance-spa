@@ -73,6 +73,8 @@ const CreateProposal = props => {
           helperText={errors?.languages?.message}
         />
 
+        {/* TODO: Save as Draft or save and Submit to supervisor */}
+
         <PrimaryButton>Save and Continue</PrimaryButton>
       </form>
     </Container>

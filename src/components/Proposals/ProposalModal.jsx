@@ -165,9 +165,9 @@ const ProposalModal = props => {
           <Input
             value={props.proposal.title}
             label="Title"
-            disabled
             variant="outlined"
             margin="none"
+            readOnly
             style={{ flex: '3', marginRight: '40px' }}
           />
           <FormControl variant="outlined" className={classes.formControl}>

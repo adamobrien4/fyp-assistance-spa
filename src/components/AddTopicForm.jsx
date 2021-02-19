@@ -39,7 +39,7 @@ const AddTopicForm = props => {
       <Typography component="h1" variant="h4" align="center">
         Create new Topic
       </Typography>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit)} autoComplete="off">
         <Input
           inputRef={register}
           type="text"
@@ -81,17 +81,10 @@ const AddTopicForm = props => {
           helperText={errors?.additionalNotes?.message}
         />
 
-        <Controller
+        <TargetCoursesInput
           control={control}
-          name="targetCourses"
-          render={({ onChange, value }) => (
-            <TargetCoursesInput
-              value={value}
-              onChange={onChange}
-              error={!!errors.targetCourses}
-              helperText={errors?.targetCourses?.message}
-            />
-          )}
+          error={!!errors.targetCourses}
+          helperText={errors?.targetCourses?.message}
         />
 
         <PrimaryButton>Add Topic</PrimaryButton>
