@@ -20,7 +20,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  Box
+  Switch
 } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 
@@ -83,6 +83,7 @@ const SubmissionDialog = props => {
 
 export default function TopicManagement(props) {
   const [topics, setTopics] = useState([])
+  const [customTopic, setCustomTopic] = useState(false)
   const [loading, setLoading] = useState(true)
   const [willSuperviseCustomTopic, setWillSuperviseCustomTopic] = useState(
     false
@@ -104,9 +105,11 @@ export default function TopicManagement(props) {
     refreshTopicList()
 
     api
-      .get('/supervisor/me')
+      .get('/me/studentProjectAvailibility')
       .then(res => {
         console.log(res)
+
+        setCustomTopic(res.data.topic)
       })
       .catch(err => {
         console.log(err)
@@ -118,9 +121,26 @@ export default function TopicManagement(props) {
       .get('/topic/me')
       .then(res => {
         console.log(res)
-        if (res.data?.topics) {
-          setTopics(res.data.topics)
-        }
+
+        let retrievedTopics = []
+        let customTopic = false
+
+        res.data.topics.forEach(topic => {
+          if (topic.type === 'regular') {
+            retrievedTopics.push(topic)
+          } else if (
+            topic.type === 'studentTopic' &&
+            topic.status !== 'archived'
+          ) {
+            customTopic = topic
+          } else {
+            console.error('Unknown topic type')
+            console.log(topic)
+          }
+        })
+
+        setTopics(retrievedTopics)
+        setCustomTopic(customTopic)
 
         // If a topic is currently selected, update it to the newly returned topic
         if (selectedTopic) {
@@ -136,20 +156,6 @@ export default function TopicManagement(props) {
       })
       .finally(() => {
         setLoading(false)
-      })
-  }
-
-  const handleToggleSuperviseCustomTopic = async e => {
-    api
-      .post('/supervisor/me/edit', {
-        superviseStudentTopics: !willSuperviseCustomTopic
-      })
-      .then(res => {
-        console.log(res)
-        setWillSuperviseCustomTopic(!willSuperviseCustomTopic)
-      })
-      .catch(err => {
-        console.log(err)
       })
   }
 
@@ -196,6 +202,22 @@ export default function TopicManagement(props) {
     setDialogOpen(true)
   }
 
+  const handleSuperviseStudentProjectChange = e => {
+    let body = {
+      active: e.target.checked
+    }
+
+    console.log(body)
+
+    api
+      .post('/supervisor/me/studentProjectAvailibility', body)
+      .then(res => {
+        refreshTopicList()
+      })
+      .catch(err => console.log(err))
+      .finally(() => {})
+  }
+
   if (loading) {
     return <Typography>Loading ...</Typography>
   }
@@ -223,6 +245,22 @@ export default function TopicManagement(props) {
         proceed={handleSubmitTopics}
       />
       <Container maxWidth="lg">
+        <Can I="takeActionPhaseTwo" this={currentPhase}>
+          <Typography>
+            Do you want to be available to supervise student defined projects?
+            (Custom Student Projects)
+          </Typography>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={customTopic}
+                onChange={handleSuperviseStudentProjectChange}
+              />
+            }
+            label="Supervise Student Defined Projects"
+          />
+        </Can>
+
         <TableContainer component={Paper} style={{ margin: '20px 0' }}>
           <Table style={{ minWidth: '650px' }} size="small">
             <TableHead>
@@ -245,26 +283,38 @@ export default function TopicManagement(props) {
                 </TableRow>
               ) : (
                 topics.map(topic => (
-                  <>
-                    <TableRow key={topic._id}>
-                      <TableCell component="th" scope="row">
-                        <MuiLink onClick={() => openTopicDetailsDialog(topic)}>
-                          {topic.title}
-                        </MuiLink>
-                      </TableCell>
-                      <TableCell align="center">
-                        {topicStatusToHumanFriendlyString(topic.status)}
-                      </TableCell>
-                      <TableCell align="right">
-                        <Link to={`/topic/${topic._id}`}>6 Submissions</Link>
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell colSpan={3}></TableCell>
-                    </TableRow>
-                  </>
+                  <TableRow key={topic._id}>
+                    <TableCell component="th" scope="row">
+                      <MuiLink onClick={() => openTopicDetailsDialog(topic)}>
+                        {topic.title}
+                      </MuiLink>
+                    </TableCell>
+                    <TableCell align="center">
+                      {topicStatusToHumanFriendlyString(topic.status)}
+                    </TableCell>
+                    <TableCell align="right">
+                      <Link to={`/topic/${topic._id}`}>6 Submissions</Link>
+                    </TableCell>
+                  </TableRow>
                 ))
               )}
+
+              {customTopic ? (
+                <TableRow key={customTopic._id}>
+                  <TableCell component="th" scope="row">
+                    <MuiLink
+                      onClick={() => openTopicDetailsDialog(customTopic)}>
+                      {customTopic.title}
+                    </MuiLink>
+                  </TableCell>
+                  <TableCell align="center">
+                    {topicStatusToHumanFriendlyString(customTopic.status)}
+                  </TableCell>
+                  <TableCell align="right">
+                    <Link to={`/topic/${customTopic._id}`}>6 Submissions</Link>
+                  </TableCell>
+                </TableRow>
+              ) : null}
             </TableBody>
           </Table>
         </TableContainer>

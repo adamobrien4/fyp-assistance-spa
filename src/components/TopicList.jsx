@@ -64,12 +64,7 @@ export default function TopicList(props) {
   const [topics, setTopics] = useState([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const [supervisors, setSupervisors] = useState([
-    {
-      displayName: 'Adam OBrien',
-      _id: 'f08481dc-6376-4b77-aae9-cc716fac949e'
-    }
-  ])
+  const [supervisors, setSupervisors] = useState([])
 
   const { handleSubmit, errors, control } = useForm({
     reValidateMode: 'onChange',
@@ -91,12 +86,24 @@ export default function TopicList(props) {
       .finally(() => {
         setLoading(false)
       })
+
+    api
+      .get('/supervisor/list')
+      .then(res => {
+        console.log(res)
+
+        setSupervisors(res.data.supervisors)
+      })
+      .catch(err => {
+        console.log(err)
+      })
+      .finally(() => {})
   }, [])
 
   const handleSearch = data => {
     console.log(data)
 
-    let query = {}
+    let query = { tags: null, supervisor: null }
 
     if (data.tags.length > 0) {
       query.tags = [...data.tags]

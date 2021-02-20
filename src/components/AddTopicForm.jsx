@@ -3,7 +3,12 @@ import api from '../utils/api.axios'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 
-import { Container, Typography } from '@material-ui/core'
+import {
+  Container,
+  Typography,
+  Switch,
+  FormControlLabel
+} from '@material-ui/core'
 
 import { formSchema, defaultValues } from '../utils/yupSchemas/yupTopicSchema'
 

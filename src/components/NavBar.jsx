@@ -79,6 +79,7 @@ export default function NavBar(props) {
           </Link>
         </Can>
       </Can>
+
       <Can I="takeActionPhaseThree" this={currentPhase}>
         <Can I="manage" a="Topic">
           <Link to="/topics/manage" className={styles.linkButton}>

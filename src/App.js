@@ -47,7 +47,6 @@ import ViewTopic from './components/ViewTopic'
 
 import CreateProposal from './components/Proposals/CreateProposal'
 import CreateProposalStep2 from './components/Proposals/CreateProposalStep2'
-import CreateProposalStep3 from './components/Proposals/CreateProposalStep3'
 import CreateProposalFinish from './components/Proposals/CreateProposalFinish'
 
 import NoRole from './components/NoRole'
@@ -69,8 +68,6 @@ function App() {
 
   const { accountType, setAccountType } = useContext(AuthContext)
   const { setCurrentPhase } = useContext(PhaseContext)
-
-  const history = useHistory()
 
   const authRequest = {
     ...loginRequest
@@ -115,7 +112,7 @@ function App() {
               // TODO: Get current system phase
               setCurrentPhase(
                 new Phase({
-                  phase: 2,
+                  phase: 3,
                   startDate: new Date('2021-02-18T11:30:00.000Z'),
                   endDate: new Date('2021-02-20T11:30:00.000Z')
                 })
@@ -196,12 +193,6 @@ function Pages(props) {
       <Route exact path="/proposals/add/step2">
         <CreateProposalContextProvider>
           <CreateProposalStep2 />
-        </CreateProposalContextProvider>
-      </Route>
-
-      <Route exact path="/proposals/add/step3">
-        <CreateProposalContextProvider>
-          <CreateProposalStep3 />
         </CreateProposalContextProvider>
       </Route>
 

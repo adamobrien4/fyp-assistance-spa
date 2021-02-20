@@ -26,7 +26,8 @@ const CreateProposal = props => {
       title: contextData.title,
       description: contextData.description,
       additionalNotes: contextData.additionalNotes,
-      chooseMessage: contextData.chooseMeMessage
+      chooseMessage: contextData.chooseMeMessage,
+      topic: contextData.topic._id
     }
 
     if (contextData.isCustomProposal) {
@@ -35,12 +36,6 @@ const CreateProposal = props => {
         ...prevData,
         environment: contextData.environment,
         languages: contextData.languages
-      }
-    } else {
-      let prevData = { ...formData }
-      formData = {
-        ...prevData,
-        topic: contextData.topic._id
       }
     }
 
