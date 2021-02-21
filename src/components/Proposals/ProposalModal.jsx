@@ -54,7 +54,7 @@ const ProposalModal = props => {
   const classes = useStyles()
 
   let defaultValues = (({
-    status,
+    title,
     description,
     chooseMessage,
     additionalNotes,
@@ -62,7 +62,7 @@ const ProposalModal = props => {
     languages,
     type
   }) => ({
-    status,
+    title,
     description,
     chooseMessage: chooseMessage || '',
     additionalNotes: additionalNotes || '',
@@ -155,45 +155,22 @@ const ProposalModal = props => {
         <Divider />
       </DialogTitle>
       <DialogContent>
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'stretch',
-            width: '100%'
-          }}>
-          <Input
-            value={props.proposal.title}
-            label="Title"
-            variant="outlined"
-            margin="none"
-            readOnly
-            style={{ flex: '3', marginRight: '40px' }}
-          />
-          <FormControl variant="outlined" className={classes.formControl}>
-            <Controller
-              render={({ onChange, value }) => (
-                <Select disabled={!editMode} value={value} onChange={onChange}>
-                  {Object.keys(proposalStatuses).map(status => (
-                    <MenuItem key={status} value={status}>
-                      {proposalStatuses[status]}
-                    </MenuItem>
-                  ))}
-                </Select>
-              )}
-              name="status"
-              control={control}
-              error={!!errors.status}
-              helperText={errors?.status?.message}
-            />
-          </FormControl>
-        </div>
+        <Input
+          inputRef={register}
+          name="title"
+          label="Title"
+          variant="outlined"
+          margin="none"
+          readOnly={!editMode}
+          error={!!errors.description}
+          helperText={errors?.description?.message}
+        />
         <form onSubmit={handleSubmit(onSubmit)}>
           <MultiLineInput
             inputRef={register}
             name="description"
             label="Description"
-            disabled={!editMode}
+            readOnly={!editMode}
             error={!!errors.description}
             helperText={errors?.description?.message}
           />
@@ -201,8 +178,9 @@ const ProposalModal = props => {
           <MultiLineInput
             inputRef={register}
             label="Choose Me Message"
+            placeholder="<No Choose Message Supplied>"
             name="chooseMessage"
-            disabled={!editMode}
+            readOnly={!editMode}
             error={!!errors.chooseMessage}
             helperText={errors?.chooseMessage?.message}
           />
@@ -210,8 +188,9 @@ const ProposalModal = props => {
           <MultiLineInput
             inputRef={register}
             label="Additional Notes"
+            placeholder="<No Additional Notes Supplied>"
             name="additionalNotes"
-            disabled={!editMode}
+            readOnly={!editMode}
             error={!!errors.additionalNotes}
             helperText={errors?.additionalNotes?.message}
           />
@@ -222,7 +201,7 @@ const ProposalModal = props => {
                 inputRef={register}
                 label="Environment"
                 name="environment"
-                disabled={!editMode}
+                readOnly={!editMode}
                 error={!!errors.environment}
                 helperText={errors?.environment?.message}
               />
@@ -230,7 +209,7 @@ const ProposalModal = props => {
                 inputRef={register}
                 label="Languages"
                 name="languages"
-                disabled={!editMode}
+                readOnly={!editMode}
                 error={!!errors.languages}
                 helperText={errors?.languages?.message}
               />

@@ -3,20 +3,14 @@ import { useParams, useHistory } from 'react-router-dom'
 
 import {
   Container,
-  Button,
   Typography,
   FormControl,
-  FormLabel,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-  Box,
-  Paper,
   Divider,
   Select,
   MenuItem,
   Grid,
-  FormHelperText
+  FormHelperText,
+  Paper
 } from '@material-ui/core'
 import Input from '../Input'
 import MultiLineInput from '../MultiLineInput'
@@ -56,8 +50,6 @@ const ViewProposal = props => {
     reValidateMode: 'onChange',
     defaultValues
   })
-
-  const history = useHistory()
 
   const { id } = useParams()
 
@@ -129,66 +121,68 @@ const ViewProposal = props => {
 
       <Divider />
 
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Paper elevation={2} style={{ padding: '20px', marginTop: '10px' }}>
-          <Typography align="center" component="h1" variant="h5">
-            Proposal Response
-          </Typography>
-          <Grid container>
-            <Grid item xs={2}>
-              <FormControl
-                variant="outlined"
-                style={{ width: '100%' }}
-                error={!!errors.responseType}>
-                <Controller
-                  render={({ onChange, value }) => (
-                    <Select
-                      value={value}
-                      onChange={e => onChange(e.target.value)}
-                      style={{ marginTop: '16px' }}>
-                      <MenuItem value="unselected" selected disabled>
-                        Choose One
-                      </MenuItem>
-                      <MenuItem
-                        value="request_edits"
-                        style={{ color: 'orange' }}>
-                        Request Edits
-                      </MenuItem>
-                      <MenuItem value="accept" style={{ color: 'green' }}>
-                        Accept
-                      </MenuItem>
-                      <MenuItem value="reject" style={{ color: 'red' }}>
-                        Reject
-                      </MenuItem>
-                    </Select>
-                  )}
-                  name="responseType"
-                  control={control}
+      <Can I="manage" this="Proposal">
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <Paper elevation={2} style={{ padding: '20px', marginTop: '10px' }}>
+            <Typography align="center" component="h1" variant="h5">
+              Proposal Response
+            </Typography>
+            <Grid container>
+              <Grid item xs={2}>
+                <FormControl
+                  variant="outlined"
+                  style={{ width: '100%' }}
+                  error={!!errors.responseType}>
+                  <Controller
+                    render={({ onChange, value }) => (
+                      <Select
+                        value={value}
+                        onChange={e => onChange(e.target.value)}
+                        style={{ marginTop: '16px' }}>
+                        <MenuItem value="unselected" selected disabled>
+                          Choose One
+                        </MenuItem>
+                        <MenuItem
+                          value="request_edits"
+                          style={{ color: 'orange' }}>
+                          Request Edits
+                        </MenuItem>
+                        <MenuItem value="accept" style={{ color: 'green' }}>
+                          Accept
+                        </MenuItem>
+                        <MenuItem value="reject" style={{ color: 'red' }}>
+                          Reject
+                        </MenuItem>
+                      </Select>
+                    )}
+                    name="responseType"
+                    control={control}
+                  />
+                </FormControl>
+                <FormHelperText error={!!errors.responseType}>
+                  {errors?.responseType?.message}
+                </FormHelperText>
+              </Grid>
+              <Grid item xs={8}>
+                <Input
+                  inputRef={register}
+                  name="message"
+                  placeholder="Message to Student"
+                  error={!!errors.abbr}
+                  helperText={errors?.abbr?.message}
                 />
-              </FormControl>
-              <FormHelperText error={!!errors.responseType}>
-                {errors?.responseType?.message}
-              </FormHelperText>
+              </Grid>
+              <Grid item xs={2}>
+                <PrimaryButton
+                  style={{ height: '56px', marginTop: '16px' }}
+                  disabled={submittingResponse}>
+                  Submit
+                </PrimaryButton>
+              </Grid>
             </Grid>
-            <Grid item xs={8}>
-              <Input
-                inputRef={register}
-                name="message"
-                placeholder="Message to Student"
-                error={!!errors.abbr}
-                helperText={errors?.abbr?.message}
-              />
-            </Grid>
-            <Grid item xs={2}>
-              <PrimaryButton
-                style={{ height: '56px', marginTop: '16px' }}
-                disabled={submittingResponse}>
-                Submit
-              </PrimaryButton>
-            </Grid>
-          </Grid>
-        </Paper>
-      </form>
+          </Paper>
+        </form>
+      </Can>
     </Container>
   )
 }

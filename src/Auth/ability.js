@@ -1,7 +1,4 @@
-import { AbilityBuilder, Ability, subject } from '@casl/ability'
-
-export const proposal = subject.bind(null, 'Article')
-export const topic = subject.bind(null, 'Topic')
+import { AbilityBuilder, Ability } from '@casl/ability'
 
 export default function defineAbilityFor(userRole) {
   const { can, cannot, build } = new AbilityBuilder(Ability)
@@ -24,6 +21,7 @@ export default function defineAbilityFor(userRole) {
       can('read', 'Topic')
       can('create', 'Topic')
       can('manage', 'Topic', { publisher: 'me' })
+      can('manage', 'Proposal')
       break
     // eslint-disable-next-line
     case 'Coordinator':

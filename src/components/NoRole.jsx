@@ -26,7 +26,7 @@ const NoRole = props => {
     type: 'student'
   }
 
-  const { register, handleSubmit, errors, control } = useForm({
+  /*const { register, handleSubmit, errors, control } = useForm({
     resolver: yupResolver(formSchema),
     reValidateMode: 'onChange',
     defaultValues
@@ -34,7 +34,7 @@ const NoRole = props => {
 
   const onSubmit = data => {
     console.log(data)
-  }
+  }*/
 
   return (
     <Container maxWidth="lg">

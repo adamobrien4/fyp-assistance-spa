@@ -3,16 +3,8 @@ import { Link } from 'react-router-dom'
 import { useForm, Controller } from 'react-hook-form'
 import {
   Container,
-  InputBase,
   Paper,
-  Divider,
-  IconButton,
   Typography,
-  Card,
-  CardContent,
-  Collapse,
-  Checkbox,
-  FormControlLabel,
   Box,
   TableContainer,
   Table,
@@ -21,37 +13,14 @@ import {
   TableCell,
   TableRow,
   Link as MuiLink,
-  Avatar,
   Select,
   MenuItem,
   FormControl
 } from '@material-ui/core'
-import SearchIcon from '@material-ui/icons/Search'
-import { makeStyles } from '@material-ui/styles'
 
 import api from '../utils/api.axios'
 import Tags from './Tags'
 import PrimaryButton from './PrimaryButton'
-
-const useStyles = makeStyles(theme => ({
-  root: {
-    padding: '2px 0px',
-    display: 'flex',
-    alignItems: 'center',
-    width: '100%'
-  },
-  input: {
-    marginLeft: theme.spacing(1),
-    flex: 1
-  },
-  iconButton: {
-    padding: 10
-  },
-  divider: {
-    height: 28,
-    margin: 4
-  }
-}))
 
 const defaultValues = {
   tags: [],
@@ -59,11 +28,8 @@ const defaultValues = {
 }
 
 export default function TopicList(props) {
-  const classes = useStyles()
-
   const [topics, setTopics] = useState([])
   const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
   const [supervisors, setSupervisors] = useState([])
 
   const { handleSubmit, errors, control } = useForm({
@@ -157,7 +123,7 @@ export default function TopicList(props) {
                   None
                 </MenuItem>
                 {supervisors.map(supervisor => (
-                  <MenuItem value={supervisor._id}>
+                  <MenuItem value={supervisor._id} key={supervisor._id}>
                     {supervisor.displayName}
                   </MenuItem>
                 ))}

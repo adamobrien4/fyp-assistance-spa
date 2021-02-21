@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useParams, Link, useHistory } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { Can } from '../Auth/Can'
 
 import { Container, Typography, Box } from '@material-ui/core'
@@ -19,7 +19,6 @@ const useStyles = makeStyles(theme => ({
 const ViewTopic = props => {
   let { code } = useParams()
 
-  const history = useHistory()
   const classes = useStyles()
 
   const [loading, setLoading] = useState(true)

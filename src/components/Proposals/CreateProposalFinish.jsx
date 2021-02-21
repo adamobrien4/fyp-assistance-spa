@@ -48,8 +48,22 @@ const CreateProposal = props => {
         setContextData({})
         history.push('/proposals')
       })
-      .catch(err => {
-        console.log(err)
+      .catch(error => {
+        if (error.response) {
+          switch (error.response.data) {
+            case 'existing_topic_proposal':
+              alert('Cannot create multiple proposals for a single topic')
+              break
+            default:
+              break
+          }
+        } else if (error.request) {
+          // The request was made but no response was received
+          console.log(error.request)
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          console.log('Error', error.message)
+        }
       })
   }
 

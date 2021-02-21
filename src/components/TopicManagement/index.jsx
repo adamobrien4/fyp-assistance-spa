@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react'
+import PropTypes from 'prop-types'
 import { Link } from 'react-router-dom'
 
 import {
@@ -22,7 +23,6 @@ import {
   DialogActions,
   Switch
 } from '@material-ui/core'
-import { makeStyles } from '@material-ui/core/styles'
 
 import { PhaseContext } from '../../contexts/PhaseContext'
 
@@ -33,15 +33,6 @@ import { Can } from '../../Auth/Can'
 
 import PrimaryButton from '../PrimaryButton'
 import TopicModal from './TopicModal'
-
-const useStyles = makeStyles(theme => ({
-  studentSupervisionCard: {
-    marginTop: theme.spacing(2),
-    padding: theme.spacing(2),
-    display: 'flex',
-    justifyContent: 'space-between'
-  }
-}))
 
 const SubmissionDialog = props => {
   return (
@@ -81,13 +72,19 @@ const SubmissionDialog = props => {
   )
 }
 
+SubmissionDialog.propTypes = {
+  open: PropTypes.bool.isRequired,
+  setOpen: PropTypes.func.isRequired,
+  checked: PropTypes.bool.isRequired,
+  setChecked: PropTypes.func.isRequired,
+  setDialogOpen: PropTypes.func.isRequired,
+  proceed: PropTypes.func.isRequired
+}
+
 export default function TopicManagement(props) {
   const [topics, setTopics] = useState([])
   const [customTopic, setCustomTopic] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [willSuperviseCustomTopic, setWillSuperviseCustomTopic] = useState(
-    false
-  )
   const [dialogOpen, setDialogOpen] = useState(false)
   const [selectedTopic, setSelectedTopic] = useState(null)
 
@@ -98,8 +95,6 @@ export default function TopicManagement(props) {
   const [submittingTopics, setSubmittingTopics] = useState(false)
 
   const { currentPhase } = useContext(PhaseContext)
-
-  const classes = useStyles()
 
   useEffect(() => {
     refreshTopicList()

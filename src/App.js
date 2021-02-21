@@ -128,6 +128,7 @@ function App() {
               }
             })
             .catch(err => {
+              alert('Could not initialise your account, please try again')
               console.log(err)
             })
         })

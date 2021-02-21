@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import { useForm, Controller } from 'react-hook-form'
 import * as _ from 'lodash'
@@ -143,6 +143,7 @@ const TopicModal = props => {
           onClick={() => {
             if (
               editMode &&
+              // eslint-disable-next-line no-restricted-globals
               confirm(
                 'Unsaved changes will be lost!. Are you sure you want to exit?'
               ) === false
