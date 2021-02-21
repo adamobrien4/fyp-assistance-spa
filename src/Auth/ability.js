@@ -1,6 +1,6 @@
 import { AbilityBuilder, Ability } from '@casl/ability'
 
-export default function defineAbilityFor(userRole) {
+export default function defineAbilityFor(user) {
   const { can, cannot, build } = new AbilityBuilder(Ability)
 
   // Setup to allow specific actions to be taken during each phase
@@ -9,19 +9,20 @@ export default function defineAbilityFor(userRole) {
   can('takeActionPhaseThree', 'Phase', { phase: 3 })
   can('takeActionPhaseFour', 'Phase', { phase: 4 })
 
-  switch (userRole) {
+  switch (user.role) {
     case 'Student':
       can('read', 'Topic')
       // FIXME: Rename 'publisher' to match the name of the user who created the proposal
       can('create', 'Proposal')
-      can('manage', 'Proposal', { student: 'me' })
+      can('read', 'Proposal', { student: user.id })
+      can('manage', 'Proposal', { student: user.id })
       break
     case 'Supervisor':
       // FIXME: Rename 'publisher' to match the name of the user who created the proposal
       can('read', 'Topic')
       can('create', 'Topic')
-      can('manage', 'Topic', { publisher: 'me' })
-      can('manage', 'Proposal')
+      can('manage', 'Topic', { supervisor: user.id })
+      can('update', 'Proposal', { topic: { supervisor: user.id } })
       break
     // eslint-disable-next-line
     case 'Coordinator':
@@ -29,14 +30,14 @@ export default function defineAbilityFor(userRole) {
       can('manage', 'Supervisor')
       can('read', 'Topic')
       can('create', 'Topic')
-      can('manage', 'Topic', { publisher: 'me' })
+      can('manage', 'Topic', { supervisor: user.id })
       break
     case 'Administrator':
       can('manage', 'Coordinator')
       can('manage', 'Phase')
       break
     default:
-      cannot('read', '*')
+      cannot('*', '*')
   }
 
   return build()

@@ -16,6 +16,7 @@ import Input from '../Input'
 import MultiLineInput from '../MultiLineInput'
 import PrimaryButton from '../PrimaryButton'
 import { Can } from '../../Auth/Can'
+import Proposal from '../../Auth/Proposal'
 
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
@@ -121,7 +122,7 @@ const ViewProposal = props => {
 
       <Divider />
 
-      <Can I="manage" this="Proposal">
+      <Can I="update" this={new Proposal(proposal)}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <Paper elevation={2} style={{ padding: '20px', marginTop: '10px' }}>
             <Typography align="center" component="h1" variant="h5">

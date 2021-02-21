@@ -12,8 +12,8 @@ import { loginRequest, config } from './config/msal-config'
 
 import { AuthContext } from './contexts/AuthContext'
 import { PhaseContext } from './contexts/PhaseContext'
-import { AbilityContext } from './Auth/Can'
-import ability from './Auth/ability'
+import { AbilityContext, Can } from './Auth/Can'
+import generateAbilitiesFor from './Auth/ability'
 import { setup as apiSetup } from './utils/api.axios'
 import axiosGraphInstance, { setup as graphSetup } from './utils/graph.axios'
 
@@ -50,6 +50,7 @@ import CreateProposalStep2 from './components/Proposals/CreateProposalStep2'
 import CreateProposalFinish from './components/Proposals/CreateProposalFinish'
 
 import NoRole from './components/NoRole'
+import NotFound from './components/NotFound'
 
 import TopicProposals from './components/TopicManagement/TopicProposals'
 import ViewProposal from './components/Proposals/ViewProposal'
@@ -66,7 +67,7 @@ function App() {
   const { instance, accounts, inProgress } = useMsal()
   const account = useAccount(accounts[0] || {})
 
-  const { accountType, setAccountType } = useContext(AuthContext)
+  const { user, setUserObject } = useContext(AuthContext)
   const { setCurrentPhase } = useContext(PhaseContext)
 
   const authRequest = {
@@ -118,12 +119,19 @@ function App() {
                 })
               )
 
-              if (role) {
-                setAccountType(role)
+              let userObject = {
+                role,
+                id: account.localAccountId
+              }
+
+              console.log(userObject)
+
+              if (userObject.role) {
+                setUserObject(userObject)
                 setAppReady(true)
               } else {
                 // User has no assigned role
-                setAccountType(null)
+                setUserObject(userObject)
                 setAppReady(true)
               }
             })
@@ -142,10 +150,10 @@ function App() {
       errorComponent={ErrorComponent}
       loadingComponent={Loading}>
       {appReady ? (
-        <AbilityContext.Provider value={ability(accountType)}>
+        <AbilityContext.Provider value={generateAbilitiesFor(user)}>
           <Header />
           <Toolbar />
-          <Pages accountType={accountType} />
+          <Pages user={user} />
         </AbilityContext.Provider>
       ) : (
         <AppLoading />
@@ -156,90 +164,119 @@ function App() {
 
 function Pages(props) {
   const { instance } = useMsal()
+  const ability = generateAbilitiesFor(props.user)
+
+  console.log(ability.can('manage', 'Topic'))
 
   // Implement Can functionality to only show available routes
   return (
     <Switch>
-      <Route path="/test">
-        <Test />
-      </Route>
       <Route exact path="/">
-        {props?.accountType ? <Welcome /> : <NoRole />}
+        {props?.user?.role ? <Welcome /> : <NoRole />}
       </Route>
+      {ability.can('manage', 'Topic') && (
+        <Route path="/test" component={Test} />
+      )}
 
-      <Route exact path="/topics">
-        <TopicList />
-      </Route>
+      {ability.can('read', 'Topic') && (
+        <Route exact path="/topics">
+          <TopicList />
+        </Route>
+      )}
 
       <Route path="/topics/view/:code">
         <ViewTopic />
       </Route>
 
-      <Route path="/topics/add">
-        <AddTopicForm />
-      </Route>
+      {ability.can('create', 'Topic') && (
+        <Route path="/topics/add" component={AddTopicForm} />
+      )}
 
-      <Route path="/topics/manage">
-        <TopicManagement />
-      </Route>
+      {ability.can('manage', 'Topic') && (
+        <Route path="/topics/manage" component={TopicManagement} />
+      )}
 
-      <Route path="/topic/:topicId">
-        <TopicProposals />
-      </Route>
+      {ability.can('read', 'Proposal') && (
+        <Route path="/topic/:topicId">
+          <TopicProposals />
+        </Route>
+      )}
 
-      <Route exact path="/proposals">
-        <ManageProposal />
-      </Route>
+      {ability.can('manage', 'Proposal') && (
+        <Route exact path="/proposals" component={ManageProposal} />
+      )}
 
-      <Route exact path="/proposals/add/step2">
-        <CreateProposalContextProvider>
-          <CreateProposalStep2 />
-        </CreateProposalContextProvider>
-      </Route>
+      {ability.can('create', 'Proposal') && (
+        <Route exact path="/proposals/add/step2">
+          <CreateProposalContextProvider>
+            <CreateProposalStep2 />
+          </CreateProposalContextProvider>
+        </Route>
+      )}
 
-      <Route exact path="/proposals/add/finish">
-        <CreateProposalContextProvider>
-          <CreateProposalFinish />
-        </CreateProposalContextProvider>
-      </Route>
+      {ability.can('create', 'Proposal') && (
+        <Route exact path="/proposals/add/finish">
+          <CreateProposalContextProvider>
+            <CreateProposalFinish />
+          </CreateProposalContextProvider>
+        </Route>
+      )}
 
-      <Route path="/proposals/add/:topicCode?">
-        <CreateProposalContextProvider>
-          <CreateProposal />
-        </CreateProposalContextProvider>
-      </Route>
+      {ability.can('create', 'Proposal') && (
+        <Route path="/proposals/add/:topicCode?">
+          <CreateProposalContextProvider>
+            <CreateProposal />
+          </CreateProposalContextProvider>
+        </Route>
+      )}
 
-      <Route exact path="/proposal/view/:id">
-        <ViewProposal />
-      </Route>
+      {ability.can('read', 'Proposal') && (
+        <Route exact path="/proposal/view/:id">
+          <ViewProposal />
+        </Route>
+      )}
 
-      <Route path="/student/assign">
-        <StudentAssignment />
-      </Route>
+      {ability.can('manage', 'Student') && (
+        <Route path="/student/assign">
+          <StudentAssignment />
+        </Route>
+      )}
 
-      <Route path="/student/manage">
-        <StudentManagement />
-      </Route>
+      {ability.can('manage', 'Student') && (
+        <Route path="/student/manage">
+          <StudentManagement />
+        </Route>
+      )}
 
-      <Route path="/supervisor/assign">
-        <SupervisorAssignment />
-      </Route>
+      {ability.can('manage', 'Supervisor') && (
+        <Route path="/supervisor/assign">
+          <SupervisorAssignment />
+        </Route>
+      )}
 
-      <Route path="/supervisor/manage">
-        <SupervisorManagement />
-      </Route>
+      {ability.can('manage', 'Supervisor') && (
+        <Route path="/supervisor/manage">
+          <SupervisorManagement />
+        </Route>
+      )}
 
-      <Route path="/coordinator">
-        <ManageCoordinator />
-      </Route>
+      {ability.can('manage', 'Coordinator') && (
+        <Route path="/coordinator">
+          <ManageCoordinator />
+        </Route>
+      )}
 
-      <Route path="/settings">
-        <Settings />
-      </Route>
+      {ability.can('manage', 'Coordinator') && (
+        <Route path="/settings">
+          <Settings />
+        </Route>
+      )}
 
-      <Route path="/phase/manage">
-        <PhaseManagement />
-      </Route>
+      {ability.can('manage', 'Phase') && (
+        <Route path="/phase/manage">
+          <PhaseManagement />
+        </Route>
+      )}
 
       <Route path="/logout">
         {/* TODO: Delete localStorage of user role on logout 'fyp-assistance-role-type , Tidy up logout methodology  */}
@@ -253,6 +290,8 @@ function Pages(props) {
           Logout
         </Button>
       </Route>
+
+      <Route component={NotFound} />
     </Switch>
   )
 }
