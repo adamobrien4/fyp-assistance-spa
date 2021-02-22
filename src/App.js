@@ -1,18 +1,18 @@
 import React, { useEffect, useState, useContext } from 'react'
-import { Switch, Route, useHistory } from 'react-router-dom'
+import PropTypes from 'prop-types'
+import { Switch, Route } from 'react-router-dom'
 import {
   MsalAuthenticationTemplate,
   useMsal,
   useAccount
 } from '@azure/msal-react'
 import { InteractionType } from '@azure/msal-browser'
-import PropTypes from 'prop-types'
 
 import { loginRequest, config } from './config/msal-config'
 
 import { AuthContext } from './contexts/AuthContext'
 import { PhaseContext } from './contexts/PhaseContext'
-import { AbilityContext, Can } from './Auth/Can'
+import { AbilityContext } from './Auth/Can'
 import generateAbilitiesFor from './Auth/ability'
 import { setup as apiSetup } from './utils/api.axios'
 import axiosGraphInstance, { setup as graphSetup } from './utils/graph.axios'
@@ -113,7 +113,7 @@ function App() {
               // TODO: Get current system phase
               setCurrentPhase(
                 new Phase({
-                  phase: 3,
+                  phase: 4,
                   startDate: new Date('2021-02-18T11:30:00.000Z'),
                   endDate: new Date('2021-02-20T11:30:00.000Z')
                 })
@@ -162,11 +162,9 @@ function App() {
   )
 }
 
-function Pages(props) {
+const Pages = props => {
   const { instance } = useMsal()
   const ability = generateAbilitiesFor(props.user)
-
-  console.log(ability.can('manage', 'Topic'))
 
   // Implement Can functionality to only show available routes
   return (
@@ -297,7 +295,7 @@ function Pages(props) {
 }
 
 Pages.propTypes = {
-  accountType: PropTypes.string.isRequired
+  user: PropTypes.object.isRequired
 }
 
 export default App

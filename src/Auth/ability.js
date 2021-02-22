@@ -12,17 +12,16 @@ export default function defineAbilityFor(user) {
   switch (user.role) {
     case 'Student':
       can('read', 'Topic')
-      // FIXME: Rename 'publisher' to match the name of the user who created the proposal
       can('create', 'Proposal')
       can('read', 'Proposal', { student: user.id })
       can('manage', 'Proposal', { student: user.id })
       break
     case 'Supervisor':
-      // FIXME: Rename 'publisher' to match the name of the user who created the proposal
       can('read', 'Topic')
       can('create', 'Topic')
       can('manage', 'Topic', { supervisor: user.id })
-      can('update', 'Proposal', { topic: { supervisor: user.id } })
+      can('read', 'Proposal')
+      can('respond', 'Proposal', { 'topic.supervisor': user.id })
       break
     // eslint-disable-next-line
     case 'Coordinator':

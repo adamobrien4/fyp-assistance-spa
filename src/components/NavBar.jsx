@@ -4,8 +4,10 @@ import { makeStyles } from '@material-ui/core/styles'
 import { Link } from 'react-router-dom'
 import { AuthenticatedTemplate } from '@azure/msal-react'
 import { Can } from '../Auth/Can'
+import generateAbilitiesFor from '../Auth/ability'
 
 import { PhaseContext } from '../contexts/PhaseContext'
+import { AuthContext } from '../contexts/AuthContext'
 
 const useStyles = makeStyles(theme => ({
   navDisplayFlex: {
@@ -26,9 +28,10 @@ const useStyles = makeStyles(theme => ({
 export default function NavBar(props) {
   const styles = useStyles()
 
+  const { user } = useContext(AuthContext)
   const { currentPhase } = useContext(PhaseContext)
 
-  console.log(currentPhase)
+  const ability = generateAbilitiesFor(user)
 
   return (
     <AuthenticatedTemplate>
@@ -38,28 +41,32 @@ export default function NavBar(props) {
         </Button>
       </Link>
 
-      <Can I="takeActionPhaseThree" on={currentPhase}>
-        <Can I="read" a="Topic">
-          <Link to="/topics" className={styles.linkButton}>
-            <Button className={styles.linkText}>View Topics List</Button>
-          </Link>
-        </Can>
+      {currentPhase.phase === 3 || currentPhase.phase === 4 ? (
+        <>
+          <Can I="read" a="Topic">
+            <Link to="/topics" className={styles.linkButton}>
+              <Button className={styles.linkText}>View Topics List</Button>
+            </Link>
+          </Can>
 
-        <Can I="manage" a="Proposal">
-          <Link to="/proposals" className={styles.linkButton}>
-            <Button className={styles.linkText}>Manage Proposals</Button>
-          </Link>
-        </Can>
-      </Can>
+          <Can I="manage" a="Proposal">
+            <Link to="/proposals" className={styles.linkButton}>
+              <Button className={styles.linkText}>Manage Proposals</Button>
+            </Link>
+          </Can>
+        </>
+      ) : null}
 
       {/* Supervisor */}
-      <Can I="takeActionPhaseTwo" this={currentPhase}>
+      {(currentPhase.phase === 2 ||
+        currentPhase.phase === 3 ||
+        currentPhase.phase === 4) && (
         <Can I="manage" a="Topic">
           <Link to="/topics/manage" className={styles.linkButton}>
             <Button className={styles.linkText}>Manage Topic List</Button>
           </Link>
         </Can>
-      </Can>
+      )}
 
       {/* Coordinator */}
       <Can I="takeActionPhaseOne" this={currentPhase}>

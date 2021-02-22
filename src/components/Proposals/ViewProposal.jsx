@@ -30,10 +30,13 @@ const formSchema = yup.object({
   responseType: yup
     .string()
     .oneOf(
-      ['request_edits', 'accept', 'reject'],
+      ['pending_edits', 'accept', 'reject'],
       'Please select a response type'
     ),
-  message: yup.string()
+  message: yup.string().when('responseType', {
+    is: 'pending_edits',
+    then: yup.string().required('Must include a message when requesting edits')
+  })
 })
 
 const defaultValues = {
@@ -89,8 +92,6 @@ const ViewProposal = props => {
     return <h1>Loading</h1>
   }
 
-  console.log(errors)
-
   return (
     <Container maxWidth="lg">
       <BackButton />
@@ -115,75 +116,70 @@ const ViewProposal = props => {
         </>
       ) : null}
 
-      {/* TODO: Implement Can to see if the user has permission to view these buttons (if they are a supervisor / coodinator)
-       * Also ensure that this proposal has been sent to the supervisor's topic
-       *
-       */}
-
-      <Divider />
-
-      <Can I="update" this={new Proposal(proposal)}>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <Paper elevation={2} style={{ padding: '20px', marginTop: '10px' }}>
-            <Typography align="center" component="h1" variant="h5">
-              Proposal Response
-            </Typography>
-            <Grid container>
-              <Grid item xs={2}>
-                <FormControl
-                  variant="outlined"
-                  style={{ width: '100%' }}
-                  error={!!errors.responseType}>
-                  <Controller
-                    render={({ onChange, value }) => (
-                      <Select
-                        value={value}
-                        onChange={e => onChange(e.target.value)}
-                        style={{ marginTop: '16px' }}>
-                        <MenuItem value="unselected" selected disabled>
-                          Choose One
-                        </MenuItem>
-                        <MenuItem
-                          value="request_edits"
-                          style={{ color: 'orange' }}>
-                          Request Edits
-                        </MenuItem>
-                        <MenuItem value="accept" style={{ color: 'green' }}>
-                          Accept
-                        </MenuItem>
-                        <MenuItem value="reject" style={{ color: 'red' }}>
-                          Reject
-                        </MenuItem>
-                      </Select>
-                    )}
-                    name="responseType"
-                    control={control}
+      {proposal.status === 'submitted' && (
+        <Can I="respond" this={new Proposal(proposal)}>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Paper elevation={2} style={{ padding: '20px', marginTop: '10px' }}>
+              <Typography align="center" component="h1" variant="h5">
+                Proposal Response
+              </Typography>
+              <Grid container>
+                <Grid item xs={2}>
+                  <FormControl
+                    variant="outlined"
+                    style={{ width: '100%' }}
+                    error={!!errors.responseType}>
+                    <Controller
+                      render={({ onChange, value }) => (
+                        <Select
+                          value={value}
+                          onChange={e => onChange(e.target.value)}
+                          style={{ marginTop: '16px' }}>
+                          <MenuItem value="unselected" selected disabled>
+                            Choose One
+                          </MenuItem>
+                          <MenuItem
+                            value="pending_edits"
+                            style={{ color: 'orange' }}>
+                            Request Edits
+                          </MenuItem>
+                          <MenuItem value="accepted" style={{ color: 'green' }}>
+                            Accept
+                          </MenuItem>
+                          <MenuItem value="rejected" style={{ color: 'red' }}>
+                            Reject
+                          </MenuItem>
+                        </Select>
+                      )}
+                      name="responseType"
+                      control={control}
+                    />
+                  </FormControl>
+                  <FormHelperText error={!!errors.responseType}>
+                    {errors?.responseType?.message}
+                  </FormHelperText>
+                </Grid>
+                <Grid item xs={8}>
+                  <Input
+                    inputRef={register}
+                    name="message"
+                    placeholder="Message to Student"
+                    error={!!errors.message}
+                    helperText={errors?.message?.message}
                   />
-                </FormControl>
-                <FormHelperText error={!!errors.responseType}>
-                  {errors?.responseType?.message}
-                </FormHelperText>
+                </Grid>
+                <Grid item xs={2}>
+                  <PrimaryButton
+                    style={{ height: '56px', marginTop: '16px' }}
+                    disabled={submittingResponse}>
+                    Submit
+                  </PrimaryButton>
+                </Grid>
               </Grid>
-              <Grid item xs={8}>
-                <Input
-                  inputRef={register}
-                  name="message"
-                  placeholder="Message to Student"
-                  error={!!errors.abbr}
-                  helperText={errors?.abbr?.message}
-                />
-              </Grid>
-              <Grid item xs={2}>
-                <PrimaryButton
-                  style={{ height: '56px', marginTop: '16px' }}
-                  disabled={submittingResponse}>
-                  Submit
-                </PrimaryButton>
-              </Grid>
-            </Grid>
-          </Paper>
-        </form>
-      </Can>
+            </Paper>
+          </form>
+        </Can>
+      )}
     </Container>
   )
 }

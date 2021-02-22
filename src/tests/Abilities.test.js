@@ -65,14 +65,17 @@ describe('Permissions', () => {
     test('can read any topic', () => {
       expect(ability.can('read', 'Topic')).toBeTruthy()
     })
+
     test('can create a topic', () => {
       expect(ability.can('create', 'Topic')).toBeTruthy()
     })
+
     test('can update a topic which they own', () => {
       expect(
         ability.can('update', new Topic({ supervisor: '456-789' }))
       ).toBeTruthy()
     })
+
     test('can delete a topic which they own', () => {
       // TODO: Implement check to see if they own the proposal or not
       expect(
@@ -85,10 +88,20 @@ describe('Permissions', () => {
         ability.cannot('update', new Topic({ supervisor: '789-012' }))
       ).toBeTruthy()
     })
+
     test('cannot delete a topic which is not theirs', () => {
       expect(
         ability.cannot('delete', new Topic({ supervisor: '789-012' }))
       ).toBeTruthy()
+    })
+
+    test('can respond to a Proposal which is linked to a Topic which they own', () => {
+      let proposalObj = {
+        topic: {
+          supervisor: '456-789'
+        }
+      }
+      expect(ability.can('respond', new Proposal(proposalObj))).toBeTruthy()
     })
   })
 })

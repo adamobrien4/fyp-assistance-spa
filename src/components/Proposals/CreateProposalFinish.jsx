@@ -5,7 +5,9 @@ import { useData } from '../../contexts/CreateProposalContext'
 import { useHistory } from 'react-router-dom'
 
 import { withStyles } from '@material-ui/core/styles'
-import { Typography, Container } from '@material-ui/core'
+import { Typography, Container, Tooltip } from '@material-ui/core'
+
+import HelpIcon from '@material-ui/icons/Help'
 
 import api from '../../utils/api.axios'
 
@@ -18,7 +20,7 @@ const CreateProposal = props => {
 
   const history = useHistory()
 
-  const handleNextStep = () => {
+  const handleNextStep = submitProposal => {
     // Get data from form and store in context
 
     let formData = {
@@ -27,7 +29,8 @@ const CreateProposal = props => {
       description: contextData.description,
       additionalNotes: contextData.additionalNotes,
       chooseMessage: contextData.chooseMeMessage,
-      topic: contextData.topic._id
+      topic: contextData.topic._id,
+      saveAsDraft: !submitProposal
     }
 
     if (contextData.isCustomProposal) {
@@ -97,7 +100,24 @@ const CreateProposal = props => {
         </>
       ) : null}
 
-      <PrimaryButton onClick={handleNextStep}>Submit Proposal</PrimaryButton>
+      <PrimaryButton
+        onClick={() => handleNextStep(true)}
+        endIcon={
+          <Tooltip title="Not editable after submission">
+            <HelpIcon />
+          </Tooltip>
+        }>
+        Submit Proposal to Supervisor
+      </PrimaryButton>
+      <PrimaryButton
+        onClick={() => handleNextStep(false)}
+        endIcon={
+          <Tooltip title="Editable until submitted">
+            <HelpIcon />
+          </Tooltip>
+        }>
+        Save Proposal as Draft
+      </PrimaryButton>
     </Container>
   )
 }

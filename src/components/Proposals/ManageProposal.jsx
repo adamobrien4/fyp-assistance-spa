@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
+import { PhaseContext } from '../../contexts/PhaseContext'
+import { Can } from '../../Auth/Can'
 import PropTypes from 'prop-types'
 import {
   Container,
@@ -22,6 +24,7 @@ import { proposalStatusToHumanFriendlyString } from '../../utils/proposal'
 import ProposalModal from './ProposalModal'
 
 const NextActionButton = props => {
+  const { currentPhase } = useContext(PhaseContext)
   switch (props.status) {
     case 'draft':
       return (
@@ -35,6 +38,14 @@ const NextActionButton = props => {
           Submit Updated Proposal
         </Button>
       )
+    case 'submitted':
+      return (
+        <Can I="takeActionPhaseThree" this={currentPhase}>
+          <Button onClick={() => props.downgradeStatus(props.proposalId)}>
+            Convert to Draft
+          </Button>
+        </Can>
+      )
     default:
       return null
   }
@@ -42,6 +53,7 @@ const NextActionButton = props => {
 
 NextActionButton.propTypes = {
   updateStatus: PropTypes.func.isRequired,
+  downgradeStatus: PropTypes.func.isRequired,
   proposalId: PropTypes.string.isRequired,
   status: PropTypes.string.isRequired
 }
@@ -96,6 +108,7 @@ const ProposalsTable = props => {
                     status={proposal.status}
                     proposalId={proposal._id}
                     updateStatus={props.updateStatus}
+                    downgradeStatus={props.downgradeStatus}
                   />
                 </TableCell>
               </TableRow>
@@ -112,6 +125,7 @@ ProposalsTable.propTypes = {
   loading: PropTypes.bool.isRequired,
   setSelectedProposal: PropTypes.func.isRequired,
   updateStatus: PropTypes.func.isRequired,
+  downgradeStatus: PropTypes.func.isRequired,
   setDialogOpen: PropTypes.func.isRequired
 }
 
@@ -162,7 +176,19 @@ const ManageProposal = props => {
 
   const updateStatus = proposalId => {
     api
-      .post(`/proposal/${proposalId}/nextStep`)
+      .post(`/proposal/${proposalId}/upgrade`)
+      .then(res => {
+        console.log(res)
+        refreshProposalList()
+      })
+      .catch(err => {
+        console.log(err)
+      })
+  }
+
+  const downgradeStatus = proposalId => {
+    api
+      .post(`/proposal/${proposalId}/downgrade`)
       .then(res => {
         console.log(res)
         refreshProposalList()
@@ -192,6 +218,7 @@ const ManageProposal = props => {
           loading={loading}
           values={supervisorProposals}
           updateStatus={updateStatus}
+          downgradeStatus={downgradeStatus}
           setSelectedProposal={setSelectedProposal}
           setDialogOpen={setDialogOpen}
         />
@@ -201,6 +228,7 @@ const ManageProposal = props => {
           loading={loading}
           values={customProposals}
           updateStatus={updateStatus}
+          downgradeStatus={downgradeStatus}
           setSelectedProposal={setSelectedProposal}
           setDialogOpen={setDialogOpen}
         />

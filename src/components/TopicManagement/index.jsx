@@ -288,7 +288,9 @@ export default function TopicManagement(props) {
                       {topicStatusToHumanFriendlyString(topic.status)}
                     </TableCell>
                     <TableCell align="right">
-                      <Link to={`/topic/${topic._id}`}>6 Submissions</Link>
+                      <Can I="takeActionPhaseFour" this={currentPhase}>
+                        <Link to={`/topic/${topic._id}`}>6 Submissions</Link>
+                      </Can>
                     </TableCell>
                   </TableRow>
                 ))
@@ -306,7 +308,11 @@ export default function TopicManagement(props) {
                     {topicStatusToHumanFriendlyString(customTopic.status)}
                   </TableCell>
                   <TableCell align="right">
-                    <Link to={`/topic/${customTopic._id}`}>6 Submissions</Link>
+                    <Can I="takeActionPhaseFour" this={currentPhase}>
+                      <Link to={`/topic/${customTopic._id}`}>
+                        6 Submissions
+                      </Link>
+                    </Can>
                   </TableCell>
                 </TableRow>
               ) : null}

@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 import PropTypes from 'prop-types'
-import { useForm, Controller } from 'react-hook-form'
+import { PhaseContext } from '../../contexts/PhaseContext'
+import { useForm } from 'react-hook-form'
 import * as _ from 'lodash'
 
 import {
@@ -10,10 +11,8 @@ import {
   IconButton,
   DialogActions,
   Divider,
-  FormControl,
   CircularProgress,
-  Select,
-  MenuItem
+  Typography
 } from '@material-ui/core'
 import { Edit, Cancel } from '@material-ui/icons'
 import { makeStyles } from '@material-ui/core/styles'
@@ -22,8 +21,6 @@ import { green } from '@material-ui/core/colors'
 import api from '../../utils/api.axios'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { editFormSchema } from '../../utils/yupSchemas/yupProposalSchema'
-
-import { proposalStatuses } from '../../utils/proposal.js'
 
 import Input from '../Input'
 import MultiLineInput from '../MultiLineInput'
@@ -74,6 +71,8 @@ const ProposalModal = props => {
   const [editMode, setEditMode] = useState(false)
   const [savingChanges, setSavingChanges] = useState(false)
 
+  const { currentPhase } = useContext(PhaseContext)
+
   const { register, handleSubmit, errors, control } = useForm({
     resolver: yupResolver(editFormSchema),
     reValidateMode: 'onChange',
@@ -96,8 +95,6 @@ const ProposalModal = props => {
       {}
     )
 
-    console.log(differences)
-
     return Object.keys(differences).length > 0 ? differences : null
   }
 
@@ -105,9 +102,9 @@ const ProposalModal = props => {
     console.log('Submitting', data)
     let differences = compareDiffs(data)
 
-    if (differences) {
-      // TODO: Send differences object to api
+    console.log('Differences', differences)
 
+    if (differences) {
       api
         .post(`/proposal/edit/${props.proposal._id}`, differences)
         .then(res => {
@@ -212,6 +209,18 @@ const ProposalModal = props => {
                 readOnly={!editMode}
                 error={!!errors.languages}
                 helperText={errors?.languages?.message}
+              />
+            </>
+          ) : null}
+
+          {props.proposal?.supervisorMessage !== '' ? (
+            <>
+              <Divider />
+              <Typography variant="h6">Supervisor Feedback</Typography>
+              <MultiLineInput
+                label="Supervisor Notes"
+                value={props.proposal.supervisorMessage}
+                readOnly
               />
             </>
           ) : null}
