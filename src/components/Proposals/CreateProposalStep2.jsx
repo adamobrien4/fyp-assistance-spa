@@ -10,62 +10,46 @@ import { useHistory } from 'react-router-dom'
 
 import { Typography, Container } from '@material-ui/core'
 
-import Input from '../Input'
-
+import MultiLineInput from '../MultiLineInput'
 import PrimaryButton from '../PrimaryButton'
 import Breadcrumb from './Breadcrumb'
-import MultiLineInput from '../MultiLineInput'
 
 const formSchema = yup.object().shape({
-  title: yup.string().required('Proposal must have a title'),
-  description: yup
-    .string()
-    .required('Proposl must have a description')
-    .min(50, 'Description must contain at least 50 characters'),
-  additionalNotes: yup.string(),
-  chooseMeMessage: yup.string()
+  environment: yup.string().required(),
+  languages: yup.string().required()
 })
+
+const defaultValues = {
+  environment: '',
+  languages: ''
+}
 
 const CreateProposal = props => {
   // CreateProposal Context
   const { setContextData, contextData } = useData()
-
-  const defaultValues = {
-    title: contextData?.title || '',
-    description: contextData?.description || '',
-    additionalNotes: contextData?.additionalNotes || '',
-    chooseMeMessage: contextData?.chooseMeMessage || ''
-  }
-
   const { register, handleSubmit, errors } = useForm({
     resolver: yupResolver(formSchema),
-    revalidate: 'onChange',
+    reValidateMode: 'onChange',
     defaultValues
   })
 
   const history = useHistory()
 
   const onSubmit = data => {
-    console.log(data)
+    // Get data from form and store in context
 
     let formData = {
       ...contextData,
-      title: data.title,
-      description: data.description,
-      additionalNotes: data.additionalNotes,
-      chooseMeMessage: data.chooseMeMessage
+      environment: data.environment,
+      languages: data.languages
     }
 
-    if (contextData?.step === 1) {
-      formData.step = 2
+    if (contextData?.step === 2) {
+      formData.step = 3
     }
 
-    setContextData(formData)
-
-    if (contextData?.isCustomProposal) {
-      return history.push('./step3')
-    }
     history.push('./finish')
+    setContextData(formData)
   }
 
   return (
@@ -74,37 +58,22 @@ const CreateProposal = props => {
       <Typography>Create Proposal - Step 2</Typography>
 
       <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
-        <Input
+        <MultiLineInput
           inputRef={register}
-          name="title"
-          label="Project Title"
-          error={!!errors.title}
-          helperText={errors?.title?.message}
+          name="environment"
+          label="Environment Required"
+          error={!!errors.environment}
+          helperText={errors?.environment?.message}
         />
         <MultiLineInput
           inputRef={register}
-          name="description"
-          label="Project Description"
-          error={!!errors.description}
-          helperText={errors?.description?.message}
+          name="languages"
+          label="Languages / Technologies Required"
+          error={!!errors.languages}
+          helperText={errors?.languages?.message}
         />
 
-        <MultiLineInput
-          inputRef={register}
-          name="chooseMeMessage"
-          label="Why choose me for this topic? (Optional)"
-          placeholder="Why should the topic supervisor choose your project for this topic?"
-          error={!!errors.chooseMeMessage}
-          helperText={errors?.chooseMeMessage?.message}
-        />
-
-        <MultiLineInput
-          inputRef={register}
-          name="additionalNotes"
-          label="Additional Notes (Optional)"
-          error={!!errors.additionalNotes}
-          helperText={errors?.additionalNotes?.message}
-        />
+        {/* TODO: Save as Draft or save and Submit to supervisor */}
 
         <PrimaryButton>Save and Continue</PrimaryButton>
       </form>

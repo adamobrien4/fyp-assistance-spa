@@ -1,4 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
+import { PhaseContext } from '../../contexts/PhaseContext'
+import { Can } from '../../Auth/Can'
+import PropTypes from 'prop-types'
 import {
   Container,
   Typography,
@@ -9,16 +12,122 @@ import {
   TableHead,
   TableBody,
   TableRow,
-  TableCell
+  TableCell,
+  Button
 } from '@material-ui/core'
-import { Link } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 
 import api from '../../utils/api.axios'
 
 import { proposalStatusToHumanFriendlyString } from '../../utils/proposal'
 
-import PrimaryButton from '../PrimaryButton'
 import ProposalModal from './ProposalModal'
+
+const NextActionButton = props => {
+  const { currentPhase } = useContext(PhaseContext)
+  switch (props.status) {
+    case 'draft':
+      return (
+        <Button onClick={() => props.updateStatus(props.proposalId)}>
+          Submit Proposal
+        </Button>
+      )
+    case 'pending_edits':
+      return (
+        <Button onClick={() => props.updateStatus(props.proposalId)}>
+          Submit Updated Proposal
+        </Button>
+      )
+    case 'submitted':
+      return (
+        <Can I="takeActionPhaseThree" this={currentPhase}>
+          <Button onClick={() => props.downgradeStatus(props.proposalId)}>
+            Convert to Draft
+          </Button>
+        </Can>
+      )
+    default:
+      return null
+  }
+}
+
+NextActionButton.propTypes = {
+  updateStatus: PropTypes.func.isRequired,
+  downgradeStatus: PropTypes.func.isRequired,
+  proposalId: PropTypes.string.isRequired,
+  status: PropTypes.string.isRequired
+}
+
+const ProposalsTable = props => {
+  const history = useHistory()
+  return (
+    <TableContainer component={Paper}>
+      <Table aria-label="simple table">
+        <TableHead>
+          <TableRow>
+            <TableCell>Title</TableCell>
+            <TableCell>For Topic</TableCell>
+            <TableCell>Status</TableCell>
+            <TableCell align="right">Actions</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {props.loading ? (
+            <TableRow key="loading_supervisor_proposals">
+              <TableCell colSpan={4}>Loading Values ...</TableCell>
+            </TableRow>
+          ) : props.values.length === 0 ? (
+            <TableRow key="no_supervisor_proposals">
+              <TableCell colSpan={4}>No Proposals to show</TableCell>
+            </TableRow>
+          ) : (
+            props.values.map(proposal => (
+              <TableRow key={proposal.id}>
+                <TableCell>
+                  <MuiLink
+                    onClick={() => {
+                      props.setSelectedProposal(proposal)
+                      props.setDialogOpen(true)
+                    }}>
+                    {proposal.title}
+                  </MuiLink>
+                </TableCell>
+                <TableCell>
+                  <MuiLink
+                    onClick={() =>
+                      history.push(`/topics/view/${proposal.topic.code}`)
+                    }>
+                    {proposal.topic.title}
+                  </MuiLink>
+                </TableCell>
+                <TableCell>
+                  {proposalStatusToHumanFriendlyString(proposal.status)}
+                </TableCell>
+                <TableCell align="right">
+                  <NextActionButton
+                    status={proposal.status}
+                    proposalId={proposal._id}
+                    updateStatus={props.updateStatus}
+                    downgradeStatus={props.downgradeStatus}
+                  />
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  )
+}
+
+ProposalsTable.propTypes = {
+  values: PropTypes.array.isRequired,
+  loading: PropTypes.bool.isRequired,
+  setSelectedProposal: PropTypes.func.isRequired,
+  updateStatus: PropTypes.func.isRequired,
+  downgradeStatus: PropTypes.func.isRequired,
+  setDialogOpen: PropTypes.func.isRequired
+}
 
 const ManageProposal = props => {
   const [supervisorProposals, setSupervisorProposals] = useState([])
@@ -65,6 +174,30 @@ const ManageProposal = props => {
     setDialogOpen(val)
   }
 
+  const updateStatus = proposalId => {
+    api
+      .post(`/proposal/${proposalId}/upgrade`)
+      .then(res => {
+        console.log(res)
+        refreshProposalList()
+      })
+      .catch(err => {
+        console.log(err)
+      })
+  }
+
+  const downgradeStatus = proposalId => {
+    api
+      .post(`/proposal/${proposalId}/downgrade`)
+      .then(res => {
+        console.log(res)
+        refreshProposalList()
+      })
+      .catch(err => {
+        console.log(err)
+      })
+  }
+
   return (
     <>
       {selectedProposal ? (
@@ -80,98 +213,25 @@ const ManageProposal = props => {
         <Typography variant="h4" align="center">
           Proposal Management
         </Typography>
-        <Typography>Supervisor Defined Proposals</Typography>
-        {/* TODO: Combine tables into seperate component */}
-        <TableContainer component={Paper}>
-          <Table aria-label="simple table">
-            <TableHead>
-              <TableRow>
-                <TableCell align="left">Title</TableCell>
-                <TableCell align="center">Status</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {loading ? (
-                <TableRow key="loading_supervisor_proposals">
-                  <TableCell colSpan={2} align="center">
-                    Loading Values ...
-                  </TableCell>
-                </TableRow>
-              ) : supervisorProposals.length === 0 ? (
-                <TableRow key="no_supervisor_proposals">
-                  <TableCell colSpan={2} align="center">
-                    No Proposals to show
-                  </TableCell>
-                </TableRow>
-              ) : (
-                supervisorProposals.map(proposal => (
-                  <TableRow key={proposal.id}>
-                    <TableCell align="left">
-                      <MuiLink
-                        onClick={() => {
-                          setSelectedProposal(proposal)
-                          setDialogOpen(true)
-                        }}>
-                        {proposal.title}
-                      </MuiLink>
-                    </TableCell>
-                    <TableCell align="center">
-                      {proposalStatusToHumanFriendlyString(proposal.status)}
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+        <Typography>Supervisor Topic Proposals</Typography>
+        <ProposalsTable
+          loading={loading}
+          values={supervisorProposals}
+          updateStatus={updateStatus}
+          downgradeStatus={downgradeStatus}
+          setSelectedProposal={setSelectedProposal}
+          setDialogOpen={setDialogOpen}
+        />
 
         <Typography>Custom Proposals</Typography>
-        <TableContainer component={Paper}>
-          <Table aria-label="simple table">
-            <TableHead>
-              <TableRow>
-                <TableCell align="left">Title</TableCell>
-                <TableCell align="center">Status</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {loading ? (
-                <TableRow key="loading_custom_proposals">
-                  <TableCell colSpan={2} align="center">
-                    Loading Values ...
-                  </TableCell>
-                </TableRow>
-              ) : customProposals.length === 0 ? (
-                <TableRow key="no_custom_proposals">
-                  <TableCell colSpan={2} align="center">
-                    No Proposals to show
-                  </TableCell>
-                </TableRow>
-              ) : (
-                customProposals.map(proposal => (
-                  <TableRow key={proposal.id}>
-                    <TableCell align="left">
-                      <MuiLink
-                        onClick={() => {
-                          setSelectedProposal(proposal)
-                          setDialogOpen(true)
-                        }}>
-                        {proposal.title}
-                      </MuiLink>
-                    </TableCell>
-                    <TableCell align="center">
-                      {proposalStatusToHumanFriendlyString(proposal.status)}
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-
-        <Link to="/proposals/add">
-          <PrimaryButton>Create new Proposal</PrimaryButton>
-        </Link>
+        <ProposalsTable
+          loading={loading}
+          values={customProposals}
+          updateStatus={updateStatus}
+          downgradeStatus={downgradeStatus}
+          setSelectedProposal={setSelectedProposal}
+          setDialogOpen={setDialogOpen}
+        />
       </Container>
     </>
   )

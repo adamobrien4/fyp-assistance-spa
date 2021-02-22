@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useContext } from 'react'
+import { PhaseContext } from '../contexts/PhaseContext'
 import {
   useMsal,
   AuthenticatedTemplate,
@@ -7,9 +8,15 @@ import {
 import { config } from '../config/msal-config'
 import { getAccessToken } from '../msalHelpers'
 
+import { differenceInSeconds } from 'date-fns'
+
 function Welcome() {
   const { instance, accounts } = useMsal()
   const account = accounts[0] || {}
+
+  const { currentPhase } = useContext(PhaseContext)
+
+  console.log(currentPhase)
 
   return (
     <div>
@@ -30,6 +37,9 @@ function Welcome() {
           Get Access Token
         </button>
         <h1>You are logged in</h1>
+
+        <h1>We are currently in Phase {currentPhase.phase}</h1>
+        <span>{differenceInSeconds(currentPhase.endDate, new Date())}</span>
       </AuthenticatedTemplate>
 
       <UnauthenticatedTemplate>

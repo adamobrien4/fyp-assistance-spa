@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import { useForm, Controller } from 'react-hook-form'
 import * as _ from 'lodash'
@@ -143,6 +143,7 @@ const TopicModal = props => {
           onClick={() => {
             if (
               editMode &&
+              // eslint-disable-next-line no-restricted-globals
               confirm(
                 'Unsaved changes will be lost!. Are you sure you want to exit?'
               ) === false
@@ -159,94 +160,150 @@ const TopicModal = props => {
       </DialogTitle>
       <DialogContent>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'stretch',
-              width: '100%'
-            }}>
-            <Input
-              ref={register}
-              name="title"
-              label="Title"
-              disabled={!editMode}
-              variant="outlined"
-              margin="none"
-              style={{ flex: '3', marginRight: '40px' }}
-              error={!!errors.title}
-              helperText={errors?.title?.message}
-            />
-            <FormControl variant="outlined" className={classes.formControl}>
-              <Controller
-                render={({ onChange, value }) => (
-                  <Select
-                    disabled={!editMode}
-                    value={value}
-                    onChange={onChange}>
-                    <MenuItem value="draft">Draft</MenuItem>
-                    <MenuItem value="suggestion">Ready for Submission</MenuItem>
-                    <MenuItem value="archived" style={{ color: 'red' }}>
-                      Archived
-                    </MenuItem>
-                    <MenuItem value="active" disabled>
-                      Active
-                    </MenuItem>
-                    <MenuItem value="assigned" disabled>
-                      Assigned
-                    </MenuItem>
-                    <MenuItem value="prev_term" disabled>
-                      From Previous Term
-                    </MenuItem>
-                  </Select>
-                )}
-                name="status"
-                control={control}
-                error={!!errors.status}
-                helperText={errors?.status?.message}
+          {props.topic.type === 'regular' ? (
+            <>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'stretch',
+                  width: '100%'
+                }}>
+                <Input
+                  ref={register}
+                  name="title"
+                  label="Title"
+                  disabled={!editMode}
+                  variant="outlined"
+                  margin="none"
+                  style={{ flex: '3', marginRight: '40px' }}
+                  error={!!errors.title}
+                  helperText={errors?.title?.message}
+                />
+                <FormControl variant="outlined" className={classes.formControl}>
+                  <Controller
+                    render={({ onChange, value }) => (
+                      <Select
+                        disabled={!editMode}
+                        value={value}
+                        onChange={onChange}>
+                        <MenuItem value="draft">Draft</MenuItem>
+                        <MenuItem value="suggestion">
+                          Ready for Submission
+                        </MenuItem>
+                        <MenuItem value="archived" style={{ color: 'red' }}>
+                          Archived
+                        </MenuItem>
+                        <MenuItem value="active" disabled>
+                          Active
+                        </MenuItem>
+                        <MenuItem value="assigned" disabled>
+                          Assigned
+                        </MenuItem>
+                        <MenuItem value="prev_term" disabled>
+                          From Previous Term
+                        </MenuItem>
+                      </Select>
+                    )}
+                    name="status"
+                    control={control}
+                    error={!!errors.status}
+                    helperText={errors?.status?.message}
+                  />
+                </FormControl>
+              </div>
+              <MultiLineInput
+                inputRef={register}
+                name="description"
+                label="Description"
+                disabled={!editMode}
+                error={!!errors.description}
+                helperText={errors?.description?.message}
               />
-            </FormControl>
-          </div>
-          <MultiLineInput
-            inputRef={register}
-            name="description"
-            label="Description"
-            disabled={!editMode}
-            error={!!errors.description}
-            helperText={errors?.description?.message}
-          />
 
-          <Controller
-            control={control}
-            name="tags"
-            render={({ onChange, value }) => (
-              <Tags
-                value={value}
-                onChange={vals => {
-                  onChange(vals)
-                }}
-                error={!!errors?.tags}
-                helperText={errors?.tags?.message}
+              <Controller
+                control={control}
+                name="tags"
+                render={({ onChange, value }) => (
+                  <Tags
+                    value={value}
+                    onChange={vals => {
+                      onChange(vals)
+                    }}
+                    error={!!errors?.tags}
+                    helperText={errors?.tags?.message}
+                    disabled={!editMode}
+                  />
+                )}
+              />
+
+              <MultiLineInput
+                inputRef={register}
+                label="Additional Notes"
+                name="additionalNotes"
+                disabled={!editMode}
+                error={!!errors.additionalNotes}
+                helperText={errors?.additionalNotes?.message}
+              />
+
+              <TargetCoursesInput
+                control={control}
+                error={!!errors.targetCourses}
+                helperText={errors?.targetCourses?.message}
                 disabled={!editMode}
               />
-            )}
-          />
+            </>
+          ) : (
+            <>
+              <Input
+                label="Title"
+                value={defaultValues.title}
+                variant="outlined"
+                margin="none"
+                inputProps={{ readOnly: true }}
+              />
+              <MultiLineInput
+                inputRef={register}
+                name="description"
+                label="Description"
+                disabled={!editMode}
+                error={!!errors.description}
+                helperText={errors?.description?.message}
+              />
 
-          <MultiLineInput
-            inputRef={register}
-            label="Additional Notes"
-            name="additionalNotes"
-            disabled={!editMode}
-            error={!!errors.additionalNotes}
-            helperText={errors?.additionalNotes?.message}
-          />
+              <Controller
+                control={control}
+                name="tags"
+                render={({ onChange, value }) => (
+                  <Tags
+                    value={value}
+                    onChange={vals => {
+                      onChange(vals)
+                    }}
+                    error={!!errors?.tags}
+                    helperText={errors?.tags?.message}
+                    disabled={!editMode}
+                  />
+                )}
+              />
 
-          <TargetCoursesInput
-            control={control}
-            error={!!errors.targetCourses}
-            helperText={errors?.targetCourses?.message}
-            disabled={!editMode}
-          />
+              <MultiLineInput
+                inputRef={register}
+                label="Additional Notes"
+                name="additionalNotes"
+                disabled={!editMode}
+                error={!!errors.additionalNotes}
+                helperText={errors?.additionalNotes?.message}
+              />
+
+              <TargetCoursesInput
+                control={control}
+                error={!!errors.targetCourses}
+                helperText={errors?.targetCourses?.message}
+                disabled={!editMode}
+              />
+            </>
+          )}
 
           {editMode && (
             <PrimaryButton disabled={savingChanges}>Save Changes</PrimaryButton>

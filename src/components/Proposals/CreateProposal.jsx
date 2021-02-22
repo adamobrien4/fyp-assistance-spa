@@ -1,243 +1,153 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
+import { useForm } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
+
+import * as yup from 'yup'
+
+import api from '../../utils/api.axios'
 
 import { useData } from '../../contexts/CreateProposalContext'
 import { useHistory, useParams } from 'react-router-dom'
 
-import { withStyles } from '@material-ui/core/styles'
-import {
-  Typography,
-  Container,
-  TableContainer,
-  Paper,
-  Table,
-  Button,
-  TableRow,
-  TableBody,
-  TableCell,
-  Divider,
-  FormControlLabel,
-  Radio,
-  RadioGroup,
-  FormLabel,
-  FormControl
-} from '@material-ui/core'
-import AddCircleIcon from '@material-ui/icons/AddCircle'
-import HistoryIcon from '@material-ui/icons/History'
-
-import api from '../../utils/api.axios'
+import { Typography, Container } from '@material-ui/core'
 
 import Input from '../Input'
+
 import PrimaryButton from '../PrimaryButton'
 import Breadcrumb from './Breadcrumb'
+import MultiLineInput from '../MultiLineInput'
+
+const formSchema = yup.object().shape({
+  title: yup.string().required('Proposal must have a title'),
+  description: yup.string().required('Proposl must have a description'),
+  additionalNotes: yup.string(),
+  chooseMeMessage: yup.string()
+})
 
 const CreateProposal = props => {
+  const [loading, setLoading] = useState(true)
+  const [validTopic, setValidTopic] = useState(false)
+
   // CreateProposal Context
   const { setContextData, contextData } = useData()
-  let { topicCode } = useParams()
+  const { topicCode } = useParams()
+
+  const defaultValues = {
+    title: contextData?.title || '',
+    description: contextData?.description || '',
+    additionalNotes: contextData?.additionalNotes || '',
+    chooseMeMessage: contextData?.chooseMeMessage || ''
+  }
+
+  const { register, handleSubmit, errors } = useForm({
+    resolver: yupResolver(formSchema),
+    revalidate: 'onChange',
+    defaultValues
+  })
 
   const history = useHistory()
-  // State hooks
-  const [isCustomProposal, setIsCustomProposal] = useState(
-    contextData?.isCustomProposal || false
-  )
-  const [topics, setTopics] = useState([])
-  const [displayedTopics, setDisplayedTopics] = useState([])
-  const [selectedTopic, setSelectedTopic] = useState(contextData?.topic)
-  // TODO: Set loading to false if topics are in data.topics
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
-    if (topicCode) {
+    if (topicCode && contextData.topic === null) {
       console.log('Loading from topicCode')
       api
         .get('/topic/' + topicCode)
         .then(res => {
           console.log(res)
-          setLoading(false)
-          setTopics([])
-          setContextData({
-            referredFromTopic: true,
-            isCustomProposal: false,
-            topic: res.data.topic,
-            topics: [],
-            step: 2
-          })
-          history.push('./step2')
-        })
-        .catch(err => {
-          console.log(err)
-        })
-      return
-    }
 
-    if (contextData?.topics?.length > 0) {
-      console.log('Loading topics from context')
-      console.log(contextData.topics)
-      setTopics(contextData.topics)
-      setLoading(false)
-    } else {
-      api
-        .get('/topic')
-        .then(res => {
-          console.log(res.data.topics)
-          setContextData({ ...contextData, topics: res.data.topics })
-          setTopics(res.data.topics)
+          if (res.data.topic) {
+            setContextData({
+              isCustomProposal: res.data.topic.type === 'studentTopic',
+              topic: res.data.topic,
+              step: 1
+            })
+
+            setValidTopic(true)
+          }
         })
         .catch(err => {
           console.log(err)
-          // TODO: Only allow student defined topics to be created as no topics could be retrieved
         })
         .finally(() => {
           setLoading(false)
         })
+    } else {
+      setLoading(false)
     }
   }, [])
 
-  const handleProposalTypeChange = event => {
-    console.log(event.target.value)
-    let isStudentDefined = event.target.value === 'student_defined'
-    setIsCustomProposal(isStudentDefined)
-    setSelectedTopic(isStudentDefined ? { title: 'Custom Topic' } : null)
-  }
-
-  const handleSelect = topic => {
-    setSelectedTopic(topic)
-  }
-
-  const handleInput = e => {
-    setSearchTerm(e.target.value)
-
-    let search = e.target.value.toLowerCase()
-
-    if (search === '') {
-      return setDisplayedTopics([])
-    }
-
-    let filteredTopics = [...topics]
-    filteredTopics = filteredTopics.filter(topic =>
-      topic?.code?.toLowerCase().includes(search)
-    )
-
-    setDisplayedTopics(filteredTopics)
-  }
-
-  const handleNextStep = () => {
-    // Get data from form and store in context
+  const onSubmit = data => {
+    console.log(data)
 
     let formData = {
       ...contextData,
-      isCustomProposal: isCustomProposal
+      title: data.title,
+      description: data.description,
+      additionalNotes: data.additionalNotes,
+      chooseMeMessage: data.chooseMeMessage
     }
 
-    if (contextData?.step === 0) {
-      formData.step = 1
-    }
-
-    if (isCustomProposal) {
-      // Custom Defined
-    } else {
-      // Supervisor Defined
-      formData.topic = selectedTopic
+    if (contextData?.step === 1) {
+      formData.step = 2
     }
 
     setContextData(formData)
-    history.push('/proposals/add/step2')
+
+    if (contextData?.isCustomProposal) {
+      return history.push('./step2')
+    }
+    history.push('./finish')
   }
 
   if (loading) {
-    return <Typography>Loading Topics...</Typography>
+    return <h1>Loading...</h1>
+  }
+
+  if (!validTopic) {
+    return <h1>Cannot create proposal without a selected topic</h1>
   }
 
   return (
     <Container component="main" maxWidth="md">
-      <Breadcrumb isCustomProposal={isCustomProposal} />
-      <Typography variant="h4" component="h1" align="center">
-        Create Proposal
-      </Typography>
-      <FormControl component="fieldset">
-        <FormLabel component="legend">Proposal Type</FormLabel>
-        <RadioGroup
-          aria-label="proposal_type"
-          name="gender1"
-          value={isCustomProposal ? 'student_defined' : 'supervisor_defined'}
-          onChange={handleProposalTypeChange}>
-          <FormControlLabel
-            value="student_defined"
-            control={<Radio />}
-            label="Student Defined"
-          />
-          <FormControlLabel
-            value="supervisor_defined"
-            control={<Radio />}
-            label="Supervisor Defined"
-          />
-        </RadioGroup>
-      </FormControl>
+      <Breadcrumb />
+      <Typography>Create Proposal - Step 1</Typography>
 
-      {isCustomProposal ? null : props?.selectedTopic ? (
-        <Typography>
-          User has selected a topic from a previous page and was redirectedd
-          here
-        </Typography>
-      ) : (
-        <div>
-          <br />
-          <Divider />
-          <Input
-            placeholder="E.g AOB-01, MH-01, ..."
-            label="Search Topic Code"
-            value={searchTerm}
-            onChange={handleInput}
-            disabled={contextData.topics.length === 0}
-          />
+      <form autoComplete="off" onSubmit={handleSubmit(onSubmit)}>
+        <Input
+          inputRef={register}
+          name="title"
+          label="Project Title"
+          error={!!errors.title}
+          helperText={errors?.title?.message}
+        />
+        <MultiLineInput
+          inputRef={register}
+          name="description"
+          label="Project Description"
+          error={!!errors.description}
+          helperText={errors?.description?.message}
+        />
 
-          <TableContainer component={Paper}>
-            <Table aria-label="simple table">
-              <TableBody>
-                {displayedTopics.map(topic => (
-                  <TableRow
-                    key={topic._id}
-                    selected={topic._id === selectedTopic?._id}>
-                    <TableCell component="th" scope="row">
-                      <Button
-                        startIcon={<AddCircleIcon />}
-                        onClick={() => handleSelect(topic)}>
-                        Select
-                      </Button>
-                    </TableCell>
-                    <TableCell align="right">{topic?.code}</TableCell>
-                    <TableCell align="right">{topic.title}</TableCell>
-                    <TableCell align="right">
-                      {topic?.supervisor?.displayName}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+        <MultiLineInput
+          inputRef={register}
+          name="chooseMeMessage"
+          label="Why choose me for this topic? (Optional)"
+          placeholder="Why should the topic supervisor choose your project for this topic?"
+          error={!!errors.chooseMeMessage}
+          helperText={errors?.chooseMeMessage?.message}
+        />
 
-          <div>
-            {selectedTopic ? (
-              <Typography>Selected Topic: {selectedTopic.title}</Typography>
-            ) : topics.length === 0 ? (
-              <Typography>
-                Could not retrieve any Topics, please try again later or create
-                a student defined proposal
-              </Typography>
-            ) : (
-              <Typography>
-                Please search and select a topic to continue
-              </Typography>
-            )}
-          </div>
-        </div>
-      )}
+        <MultiLineInput
+          inputRef={register}
+          name="additionalNotes"
+          label="Additional Notes (Optional)"
+          error={!!errors.additionalNotes}
+          helperText={errors?.additionalNotes?.message}
+        />
 
-      <PrimaryButton disabled={!selectedTopic} onClick={handleNextStep}>
-        Save and Continue
-      </PrimaryButton>
+        <PrimaryButton>Save and Continue</PrimaryButton>
+      </form>
     </Container>
   )
 }

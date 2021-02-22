@@ -5,7 +5,9 @@ import { useData } from '../../contexts/CreateProposalContext'
 import { useHistory } from 'react-router-dom'
 
 import { withStyles } from '@material-ui/core/styles'
-import { Typography, Container } from '@material-ui/core'
+import { Typography, Container, Tooltip } from '@material-ui/core'
+
+import HelpIcon from '@material-ui/icons/Help'
 
 import api from '../../utils/api.axios'
 
@@ -18,7 +20,7 @@ const CreateProposal = props => {
 
   const history = useHistory()
 
-  const handleNextStep = () => {
+  const handleNextStep = submitProposal => {
     // Get data from form and store in context
 
     let formData = {
@@ -26,7 +28,9 @@ const CreateProposal = props => {
       title: contextData.title,
       description: contextData.description,
       additionalNotes: contextData.additionalNotes,
-      chooseMessage: contextData.chooseMeMessage
+      chooseMessage: contextData.chooseMeMessage,
+      topic: contextData.topic._id,
+      saveAsDraft: !submitProposal
     }
 
     if (contextData.isCustomProposal) {
@@ -35,12 +39,6 @@ const CreateProposal = props => {
         ...prevData,
         environment: contextData.environment,
         languages: contextData.languages
-      }
-    } else {
-      let prevData = { ...formData }
-      formData = {
-        ...prevData,
-        topic: contextData.topic._id
       }
     }
 
@@ -53,8 +51,22 @@ const CreateProposal = props => {
         setContextData({})
         history.push('/proposals')
       })
-      .catch(err => {
-        console.log(err)
+      .catch(error => {
+        if (error.response) {
+          switch (error.response.data) {
+            case 'existing_topic_proposal':
+              alert('Cannot create multiple proposals for a single topic')
+              break
+            default:
+              break
+          }
+        } else if (error.request) {
+          // The request was made but no response was received
+          console.log(error.request)
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          console.log('Error', error.message)
+        }
       })
   }
 
@@ -88,7 +100,24 @@ const CreateProposal = props => {
         </>
       ) : null}
 
-      <PrimaryButton onClick={handleNextStep}>Submit Proposal</PrimaryButton>
+      <PrimaryButton
+        onClick={() => handleNextStep(true)}
+        endIcon={
+          <Tooltip title="Not editable after submission">
+            <HelpIcon />
+          </Tooltip>
+        }>
+        Submit Proposal to Supervisor
+      </PrimaryButton>
+      <PrimaryButton
+        onClick={() => handleNextStep(false)}
+        endIcon={
+          <Tooltip title="Editable until submitted">
+            <HelpIcon />
+          </Tooltip>
+        }>
+        Save Proposal as Draft
+      </PrimaryButton>
     </Container>
   )
 }

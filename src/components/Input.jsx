@@ -9,6 +9,7 @@ const Input = forwardRef((props, ref) => {
       margin="normal"
       inputRef={ref}
       fullWidth
+      inputProps={{ readOnly: props.readOnly === true }}
       {...props}
     />
   )

@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 import PropTypes from 'prop-types'
-import { useForm, Controller } from 'react-hook-form'
+import { PhaseContext } from '../../contexts/PhaseContext'
+import { useForm } from 'react-hook-form'
 import * as _ from 'lodash'
 
 import {
@@ -10,10 +11,8 @@ import {
   IconButton,
   DialogActions,
   Divider,
-  FormControl,
   CircularProgress,
-  Select,
-  MenuItem
+  Typography
 } from '@material-ui/core'
 import { Edit, Cancel } from '@material-ui/icons'
 import { makeStyles } from '@material-ui/core/styles'
@@ -22,8 +21,6 @@ import { green } from '@material-ui/core/colors'
 import api from '../../utils/api.axios'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { editFormSchema } from '../../utils/yupSchemas/yupProposalSchema'
-
-import { proposalStatuses } from '../../utils/proposal.js'
 
 import Input from '../Input'
 import MultiLineInput from '../MultiLineInput'
@@ -54,7 +51,7 @@ const ProposalModal = props => {
   const classes = useStyles()
 
   let defaultValues = (({
-    status,
+    title,
     description,
     chooseMessage,
     additionalNotes,
@@ -62,7 +59,7 @@ const ProposalModal = props => {
     languages,
     type
   }) => ({
-    status,
+    title,
     description,
     chooseMessage: chooseMessage || '',
     additionalNotes: additionalNotes || '',
@@ -73,6 +70,8 @@ const ProposalModal = props => {
 
   const [editMode, setEditMode] = useState(false)
   const [savingChanges, setSavingChanges] = useState(false)
+
+  const { currentPhase } = useContext(PhaseContext)
 
   const { register, handleSubmit, errors, control } = useForm({
     resolver: yupResolver(editFormSchema),
@@ -96,8 +95,6 @@ const ProposalModal = props => {
       {}
     )
 
-    console.log(differences)
-
     return Object.keys(differences).length > 0 ? differences : null
   }
 
@@ -105,9 +102,9 @@ const ProposalModal = props => {
     console.log('Submitting', data)
     let differences = compareDiffs(data)
 
-    if (differences) {
-      // TODO: Send differences object to api
+    console.log('Differences', differences)
 
+    if (differences) {
       api
         .post(`/proposal/edit/${props.proposal._id}`, differences)
         .then(res => {
@@ -155,45 +152,22 @@ const ProposalModal = props => {
         <Divider />
       </DialogTitle>
       <DialogContent>
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'stretch',
-            width: '100%'
-          }}>
-          <Input
-            value={props.proposal.title}
-            label="Title"
-            disabled
-            variant="outlined"
-            margin="none"
-            style={{ flex: '3', marginRight: '40px' }}
-          />
-          <FormControl variant="outlined" className={classes.formControl}>
-            <Controller
-              render={({ onChange, value }) => (
-                <Select disabled={!editMode} value={value} onChange={onChange}>
-                  {Object.keys(proposalStatuses).map(status => (
-                    <MenuItem key={status} value={status}>
-                      {proposalStatuses[status]}
-                    </MenuItem>
-                  ))}
-                </Select>
-              )}
-              name="status"
-              control={control}
-              error={!!errors.status}
-              helperText={errors?.status?.message}
-            />
-          </FormControl>
-        </div>
+        <Input
+          inputRef={register}
+          name="title"
+          label="Title"
+          variant="outlined"
+          margin="none"
+          readOnly={!editMode}
+          error={!!errors.description}
+          helperText={errors?.description?.message}
+        />
         <form onSubmit={handleSubmit(onSubmit)}>
           <MultiLineInput
             inputRef={register}
             name="description"
             label="Description"
-            disabled={!editMode}
+            readOnly={!editMode}
             error={!!errors.description}
             helperText={errors?.description?.message}
           />
@@ -201,8 +175,9 @@ const ProposalModal = props => {
           <MultiLineInput
             inputRef={register}
             label="Choose Me Message"
+            placeholder="<No Choose Message Supplied>"
             name="chooseMessage"
-            disabled={!editMode}
+            readOnly={!editMode}
             error={!!errors.chooseMessage}
             helperText={errors?.chooseMessage?.message}
           />
@@ -210,8 +185,9 @@ const ProposalModal = props => {
           <MultiLineInput
             inputRef={register}
             label="Additional Notes"
+            placeholder="<No Additional Notes Supplied>"
             name="additionalNotes"
-            disabled={!editMode}
+            readOnly={!editMode}
             error={!!errors.additionalNotes}
             helperText={errors?.additionalNotes?.message}
           />
@@ -222,7 +198,7 @@ const ProposalModal = props => {
                 inputRef={register}
                 label="Environment"
                 name="environment"
-                disabled={!editMode}
+                readOnly={!editMode}
                 error={!!errors.environment}
                 helperText={errors?.environment?.message}
               />
@@ -230,9 +206,21 @@ const ProposalModal = props => {
                 inputRef={register}
                 label="Languages"
                 name="languages"
-                disabled={!editMode}
+                readOnly={!editMode}
                 error={!!errors.languages}
                 helperText={errors?.languages?.message}
+              />
+            </>
+          ) : null}
+
+          {props.proposal?.supervisorMessage !== '' ? (
+            <>
+              <Divider />
+              <Typography variant="h6">Supervisor Feedback</Typography>
+              <MultiLineInput
+                label="Supervisor Notes"
+                value={props.proposal.supervisorMessage}
+                readOnly
               />
             </>
           ) : null}

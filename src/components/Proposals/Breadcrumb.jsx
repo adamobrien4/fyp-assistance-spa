@@ -6,18 +6,12 @@ const Breadcrumb = props => {
   const { contextData } = useData()
   return (
     <div>
-      <Link to="/proposals/add" disabled={contextData?.referredFromTopic}>
-        Step 1
-      </Link>
-      ->
-      <Link to="/proposals/add/step2" disabled={contextData?.step < 1}>
-        Step 2
-      </Link>
+      <Link to="/proposals/add/">Step 1</Link>
       {contextData?.isCustomProposal ? (
         <>
           ->
-          <Link to="/proposals/add/step3" disabled={contextData?.step < 2}>
-            Step 3
+          <Link to="/proposals/add/step2" disabled={contextData?.step < 2}>
+            Step 2
           </Link>
         </>
       ) : (

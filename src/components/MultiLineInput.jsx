@@ -12,6 +12,7 @@ const MultiLineInput = forwardRef((props, ref) => {
       multiline
       rows={3}
       rowsMax={6}
+      inputProps={{ readOnly: props.readOnly === true }}
       {...props}
     />
   )

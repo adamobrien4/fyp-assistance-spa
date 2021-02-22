@@ -6,9 +6,8 @@ const CreateProposalContext = createContext()
 export const CreateProposalContextProvider = ({ children }) => {
   const [contextData, setCntxData] = useState({
     step: 0,
-    referredFromTopic: false,
     isCustomProposal: false,
-    topics: []
+    topic: null
   })
 
   const setContextData = values => {

@@ -1,62 +1,41 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { useForm, Controller } from 'react-hook-form'
 import {
   Container,
-  InputBase,
   Paper,
-  Divider,
-  IconButton,
   Typography,
-  Card,
-  CardContent,
-  Collapse,
-  Checkbox,
-  FormControlLabel,
   Box,
   TableContainer,
   Table,
+  TableHead,
   TableBody,
   TableCell,
   TableRow,
   Link as MuiLink,
-  Avatar
+  Select,
+  MenuItem,
+  FormControl
 } from '@material-ui/core'
-import SearchIcon from '@material-ui/icons/Search'
-import { makeStyles } from '@material-ui/styles'
 
 import api from '../utils/api.axios'
 import Tags from './Tags'
 import PrimaryButton from './PrimaryButton'
 
-const useStyles = makeStyles(theme => ({
-  root: {
-    padding: '2px 0px',
-    display: 'flex',
-    alignItems: 'center',
-    width: '100%'
-  },
-  input: {
-    marginLeft: theme.spacing(1),
-    flex: 1
-  },
-  iconButton: {
-    padding: 10
-  },
-  divider: {
-    height: 28,
-    margin: 4
-  }
-}))
+const defaultValues = {
+  tags: [],
+  supervisor: 'unspecified'
+}
 
 export default function TopicList(props) {
-  const classes = useStyles()
-
-  const [tags, setTags] = useState([])
-  const [error, setError] = useState('')
   const [topics, setTopics] = useState([])
   const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [advancedSearch, setAdvancedSearch] = useState(false)
+  const [supervisors, setSupervisors] = useState([])
+
+  const { handleSubmit, errors, control } = useForm({
+    reValidateMode: 'onChange',
+    defaultValues
+  })
 
   useEffect(() => {
     api
@@ -69,30 +48,49 @@ export default function TopicList(props) {
       })
       .catch(err => {
         console.log(err)
-        setError(err)
       })
       .finally(() => {
         setLoading(false)
       })
+
+    api
+      .get('/supervisor/list')
+      .then(res => {
+        console.log(res)
+
+        setSupervisors(res.data.supervisors)
+      })
+      .catch(err => {
+        console.log(err)
+      })
+      .finally(() => {})
   }, [])
 
-  const handleSearch = () => {
-    console.log('Searching for tags ', tags)
+  const handleSearch = data => {
+    console.log(data)
 
-    if (tags.length) {
-      api
-        .post('/topic/search', { tags: [...tags] })
-        .then(res => {
-          console.log(res)
+    let query = { tags: null, supervisor: null }
 
-          setTopics(res.data.topics)
-        })
-        .catch(err => {
-          console.log(err)
-        })
-    } else {
-      // No tags selected
+    if (data.tags.length > 0) {
+      query.tags = [...data.tags]
     }
+
+    if (data.supervisor !== 'unspecified') {
+      query.supervisor = data.supervisor
+    }
+
+    console.log('Querying DB for', query)
+
+    api
+      .post('/topic/search', query)
+      .then(res => {
+        console.log(res)
+
+        setTopics(res.data.topics)
+      })
+      .catch(err => {
+        console.log(err)
+      })
   }
 
   return (
@@ -101,28 +99,54 @@ export default function TopicList(props) {
         Topic List
       </Typography>
 
-      <Tags value={tags} onChange={setTags} style={{ margin: '20px 0' }} />
+      <form onSubmit={handleSubmit(handleSearch)}>
+        <Controller
+          control={control}
+          name="tags"
+          render={({ onChange, value }) => (
+            <Tags
+              value={value}
+              onChange={vals => {
+                onChange(vals)
+              }}
+              error={!!errors?.tags}
+              helperText={errors?.tags?.message}
+            />
+          )}
+        />
 
-      <FormControlLabel
-        control={
-          <Checkbox
-            defaultChecked={advancedSearch}
-            color="primary"
-            name="advancedSearch"
-            onChange={e => {
-              setAdvancedSearch(e.target.checked)
-            }}
+        <FormControl variant="outlined">
+          <Controller
+            render={({ onChange, value }) => (
+              <Select value={value} onChange={onChange}>
+                <MenuItem value="unspecified" key="unspecified" selected>
+                  None
+                </MenuItem>
+                {supervisors.map(supervisor => (
+                  <MenuItem value={supervisor._id} key={supervisor._id}>
+                    {supervisor.displayName}
+                  </MenuItem>
+                ))}
+              </Select>
+            )}
+            name="supervisor"
+            control={control}
           />
-        }
-        label="Advanced Search"
-      />
-      {/* <Collapse in={advancedSearch}>
-            <Typography>Advanced Search Settings</Typography>
-          </Collapse> */}
-      <PrimaryButton onClick={handleSearch}>Search</PrimaryButton>
+        </FormControl>
+
+        <PrimaryButton>Search</PrimaryButton>
+      </form>
 
       <TableContainer component={Paper} style={{ margin: '20px 0' }}>
         <Table style={{ minWidth: '650px' }} size="medium">
+          <TableHead>
+            <TableRow>
+              <TableCell colSpan={5}>
+                {`Found ${topics.length} matching topics`}
+              </TableCell>
+            </TableRow>
+          </TableHead>
+
           <TableBody>
             {topics.length === 0 ? (
               <TableRow>
