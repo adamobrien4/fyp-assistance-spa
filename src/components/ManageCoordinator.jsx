@@ -1,4 +1,10 @@
 import React, { useState, useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
+import {
+  formSchema,
+  defaultValues
+} from '../utils/yupSchemas/ManageCoordinator.js'
 
 import {
   Container,
@@ -21,42 +27,34 @@ import {
 } from '@material-ui/core'
 import { ArrowForward, Delete } from '@material-ui/icons'
 
-import API from '../utils/api.axios'
+import api from '../utils/api.axios'
+
+import PrimaryButton from './PrimaryButton'
+import Input from './Input'
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />
 })
 
 export default function ManageCoordinator(props) {
-  const [currentEmail, setCurrentEmail] = useState('')
+  const [selectedCoordinator, setSelectedCoordinator] = useState()
   const [assignedCoordinators, setAssignedCoordinators] = useState([])
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [selectedCoordinator, setSelectedCoordinator] = useState({
-    email: 'Unselected',
-    id: '0',
-    displayName: 'Unnamed'
-  })
   const [refreshing, setRefreshing] = useState(true)
+
+  const { register, handleSubmit, setError, errors } = useForm({
+    resolver: yupResolver(formSchema),
+    reValidateMode: 'onChange',
+    defaultValues
+  })
 
   useEffect(() => {
     refreshAssignedCoordinators()
   }, [])
 
-  const onEmailChange = e => {
-    setCurrentEmail(e.target.value.trim())
-  }
-
-  const handleAssignCoordinator = () => {
-    if (currentEmail.length === 0) {
-      return
-    }
-    console.log('Handling assign of coordinator: ' + currentEmail)
-
-    const body = {
-      coordinator: currentEmail
-    }
-
-    API.post('/coordinator/assign', body)
+  const handleAssignCoordinator = data => {
+    api
+      .post('/coordinator/assign', data)
       .then(res => {
         if (res.data) {
           switch (res.data) {
@@ -68,7 +66,23 @@ export default function ManageCoordinator(props) {
               )
               refreshAssignedCoordinators()
               break
+            case 'exists':
+              setError('coordinator', {
+                type: 'manual',
+                message: 'User is already a Coordinator'
+              })
+              break
+            case 'not_found':
+              setError('coordinator', {
+                type: 'manual',
+                message: 'Coordinator could not be found'
+              })
+              break
             default:
+              setError('coordinator', {
+                type: 'manual',
+                message: 'An unknown error occurred, please try again'
+              })
               console.log('Coordinator could not be assigned')
               console.log(res.data)
           }
@@ -82,25 +96,20 @@ export default function ManageCoordinator(props) {
   const refreshAssignedCoordinators = () => {
     setRefreshing(true)
 
-    API.get('/coordinator')
+    api
+      .get('/coordinator')
       .then(res => {
         if (!res.data?.coordinators) {
-          setRefreshing(false)
           return setAssignedCoordinators([])
         }
 
-        let coordinatorList = res.data.coordinators.map(coordinator => {
-          return {
-            id: coordinator._id,
-            displayName: coordinator.displayName,
-            email: coordinator.email
-          }
-        })
-        setAssignedCoordinators(coordinatorList)
-        setRefreshing(false)
+        setAssignedCoordinators(res.data.coordinators)
       })
       .catch(err => {
         console.log(err)
+        setRefreshing(false)
+      })
+      .finally(() => {
         setRefreshing(false)
       })
   }
@@ -110,22 +119,16 @@ export default function ManageCoordinator(props) {
     setDialogOpen(true)
   }
 
-  const handleRemove = resp => {
-    setDialogOpen(false)
-    if (resp) {
-      console.log('Deleting user: ' + selectedCoordinator.displayName)
-      let body = {
-        coordinatorId: selectedCoordinator.id
-      }
-      API.post('/coordinator/remove', body)
+  const handleRemove = deleteCoordinator => {
+    if (deleteCoordinator) {
+      api
+        .post('/coordinator/remove', { coordinatorId: selectedCoordinator._id })
         .then(resp => {
           console.log(resp)
           refreshAssignedCoordinators()
         })
         .then(err => console.log(err))
-      return
     }
-    console.log('Not deleting user')
   }
 
   return (
@@ -136,17 +139,17 @@ export default function ManageCoordinator(props) {
         aria-labelledby="alert-dialog-slide-title"
         aria-describedby="alert-dialog-slide-description">
         <DialogTitle id="alert-dialog-slide-title">
-          {"Use Google's location service?"}
+          Remove Coordinator?
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-slide-description">
             Are you sure you want to remove
             <br />
             <span style={{ fontWeight: 'bold' }}>
-              {selectedCoordinator.displayName}
+              {selectedCoordinator?.displayName}
             </span>
             <br />
-            as a Coordinator?
+            Coordinator role?
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -167,28 +170,24 @@ export default function ManageCoordinator(props) {
       </Dialog>
       <Typography variant="h6">Manage Coordinators</Typography>
       <br />
-
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'row',
-          justifyContent: 'center'
-        }}>
-        <TextField
+      <form onSubmit={handleSubmit(handleAssignCoordinator)}>
+        <Input
+          inputRef={register}
           label="Coordinator Email"
+          placeholder="e.g. John.Keane@ul.ie"
           variant="outlined"
-          style={{ width: '50%' }}
-          value={currentEmail}
-          onChange={onEmailChange}
+          name="coordinator"
+          style={{ margin: 0 }}
+          error={!!errors.coordinator}
+          helperText={errors?.coordinator?.message}
         />
-        <Button
+        <PrimaryButton
           variant="contained"
           color="primary"
-          endIcon={<ArrowForward />}
-          onClick={handleAssignCoordinator}>
+          endIcon={<ArrowForward />}>
           Assign New Coordinator
-        </Button>
-      </div>
+        </PrimaryButton>
+      </form>
 
       <Typography variant="h6">Existing Coordinators</Typography>
       <br />

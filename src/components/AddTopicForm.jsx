@@ -88,6 +88,7 @@ const AddTopicForm = props => {
 
         <TargetCoursesInput
           control={control}
+          label="Target Courses (Optional)"
           error={!!errors.targetCourses}
           helperText={errors?.targetCourses?.message}
         />

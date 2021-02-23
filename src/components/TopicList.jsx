@@ -24,7 +24,8 @@ import PrimaryButton from './PrimaryButton'
 
 const defaultValues = {
   tags: [],
-  supervisor: 'unspecified'
+  supervisor: 'unspecified',
+  topicType: 'all'
 }
 
 export default function TopicList(props) {
@@ -39,7 +40,7 @@ export default function TopicList(props) {
 
   useEffect(() => {
     api
-      .get('/topic')
+      .post('/topic/search')
       .then(res => {
         console.log(res)
         if (res.data?.topics) {
@@ -69,7 +70,7 @@ export default function TopicList(props) {
   const handleSearch = data => {
     console.log(data)
 
-    let query = { tags: null, supervisor: null }
+    let query = { tags: null, supervisor: null, topicType: null }
 
     if (data.tags.length > 0) {
       query.tags = [...data.tags]
@@ -78,6 +79,8 @@ export default function TopicList(props) {
     if (data.supervisor !== 'unspecified') {
       query.supervisor = data.supervisor
     }
+
+    query.topicType = data.topicType
 
     console.log('Querying DB for', query)
 
@@ -94,7 +97,7 @@ export default function TopicList(props) {
   }
 
   return (
-    <Container maxWidth="md">
+    <Container maxWidth="lg">
       <Typography variant="h3" component="h1">
         Topic List
       </Typography>
@@ -116,6 +119,7 @@ export default function TopicList(props) {
         />
 
         <FormControl variant="outlined">
+          <label>Supervisor</label>
           <Controller
             render={({ onChange, value }) => (
               <Select value={value} onChange={onChange}>
@@ -130,6 +134,27 @@ export default function TopicList(props) {
               </Select>
             )}
             name="supervisor"
+            control={control}
+          />
+        </FormControl>
+
+        <FormControl variant="outlined">
+          <label>Topic Type</label>
+          <Controller
+            render={({ onChange, value }) => (
+              <Select value={value} onChange={onChange}>
+                <MenuItem value="all" key="all" selected>
+                  All
+                </MenuItem>
+                <MenuItem value="regular" key="regular">
+                  Supervisor Defined
+                </MenuItem>
+                <MenuItem value="studentTopic" key="studentTopic">
+                  Student Defined
+                </MenuItem>
+              </Select>
+            )}
+            name="topicType"
             control={control}
           />
         </FormControl>
@@ -209,7 +234,7 @@ export default function TopicList(props) {
                     </div>
                   </TableCell>
                   <TableCell align="right">
-                    7 Students have shown interest
+                    {topic.proposalCount} Students have shown interest
                   </TableCell>
                 </TableRow>
               ))

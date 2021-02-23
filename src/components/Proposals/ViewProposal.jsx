@@ -58,6 +58,10 @@ const ViewProposal = props => {
   const { id } = useParams()
 
   useEffect(() => {
+    refreshProposal()
+  }, [])
+
+  const refreshProposal = () => {
     api
       .get(`/proposal/${id}`)
       .then(res => {
@@ -71,7 +75,7 @@ const ViewProposal = props => {
       .finally(() => {
         setLoading(false)
       })
-  }, [])
+  }
 
   const onSubmit = data => {
     setSubmittingResponse(true)
@@ -79,6 +83,7 @@ const ViewProposal = props => {
       .post(`/proposal/respond/${proposal._id}`, data)
       .then(res => {
         console.log(res)
+        refreshProposal()
       })
       .catch(err => {
         console.log(err)
@@ -96,23 +101,37 @@ const ViewProposal = props => {
     <Container maxWidth="lg">
       <BackButton />
       <Typography>Proposal Details</Typography>
-      <Input value={proposal.title} label="Title" variant="outlined" />
-      <MultiLineInput label="Description" value={proposal.description} />
+      <Input value={proposal.title} label="Title" variant="outlined" readOnly />
+      <MultiLineInput
+        label="Description"
+        value={proposal.description}
+        readOnly
+      />
 
       <MultiLineInput
         label="Choose Me Message"
         value={proposal.chooseMessage}
+        readOnly
       />
 
       <MultiLineInput
         label="Additional Notes"
         value={proposal.additionalNotes}
+        readOnly
       />
 
       {proposal.type === 'studentDefined' ? (
         <>
-          <MultiLineInput label="Environment" value={proposal.environment} />
-          <MultiLineInput label="Languages" value={proposal.languages} />
+          <MultiLineInput
+            label="Environment"
+            value={proposal.environment}
+            readOnly
+          />
+          <MultiLineInput
+            label="Languages"
+            value={proposal.languages}
+            readOnly
+          />
         </>
       ) : null}
 

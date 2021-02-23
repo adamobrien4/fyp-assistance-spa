@@ -1,10 +1,10 @@
 const proposalStatuses = {
   draft: 'Draft',
-  submitted: 'Submitted',
+  submitted: 'Pending Supervisor Feedback',
   under_review: 'Under Review',
   pending_edits: 'Edits Required',
   accepted: 'Accepted',
-  declined: 'Declined'
+  rejected: 'Rejected'
 }
 const proposalStatusToHumanFriendlyString = status => proposalStatuses[status]
 

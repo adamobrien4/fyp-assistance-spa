@@ -329,6 +329,23 @@ export default function TopicManagement(props) {
             Submit Suggestions
           </PrimaryButton>
         </Can>
+
+        <Typography>Editing a Topic</Typography>
+        <Typography variant="paragraph">
+          To edit a topic click on the `Topic Title` link on the table above. A
+          popup should be displayed containing all the Topic information. Click
+          the `Edit (Pencil)` icon in the top left to begin editing. Make any
+          necessary changes to the topic, then click the `Save Changes` button
+          at the bottom of the popup. To close the popup click the `Exit (X)`
+          icon in the top left.
+        </Typography>
+        <Typography>Viewing Topic proposals</Typography>
+        <Typography variant="paragraph">
+          *Note: Viewing topic proposals will only become available during phase
+          4. <Link to="/help/phases">What are Phases?</Link>
+          To view all proposals students have sent to your topics, click on the
+          link below the `Proposals` on the above table.
+        </Typography>
       </Container>
     </>
   )

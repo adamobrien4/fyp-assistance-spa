@@ -12,7 +12,13 @@ const courses = [
   'Lm053 - Course 3'
 ]
 
-const TargetCoursesInput = ({ control, error, helperText, disabled }) => {
+const TargetCoursesInput = ({
+  control,
+  error,
+  helperText,
+  disabled,
+  label
+}) => {
   return (
     <Controller
       render={({ onChange, value }) => (
@@ -28,7 +34,7 @@ const TargetCoursesInput = ({ control, error, helperText, disabled }) => {
             <Input
               {...params}
               variant="outlined"
-              label="Choose a Course"
+              label={label || 'Choose a Course'}
               placeholder="Course"
               error={error}
               helperText={helperText}

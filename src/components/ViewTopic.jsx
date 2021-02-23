@@ -95,11 +95,19 @@ const ViewTopic = props => {
       </div>
 
       <Can I="create" a="Proposal">
-        <Link to={`/proposals/add/${topic.code}`}>
-          <PrimaryButton>
-            Look interesting? Draft Proposal for this Topic
-          </PrimaryButton>
-        </Link>
+        {topic?.hasProposal ? (
+          <Typography style={{ fontSize: '25px' }} align="center">
+            <Link to="/proposals">
+              You already created a Proposal for this topic
+            </Link>
+          </Typography>
+        ) : (
+          <Link to={`/proposals/add/${topic.code}`}>
+            <PrimaryButton>
+              Look interesting? Draft Proposal for this Topic
+            </PrimaryButton>
+          </Link>
+        )}
       </Can>
     </Container>
   )

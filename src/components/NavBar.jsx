@@ -2,12 +2,9 @@ import React, { useContext } from 'react'
 import { Button } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 import { Link } from 'react-router-dom'
-import { AuthenticatedTemplate } from '@azure/msal-react'
 import { Can } from '../Auth/Can'
-import generateAbilitiesFor from '../Auth/ability'
 
 import { PhaseContext } from '../contexts/PhaseContext'
-import { AuthContext } from '../contexts/AuthContext'
 
 const useStyles = makeStyles(theme => ({
   navDisplayFlex: {
@@ -27,14 +24,12 @@ const useStyles = makeStyles(theme => ({
 
 export default function NavBar(props) {
   const styles = useStyles()
-
-  const { user } = useContext(AuthContext)
   const { currentPhase } = useContext(PhaseContext)
 
-  const ability = generateAbilitiesFor(user)
+  console.log(currentPhase)
 
   return (
-    <AuthenticatedTemplate>
+    <>
       <Link to="/" className={styles.linkButton}>
         <Button className={styles.linkText} color="inherit">
           Home
@@ -80,28 +75,16 @@ export default function NavBar(props) {
             <Button className={styles.linkText}>Manage Supervisors</Button>
           </Link>
         </Can>
-        <Can I="manage" a="Phase">
-          <Link to="/phase/manage" className={styles.linkButton}>
-            <Button className={styles.linkText}>Manage Phases</Button>
-          </Link>
-        </Can>
       </Can>
 
-      <Can I="takeActionPhaseThree" this={currentPhase}>
-        <Can I="manage" a="Topic">
-          <Link to="/topics/manage" className={styles.linkButton}>
-            <Button className={styles.linkText}>Manage Topic List</Button>
-          </Link>
-        </Can>
-      </Can>
-      {/* Administrator */}
+      {/* Administrator / Coordinator */}
       <Can I="takeActionPhaseOne" this={currentPhase}>
         <Can I="create" a="Coordinator">
           <Link to="/coordinator" className={styles.linkButton}>
             <Button className={styles.linkText}>Manage Coordinators</Button>
           </Link>
         </Can>
-        <Can I="manage" a="Phase">
+        <Can I="update" a="Phase">
           <Link to="/phase/manage" className={styles.linkButton}>
             <Button className={styles.linkText}>Manage Phases</Button>
           </Link>
@@ -111,6 +94,6 @@ export default function NavBar(props) {
       <Link to="/logout" className={styles.linkButton}>
         <Button className={styles.linkText}>Logout</Button>
       </Link>
-    </AuthenticatedTemplate>
+    </>
   )
 }

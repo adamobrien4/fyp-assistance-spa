@@ -15,6 +15,9 @@ import {
 } from '@material-ui/core'
 
 import api from '../../utils/api.axios'
+import { proposalStatusToHumanFriendlyString } from '../../utils/proposal'
+
+import BackButton from '../Buttons/BackButton'
 
 const TopicProposals = props => {
   const [loading, setLoading] = useState(false)
@@ -37,39 +40,44 @@ const TopicProposals = props => {
 
   return (
     <Container maxWidth="lg">
+      <BackButton />
       <Typography>Student Proposals</Typography>
 
       <TableContainer component={Paper}>
         <Table aria-label="simple table">
           <TableHead>
             <TableRow>
-              <TableCell align="left">Title</TableCell>
+              <TableCell>Title</TableCell>
               <TableCell align="center">Student</TableCell>
+              <TableCell align="right">Status</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {loading ? (
               <TableRow key="loading_supervisor_proposals">
-                <TableCell colSpan={2} align="center">
+                <TableCell colSpan={3} align="center">
                   Loading Values ...
                 </TableCell>
               </TableRow>
             ) : proposals.length === 0 ? (
               <TableRow key="no_supervisor_proposals">
-                <TableCell colSpan={2} align="center">
-                  No Proposals to show
+                <TableCell colSpan={3} align="center">
+                  You have no proposals to review
                 </TableCell>
               </TableRow>
             ) : (
               proposals.map(proposal => (
                 <TableRow key={proposal.id}>
-                  <TableCell align="left">
+                  <TableCell>
                     <Link to={`/proposal/view/${proposal._id}`}>
                       {proposal.title}
                     </Link>
                   </TableCell>
                   <TableCell align="center">
                     {proposal.student.displayName}
+                  </TableCell>
+                  <TableCell align="right">
+                    {proposalStatusToHumanFriendlyString(proposal.status)}
                   </TableCell>
                 </TableRow>
               ))

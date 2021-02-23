@@ -8,6 +8,8 @@ import {
 } from '@azure/msal-react'
 import { InteractionType } from '@azure/msal-browser'
 
+import api from './utils/api.axios'
+
 import { loginRequest, config } from './config/msal-config'
 
 import { AuthContext } from './contexts/AuthContext'
@@ -60,6 +62,8 @@ import PhaseManagement from './components/PhaseManagement'
 
 import Phase from './Auth/Phase'
 
+import HelpPage from './components/Help/HelpPage'
+
 import Test from './components/Test'
 
 function App() {
@@ -92,7 +96,7 @@ function App() {
 
           axiosGraphInstance
             .get(`${config.endpoints.graph}/me/appRoleAssignments`)
-            .then(resp => {
+            .then(async resp => {
               let rolePriority = -1
               let role = null
               for (const roleData of resp.data.value) {
@@ -110,12 +114,22 @@ function App() {
                 }
               }
 
-              // TODO: Get current system phase
+              // let phaseDoc = await api.get('/phase').catch(err => {
+              //   console.log('Could not retrieve phase')
+              //   console.log(err)
+              // })
+              // let phase = phaseDoc.data.phase
+
+              let phase = {
+                phase: 1,
+                start_time: new Date(),
+                end_time: new Date()
+              }
               setCurrentPhase(
                 new Phase({
-                  phase: 4,
-                  startDate: new Date('2021-02-18T11:30:00.000Z'),
-                  endDate: new Date('2021-02-20T11:30:00.000Z')
+                  phase: phase.phase,
+                  startDate: phase.start_time,
+                  endDate: phase.end_time
                 })
               )
 
@@ -165,6 +179,13 @@ function App() {
 const Pages = props => {
   const { instance } = useMsal()
   const ability = generateAbilitiesFor(props.user)
+  const { currentPhase } = useContext(PhaseContext)
+
+  const allowForPhase = phase => {
+    return Array.isArray(phase)
+      ? phase.includes(currentPhase.phase)
+      : phase === currentPhase.phase
+  }
 
   // Implement Can functionality to only show available routes
   return (
@@ -172,11 +193,16 @@ const Pages = props => {
       <Route exact path="/">
         {props?.user?.role ? <Welcome /> : <NoRole />}
       </Route>
+
+      <Route exact path="/help">
+        <HelpPage />
+      </Route>
+
       {ability.can('manage', 'Topic') && (
         <Route path="/test" component={Test} />
       )}
 
-      {ability.can('read', 'Topic') && (
+      {ability.can('read', 'Topic') && allowForPhase([3, 4]) && (
         <Route exact path="/topics">
           <TopicList />
         </Route>
@@ -186,11 +212,11 @@ const Pages = props => {
         <ViewTopic />
       </Route>
 
-      {ability.can('create', 'Topic') && (
+      {ability.can('create', 'Topic') && allowForPhase(2) && (
         <Route path="/topics/add" component={AddTopicForm} />
       )}
 
-      {ability.can('manage', 'Topic') && (
+      {ability.can('manage', 'Topic') && allowForPhase([2, 3, 4]) && (
         <Route path="/topics/manage" component={TopicManagement} />
       )}
 
@@ -240,25 +266,25 @@ const Pages = props => {
         </Route>
       )}
 
-      {ability.can('manage', 'Student') && (
+      {ability.can('manage', 'Student') && allowForPhase(1) && (
         <Route path="/student/manage">
           <StudentManagement />
         </Route>
       )}
 
-      {ability.can('manage', 'Supervisor') && (
+      {ability.can('manage', 'Supervisor') && allowForPhase(1) && (
         <Route path="/supervisor/assign">
           <SupervisorAssignment />
         </Route>
       )}
 
-      {ability.can('manage', 'Supervisor') && (
+      {ability.can('manage', 'Supervisor') && allowForPhase(1) && (
         <Route path="/supervisor/manage">
           <SupervisorManagement />
         </Route>
       )}
 
-      {ability.can('manage', 'Coordinator') && (
+      {ability.can('manage', 'Coordinator') && allowForPhase(1) && (
         <Route path="/coordinator">
           <ManageCoordinator />
         </Route>
@@ -270,7 +296,7 @@ const Pages = props => {
         </Route>
       )}
 
-      {ability.can('manage', 'Phase') && (
+      {ability.can('update', 'Phase') && (
         <Route path="/phase/manage">
           <PhaseManagement />
         </Route>

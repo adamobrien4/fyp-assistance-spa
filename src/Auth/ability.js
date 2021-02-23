@@ -33,7 +33,7 @@ export default function defineAbilityFor(user) {
       break
     case 'Administrator':
       can('manage', 'Coordinator')
-      can('manage', 'Phase')
+      can('update', 'Phase')
       break
     default:
       cannot('*', '*')

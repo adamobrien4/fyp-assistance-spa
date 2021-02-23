@@ -11,6 +11,7 @@ import UploadButton from './UploadButton'
 import CSVUploader from '../../CSVUploader'
 import UserEmailInputField from './UserEmailInputField'
 import PaginatedTable from '../../PaginatedTable'
+import BackButton from '../../Buttons/BackButton'
 
 const StudentAssignment = props => {
   const [currentEmail, setCurrentEmail] = useState('')
@@ -135,6 +136,7 @@ const StudentAssignment = props => {
 
   return (
     <Container>
+      <BackButton />
       <Typography variant="h6">Upload CSV file</Typography>
       <CSVUploader onAdd={onAddBulk} />
       <Container maxWidth="md">

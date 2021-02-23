@@ -195,15 +195,15 @@ const SupervisorManagement = props => {
                   </TableCell>
                   <TableCell align="right">{supervisor.email}</TableCell>
                   <TableCell align="right">
-                    <PrimaryButton
+                    {/*<PrimaryButton
                       style={{ width: '25%', margin: 0 }}
                       startIcon={<Edit />}>
                       View
-                    </PrimaryButton>
+                    </PrimaryButton>*/}
                     {/* TODO: Add loading etc when removing supervisor */}
                     <PrimaryButton
                       onClick={() => handleRemoveSingle(supervisor._id)}
-                      style={{ width: '25%', margin: '0 0 0 5px' }}
+                      style={{ width: '50%', margin: '0 0 0 5px' }}
                       color="secondary"
                       startIcon={<Delete />}>
                       Delete
