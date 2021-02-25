@@ -13,21 +13,31 @@ import {
   Paper,
   Table
 } from '@material-ui/core'
+import Alert from '@material-ui/lab/Alert'
 import { DatePicker } from 'antd'
-
 import PrimaryButton from './PrimaryButton'
 
 const PhaseManagement = props => {
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
-  const [phases, setPhases] = useState([])
+  const [phases, setPhases] = useState()
+  const [alert, setAlert] = useState({
+    message: '',
+    severity: 'success',
+    hidden: true
+  })
 
   useEffect(() => {
     api
       .get('/phase/all')
       .then(res => {
         console.log(res)
-        setPhases(res.data.phases)
+        let phasesData = res.data.phases.map(p => ({
+          phase: p._id,
+          date: moment(p.start_date)
+        }))
+        console.log(phasesData)
+        setPhases(phasesData)
       })
       .catch(err => {
         console.log(err)
@@ -37,43 +47,59 @@ const PhaseManagement = props => {
       })
   }, [])
 
-  const onCalendarChange = (dates, dateStrings, info, phase) => {
-    console.log('Editing phase', phase)
-    if (dates.length === 2) {
-      let tempPhases = [...phases]
-      console.log(tempPhases)
-      tempPhases[phase + 1].start_time = dates[1]
-      tempPhases[phase + 1].end_time = dates[1].add(2, 'week')
-
-      setPhases(tempPhases)
-    }
-  }
-
-  const onChange = (date, dateString, phase, type) => {
-    let tempPhases = [...phases]
-
-    if (type) {
-      tempPhases[phase].end_time = date
-    } else {
-      tempPhases[phase].start_time = date
-    }
-
-    setPhases(tempPhases)
-  }
-
   const onSubmit = () => {
+    for (let i = 0; i < phases.length; i++) {
+      let p = phases[i]
+      if (i < phases.length - 1 && p.date.isAfter(phases[i + 1].date)) {
+        setAlert({
+          message: `Phase ${p.phase} start date must be before Phase ${
+            p.phase + 1
+          }'s start date`,
+          severity: 'error',
+          hidden: false
+        })
+        return
+      }
+    }
+
+    let body = phases.map(p => ({
+      phase: p.phase,
+      date: p.date
+    }))
+
     setUpdating(true)
     api
-      .post('/phase/edit', { phases: phases })
+      .post('/phase/edit', { phases: body })
       .then(res => {
         console.log(res)
+        setAlert({
+          hidden: false,
+          message: 'Phase dates updated',
+          severity: 'success'
+        })
       })
       .catch(err => {
         console.log(err)
+        setAlert({
+          hidden: false,
+          message: 'Phase dates not updated',
+          severity: 'error'
+        })
       })
       .finally(() => {
         setUpdating(false)
       })
+  }
+
+  const updatePhase = (value, phase) => {
+    console.log('Updating phase', phase, value)
+    let temp = [...phases]
+
+    temp[phase - 1].date = value
+
+    console.log(temp)
+
+    setPhases(temp)
   }
 
   if (loading) {
@@ -84,17 +110,12 @@ const PhaseManagement = props => {
     <Container maxWidth="lg">
       <h1>Phase Management</h1>
 
-      {phases.map(phase => (
-        <span key={phase.phase}>{phase.phase}</span>
-      ))}
-
       <TableContainer component={Paper}>
         <Table aria-label="simple table">
           <TableHead>
             <TableRow>
               <TableCell>Phase No.</TableCell>
-              <TableCell>Phase Start</TableCell>
-              <TableCell>Phase End</TableCell>
+              <TableCell>Phase Start Date</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -108,23 +129,14 @@ const PhaseManagement = props => {
                   <TableCell>{phase.phase}</TableCell>
                   <TableCell>
                     <DatePicker
-                      value={moment(phase.start_time)}
-                      onChange={(p1, p2) => onChange(p1, p2, phase.phase, 0)}
-                    />
-                    {/* <RangePicker
-                      defaultValue={[
-                        moment(phase.start_time),
-                        moment(phase.end_time)
-                      ]}
-                      onCalendarChange={(v1, v2, v3) =>
-                        onCalendarChange(v1, v2, v3, phase.phase)
+                      defaultValue={phase.date}
+                      onChange={val => updatePhase(val, phase.phase)}
+                      format="DD / MMM / YY HH:mm"
+                      showTime={{ format: 'HH:mm' }}
+                      size="large"
+                      renderExtraFooter={() =>
+                        'Phase will end 5 minutes before following phase start'
                       }
-                    /> */}
-                  </TableCell>
-                  <TableCell>
-                    <DatePicker
-                      value={moment(phase.end_time)}
-                      onChange={(p1, p2) => onChange(p1, p2, phase.phase, 1)}
                     />
                   </TableCell>
                 </TableRow>
@@ -137,6 +149,9 @@ const PhaseManagement = props => {
       <PrimaryButton onClick={onSubmit} disabled={updating}>
         Update Phase Dates
       </PrimaryButton>
+      <Alert hidden={alert.hidden} severity={alert.severity}>
+        {alert.message}
+      </Alert>
     </Container>
   )
 }

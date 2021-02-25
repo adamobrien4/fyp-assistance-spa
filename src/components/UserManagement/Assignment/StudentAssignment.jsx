@@ -150,6 +150,7 @@ const StudentAssignment = props => {
           onAdd={onAdd}
         />
 
+        {/* TODO: Replace with collapsible alert component */}
         <Collapse in={alertOpen}>
           <Alert
             severity="error"

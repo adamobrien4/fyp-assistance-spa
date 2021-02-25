@@ -114,24 +114,35 @@ function App() {
                 }
               }
 
-              // let phaseDoc = await api.get('/phase').catch(err => {
-              //   console.log('Could not retrieve phase')
-              //   console.log(err)
-              // })
-              // let phase = phaseDoc.data.phase
+              let phaseDoc = await api.get('/phase').catch(err => {
+                console.log('Could not retrieve phase')
+                console.log(err)
+              })
 
-              let phase = {
-                phase: 1,
-                start_time: new Date(),
-                end_time: new Date()
-              }
-              setCurrentPhase(
-                new Phase({
-                  phase: phase.phase,
-                  startDate: phase.start_time,
-                  endDate: phase.end_time
+              let phase = null
+
+              if (phaseDoc.data.phase) {
+                phase = new Phase({
+                  phase: phaseDoc.data.phase._id,
+                  startDate: phaseDoc.data.phase.start_date,
+                  endDate: phaseDoc.data.phase.end_date
                 })
-              )
+              } else {
+                phase = new Phase({
+                  phase: 0,
+                  startDate: null,
+                  endDate: null
+                })
+              }
+
+              console.log('phase', phase)
+
+              // let phase = {
+              //   phase: 1,
+              //   start_time: new Date(),
+              //   end_time: new Date()
+              // }
+              setCurrentPhase(phase)
 
               let userObject = {
                 role,
@@ -191,7 +202,15 @@ const Pages = props => {
   return (
     <Switch>
       <Route exact path="/">
-        {props?.user?.role ? <Welcome /> : <NoRole />}
+        {currentPhase.phase !== 0 ? (
+          props?.user?.role ? (
+            <Welcome />
+          ) : (
+            <NoRole />
+          )
+        ) : (
+          <h1>Switching Phase Please Wait</h1>
+        )}
       </Route>
 
       <Route exact path="/help">
