@@ -13,9 +13,9 @@ import {
   Paper,
   Table
 } from '@material-ui/core'
-import Alert from '@material-ui/lab/Alert'
 import { DatePicker } from 'antd'
 import PrimaryButton from './PrimaryButton'
+import CollapsableAlert from './CollapsableAlert'
 
 const PhaseManagement = props => {
   const [loading, setLoading] = useState(true)
@@ -23,9 +23,9 @@ const PhaseManagement = props => {
   const [phases, setPhases] = useState()
   const [alert, setAlert] = useState({
     message: '',
-    severity: 'success',
-    hidden: true
+    severity: 'success'
   })
+  const [alertOpen, setAlertOpen] = useState(false)
 
   useEffect(() => {
     api
@@ -58,6 +58,7 @@ const PhaseManagement = props => {
           severity: 'error',
           hidden: false
         })
+        setAlertOpen(true)
         return
       }
     }
@@ -81,13 +82,13 @@ const PhaseManagement = props => {
       .catch(err => {
         console.log(err)
         setAlert({
-          hidden: false,
           message: 'Phase dates not updated',
           severity: 'error'
         })
       })
       .finally(() => {
         setUpdating(false)
+        setAlertOpen(true)
       })
   }
 
@@ -149,9 +150,12 @@ const PhaseManagement = props => {
       <PrimaryButton onClick={onSubmit} disabled={updating}>
         Update Phase Dates
       </PrimaryButton>
-      <Alert hidden={alert.hidden} severity={alert.severity}>
-        {alert.message}
-      </Alert>
+      <CollapsableAlert
+        open={alertOpen}
+        setOpen={setAlertOpen}
+        message={alert.message}
+        severity={alert.severity}
+      />
     </Container>
   )
 }

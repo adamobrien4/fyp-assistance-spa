@@ -41,7 +41,7 @@ import SupervisorAssignment from './components/UserManagement/Assignment/Supervi
 import SupervisorManagement from './components/UserManagement/SupervisorManagement'
 
 // Coordinator Imports
-import ManageCoordinator from './components/ManageCoordinator'
+import CoordinatorManagement from './components/UserManagement/Coordinator/CoordinatorManagement'
 import Header from './components/Header'
 import Button from '@material-ui/core/Button'
 import ManageProposal from './components/Proposals/ManageProposal'
@@ -137,11 +137,12 @@ function App() {
 
               console.log('phase', phase)
 
-              // let phase = {
-              //   phase: 1,
-              //   start_time: new Date(),
-              //   end_time: new Date()
-              // }
+              // Testing
+              phase = {
+                phase: 1,
+                startDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10),
+                endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 10)
+              }
               setCurrentPhase(phase)
 
               let userObject = {
@@ -201,6 +202,10 @@ const Pages = props => {
   // Implement Can functionality to only show available routes
   return (
     <Switch>
+      <Route exact path="/test">
+        <Test />
+      </Route>
+
       <Route exact path="/">
         {currentPhase.phase !== 0 ? (
           props?.user?.role ? (
@@ -305,7 +310,7 @@ const Pages = props => {
 
       {ability.can('manage', 'Coordinator') && allowForPhase(1) && (
         <Route path="/coordinator">
-          <ManageCoordinator />
+          <CoordinatorManagement />
         </Route>
       )}
 

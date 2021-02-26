@@ -4,20 +4,12 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import {
   formSchema,
   defaultValues
-} from '../utils/yupSchemas/ManageCoordinator.js'
+} from '../../../utils/yupSchemas/ManageCoordinator.js'
 
 import {
   Container,
-  TextField,
   Button,
   Typography,
-  TableContainer,
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-  Paper,
   Dialog,
   DialogContent,
   DialogTitle,
@@ -27,10 +19,12 @@ import {
 } from '@material-ui/core'
 import { ArrowForward, Delete } from '@material-ui/icons'
 
-import api from '../utils/api.axios'
+import api from '../../../utils/api.axios'
 
-import PrimaryButton from './PrimaryButton'
-import Input from './Input'
+import ListCoordinatorTable from './ListCoordinatorTable'
+import PrimaryButton from '../../PrimaryButton'
+import Input from '../../Input'
+import CollapsableAlert from '../../CollapsableAlert'
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />
@@ -41,8 +35,12 @@ export default function ManageCoordinator(props) {
   const [assignedCoordinators, setAssignedCoordinators] = useState([])
   const [dialogOpen, setDialogOpen] = useState(false)
   const [refreshing, setRefreshing] = useState(true)
+  const [alert, setAlert] = useState({})
+  const [alertOpen, setAlertOpen] = useState(false)
+  const [tableAlert, setTableAlert] = useState({})
+  const [tableAlertOpen, setTableAlertOpen] = useState(false)
 
-  const { register, handleSubmit, setError, errors } = useForm({
+  const { register, handleSubmit, errors } = useForm({
     resolver: yupResolver(formSchema),
     reValidateMode: 'onChange',
     defaultValues
@@ -56,39 +54,37 @@ export default function ManageCoordinator(props) {
     api
       .post('/coordinator/assign', data)
       .then(res => {
-        if (res.data) {
-          switch (res.data) {
-            case 'success':
-              console.log('Sucessful Coordinator assign')
-              // TODO: Find out how to assign this role automatically
-              alert(
-                'Please assign "Privilaged Role Administrator" to uploaded Coordinator to continue, (Azure Admin Center)'
-              )
-              refreshAssignedCoordinators()
-              break
-            case 'exists':
-              setError('coordinator', {
-                type: 'manual',
-                message: 'User is already a Coordinator'
-              })
-              break
-            case 'not_found':
-              setError('coordinator', {
-                type: 'manual',
-                message: 'Coordinator could not be found'
-              })
-              break
-            default:
-              setError('coordinator', {
-                type: 'manual',
-                message: 'An unknown error occurred, please try again'
-              })
-              console.log('Coordinator could not be assigned')
-              console.log(res.data)
-          }
-        } else {
-          console.log(res)
+        console.log(res)
+        switch (res.data) {
+          case 'success':
+            console.log('Sucessful Coordinator assign')
+            // TODO: Find out how to assign this role automatically
+            setAlert({
+              message: 'Coordinator suvessfully assigned',
+              severity: 'success'
+            })
+            refreshAssignedCoordinators()
+            break
+          case 'exists':
+            setAlert({
+              message: 'User is already a Coordinator',
+              severity: 'warning'
+            })
+            break
+          case 'not_found':
+            setAlert({
+              message: 'Email address could not be found',
+              severity: 'error'
+            })
+            break
+          default:
+            setAlert({
+              message: 'An error occurred, please try again',
+              severity: 'error'
+            })
         }
+        console.log(alert)
+        setAlertOpen(true)
       })
       .catch(err => console.log(err))
   }
@@ -107,6 +103,11 @@ export default function ManageCoordinator(props) {
       })
       .catch(err => {
         console.log(err)
+        setTableAlert({
+          message: err.message,
+          severity: 'error'
+        })
+        setTableAlertOpen(true)
         setRefreshing(false)
       })
       .finally(() => {
@@ -125,9 +126,24 @@ export default function ManageCoordinator(props) {
         .post('/coordinator/remove', { coordinatorId: selectedCoordinator._id })
         .then(resp => {
           console.log(resp)
+          setTableAlert({
+            message: 'Coordinator sucessfully removed',
+            severity: 'success'
+          })
+          setTableAlertOpen(true)
           refreshAssignedCoordinators()
         })
-        .then(err => console.log(err))
+        .catch(err => {
+          console.log(err)
+          setTableAlert({
+            message: 'Could not remove coordinator',
+            severity: 'error'
+          })
+          setTableAlertOpen(true)
+        })
+      setDialogOpen(false)
+    } else {
+      setDialogOpen(false)
     }
   }
 
@@ -187,49 +203,25 @@ export default function ManageCoordinator(props) {
           endIcon={<ArrowForward />}>
           Assign New Coordinator
         </PrimaryButton>
+        <CollapsableAlert
+          open={alertOpen}
+          setOpen={setAlertOpen}
+          message={alert.message}
+          severity={alert.severity}
+        />
       </form>
 
       <Typography variant="h6">Existing Coordinators</Typography>
       <br />
 
-      {refreshing ? (
-        <span>Loading Coordinators list ...</span>
-      ) : assignedCoordinators.length === 0 ? (
-        <Typography variant="body1">
-          There are currently no assigned coordinators
-        </Typography>
-      ) : (
-        <TableContainer component={Paper}>
-          <Table aria-label="simple table">
-            <TableHead>
-              <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell align="right">Email</TableCell>
-                <TableCell align="right">Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {assignedCoordinators.map(coordinator => (
-                <TableRow key={coordinator.id}>
-                  <TableCell component="th" scope="row">
-                    {coordinator.displayName}
-                  </TableCell>
-                  <TableCell align="right">{coordinator.email}</TableCell>
-                  <TableCell align="right">
-                    <Button
-                      variant="outlined"
-                      color="secondary"
-                      startIcon={<Delete />}
-                      onClick={() => handleRemoveClick(coordinator)}>
-                      Remove
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+      <ListCoordinatorTable
+        refreshing={refreshing}
+        value={assignedCoordinators}
+        open={tableAlertOpen}
+        setOpen={setTableAlertOpen}
+        handleRemove={handleRemoveClick}
+        alert={tableAlert}
+      />
     </Container>
   )
 }

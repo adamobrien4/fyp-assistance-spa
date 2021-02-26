@@ -1,10 +1,7 @@
 import React, { useState } from 'react'
 import api from '../../../utils/api.axios'
 
-import { Typography, Container, IconButton, Collapse } from '@material-ui/core'
-
-import Alert from '@material-ui/lab/Alert'
-import { Close as CloseIcon } from '@material-ui/icons'
+import { Typography, Container } from '@material-ui/core'
 
 import PrimaryButton from '../../PrimaryButton'
 import UploadButton from './UploadButton'
@@ -13,12 +10,14 @@ import UserEmailInputField from './UserEmailInputField'
 import PaginatedTable from '../../PaginatedTable'
 import BackButton from '../../Buttons/BackButton'
 
+import CollapsableAlert from '../../CollapsableAlert'
+
 const StudentAssignment = props => {
   const [currentEmail, setCurrentEmail] = useState('')
   const [students, setStudents] = useState([])
   const [includeEmailPrefix, setIncludeEmailPrefix] = useState(true)
+  const [alert, setAlert] = useState({})
   const [alertOpen, setAlertOpen] = useState(false)
-  const [alertMessage, setAlertMessage] = useState('Alert Message')
 
   const onChange = e => {
     setCurrentEmail(e.target.value)
@@ -26,13 +25,13 @@ const StudentAssignment = props => {
 
   const onAdd = e => {
     if (currentEmail.length === 0) {
-      setAlertMessage('Cannot add empty email!')
+      setAlert({ message: 'Cannot add empty email!', severity: 'warning' })
       setAlertOpen(true)
       return
     }
 
     if (students.filter(student => student.email === currentEmail).length > 0) {
-      setAlertMessage('Cannot add duplicate email!')
+      setAlert({ message: 'Cannot add duplicate email!', severity: 'warning' })
       setAlertOpen(true)
       return
     }
@@ -46,7 +45,7 @@ const StudentAssignment = props => {
 
     let re = /\S+@\S+\.\S+/
     if (!re.test(email)) {
-      setAlertMessage('Cannot add invalid email!')
+      setAlert({ message: 'Cannot add invalid email!', severity: 'warning' })
       setAlertOpen(true)
       return
     }
@@ -108,9 +107,10 @@ const StudentAssignment = props => {
           )
           console.log(remainingStudents)
           if (remainingStudents.length > 0) {
-            setAlertMessage(
-              'The following student email addresses could not be linked to a student'
-            )
+            setAlert({
+              message: 'Could not add the following student emails',
+              severity: 'error'
+            })
             setAlertOpen(true)
           }
           return setStudents(remainingStudents)
@@ -150,24 +150,14 @@ const StudentAssignment = props => {
           onAdd={onAdd}
         />
 
-        {/* TODO: Replace with collapsible alert component */}
-        <Collapse in={alertOpen}>
-          <Alert
-            severity="error"
-            action={
-              <IconButton
-                aria-label="close"
-                color="inherit"
-                size="small"
-                onClick={() => {
-                  setAlertOpen(false)
-                }}>
-                <CloseIcon fontSize="inherit" />
-              </IconButton>
-            }>
-            {alertMessage}
-          </Alert>
-        </Collapse>
+        <br />
+
+        <CollapsableAlert
+          open={alertOpen}
+          setOpen={setAlertOpen}
+          message={alert.message}
+          severity={alert.severity}
+        />
 
         <br />
 

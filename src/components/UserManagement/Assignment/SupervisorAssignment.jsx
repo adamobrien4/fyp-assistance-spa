@@ -13,12 +13,14 @@ import UserEmailInputField from './UserEmailInputField'
 import PaginatedTable from '../../PaginatedTable'
 import BackButton from '../../Buttons/BackButton'
 
+import CollapsableAlert from '../../CollapsableAlert'
+
 const SupervisorAssignment = props => {
   const [currentEmail, setCurrentEmail] = useState('')
   const [supervisors, setsupervisors] = useState([])
   const [includeEmailPrefix, setIncludeEmailPrefix] = useState(true)
+  const [alert, setAlert] = useState({})
   const [alertOpen, setAlertOpen] = useState(false)
-  const [alertMessage, setAlertMessage] = useState('Alert Message')
 
   const onChange = e => {
     setCurrentEmail(e.target.value)
@@ -26,7 +28,7 @@ const SupervisorAssignment = props => {
 
   const onAdd = e => {
     if (currentEmail.length === 0) {
-      setAlertMessage('Cannot add empty email!')
+      setAlert({ message: 'Cannot add empty email!', severity: 'warning' })
       setAlertOpen(true)
       return
     }
@@ -35,7 +37,7 @@ const SupervisorAssignment = props => {
       supervisors.filter(supervisor => supervisor.email === currentEmail)
         .length > 0
     ) {
-      setAlertMessage('Cannot add duplicate email!')
+      setAlert({ message: 'Cannot add duplicate email!', severity: 'warning' })
       setAlertOpen(true)
       return
     }
@@ -47,7 +49,7 @@ const SupervisorAssignment = props => {
 
     let re = /\S+@\S+\.\S+/
     if (!re.test(email)) {
-      setAlertMessage('Cannot add invalid email!')
+      setAlert({ message: 'Cannot add invalid email!', severity: 'error' })
       setAlertOpen(true)
       return
     }
@@ -109,9 +111,10 @@ const SupervisorAssignment = props => {
           )
           console.log(remainingsupervisors)
           if (remainingsupervisors.length > 0) {
-            setAlertMessage(
-              'The following supervisor email addresses could not be linked to a supervisor'
-            )
+            setAlert({
+              message: 'Could not add the following supervisor emails',
+              severity: 'error'
+            })
             setAlertOpen(true)
           }
           return setsupervisors(remainingsupervisors)
@@ -150,24 +153,12 @@ const SupervisorAssignment = props => {
           onChangeEmailPrefix={onChangeEmailPrefix}
           onAdd={onAdd}
         />
-
-        <Collapse in={alertOpen}>
-          <Alert
-            severity="error"
-            action={
-              <IconButton
-                aria-label="close"
-                color="inherit"
-                size="small"
-                onClick={() => {
-                  setAlertOpen(false)
-                }}>
-                <CloseIcon fontSize="inherit" />
-              </IconButton>
-            }>
-            {alertMessage}
-          </Alert>
-        </Collapse>
+        <CollapsableAlert
+          open={alertOpen}
+          setOpen={setAlertOpen}
+          message={alert.message}
+          severity={alert.severity}
+        />
 
         <br />
 
