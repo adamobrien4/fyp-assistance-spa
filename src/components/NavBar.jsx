@@ -1,4 +1,5 @@
 import React, { useContext, useState } from 'react'
+import { useMsal } from '@azure/msal-react'
 import {
   Avatar,
   Button,
@@ -44,6 +45,7 @@ export default function NavBar(props) {
   const { currentPhase } = useContext(PhaseContext)
 
   const history = useHistory()
+  const { instance } = useMsal()
 
   const [anchorEl, setAnchorEl] = useState(null)
 
@@ -119,10 +121,6 @@ export default function NavBar(props) {
             </Link>
           </Can>
         </Can>
-
-        <Link to="/logout" className={styles.linkButton}>
-          <Button className={styles.linkText}>Logout</Button>
-        </Link>
       </div>
 
       {/* User Avatar */}
@@ -160,7 +158,7 @@ export default function NavBar(props) {
           </MenuItem>
           <MenuItem
             onClick={() => {
-              history.push('/logout')
+              instance.logout({ onRedirectNavigate: 'http://localhost:3000/' })
               setAnchorEl(null)
             }}>
             <ListItemIcon>

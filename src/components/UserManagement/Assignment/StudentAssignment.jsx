@@ -58,9 +58,12 @@ const StudentAssignment = props => {
 
   const onAddBulk = bulkStudents => {
     let studentsList = [...students]
+    console.log('studentsList', studentsList)
+    console.log('bulkStudents', bulkStudents)
     for (let student of bulkStudents) {
       // Skip any empty rows or strings
       if (!student || student.length === 0) {
+        console.log('Skipping', student)
         return
       }
       studentsList.push({
@@ -85,7 +88,7 @@ const StudentAssignment = props => {
     api
       .post('/student/assign', body)
       .then(res => {
-        console.log(res.data.students)
+        console.log(res.data)
         if (res.data.students.length > 0) {
           let studentsMap = [...students]
           let emailsMap = students.map(student => student.email)
@@ -108,14 +111,26 @@ const StudentAssignment = props => {
           console.log(remainingStudents)
           if (remainingStudents.length > 0) {
             setAlert({
-              message: 'Could not add the following student emails',
+              message:
+                'Could not add the following student emails (Hover email for more details)',
               severity: 'error'
             })
-            setAlertOpen(true)
+          } else {
+            setAlert({
+              message: 'All students were sucessfully added',
+              severity: 'success'
+            })
           }
+          setAlertOpen(true)
           return setStudents(remainingStudents)
         }
         setStudents([])
+        setAlert({
+          message: 'All students were sucessfully added',
+          severity: 'success'
+        })
+
+        setAlertOpen(true)
       })
       .catch(err => {
         console.log(err)
@@ -124,6 +139,11 @@ const StudentAssignment = props => {
 
   const onChangeEmailPrefix = e => {
     setIncludeEmailPrefix(e.target.checked)
+  }
+
+  const handleRemove = studentEmail => {
+    let filteredStudents = students.filter(s => s.email !== studentEmail)
+    setStudents(filteredStudents)
   }
 
   const endAdornment = includeEmailPrefix ? (
@@ -161,7 +181,11 @@ const StudentAssignment = props => {
 
         <br />
 
-        <PaginatedTable value={students} />
+        <PaginatedTable
+          value={students}
+          removableEntries
+          removeEntry={handleRemove}
+        />
 
         <UploadButton disabled={!students.length} onUpload={onUpload} />
         <PrimaryButton
@@ -169,6 +193,7 @@ const StudentAssignment = props => {
           color="secondary"
           onClick={() => {
             setStudents([])
+            setAlertOpen(false)
           }}>
           Clear Student List
         </PrimaryButton>

@@ -17,7 +17,7 @@ import CollapsableAlert from '../../CollapsableAlert'
 
 const SupervisorAssignment = props => {
   const [currentEmail, setCurrentEmail] = useState('')
-  const [supervisors, setsupervisors] = useState([])
+  const [supervisors, setSupervisors] = useState([])
   const [includeEmailPrefix, setIncludeEmailPrefix] = useState(true)
   const [alert, setAlert] = useState({})
   const [alertOpen, setAlertOpen] = useState(false)
@@ -57,7 +57,7 @@ const SupervisorAssignment = props => {
     let supervisorsList = [...supervisors]
     supervisorsList.push({ email: email })
     setCurrentEmail('')
-    setsupervisors(supervisorsList)
+    setSupervisors(supervisorsList)
   }
 
   const onAddBulk = bulksupervisors => {
@@ -72,7 +72,7 @@ const SupervisorAssignment = props => {
         email: supervisor
       })
     }
-    setsupervisors(supervisorsList)
+    setSupervisors(supervisorsList)
   }
 
   const onUpload = async e => {
@@ -117,9 +117,16 @@ const SupervisorAssignment = props => {
             })
             setAlertOpen(true)
           }
-          return setsupervisors(remainingsupervisors)
+          return setSupervisors(remainingsupervisors)
         }
-        setsupervisors([])
+        setSupervisors([])
+
+        setAlert({
+          message: 'All supervisors were sucessfully added',
+          severity: 'success'
+        })
+
+        setAlertOpen(true)
       })
       .catch(err => {
         console.log(err)
@@ -128,6 +135,11 @@ const SupervisorAssignment = props => {
 
   const onChangeEmailPrefix = e => {
     setIncludeEmailPrefix(e.target.checked)
+  }
+
+  const handleRemove = studentEmail => {
+    let filteredSupervisors = supervisors.filter(s => s.email !== studentEmail)
+    setSupervisors(filteredSupervisors)
   }
 
   const endAdornment = includeEmailPrefix ? (
@@ -162,14 +174,18 @@ const SupervisorAssignment = props => {
 
         <br />
 
-        <PaginatedTable value={supervisors} />
+        <PaginatedTable
+          value={supervisors}
+          removableEntries
+          removeEntry={handleRemove}
+        />
 
         <UploadButton disabled={!supervisors.length} onUpload={onUpload} />
         <PrimaryButton
           type="text"
           color="secondary"
           onClick={() => {
-            setsupervisors([])
+            setSupervisors([])
           }}>
           Clear Supervisor List
         </PrimaryButton>

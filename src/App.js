@@ -326,19 +326,6 @@ const Pages = props => {
         </Route>
       )}
 
-      <Route path="/logout">
-        {/* TODO: Delete localStorage of user role on logout 'fyp-assistance-role-type , Tidy up logout methodology  */}
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => {
-            localStorage.removeItem('fyp-assistance-role-type')
-            instance.logout({ onRedirectNavigate: 'http://localhost:3000/' })
-          }}>
-          Logout
-        </Button>
-      </Route>
-
       <Route component={NotFound} />
     </Switch>
   )
