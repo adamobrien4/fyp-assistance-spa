@@ -1,10 +1,7 @@
 import React, { useState } from 'react'
 import api from '../../../utils/api.axios'
 
-import { Typography, Container, IconButton, Collapse } from '@material-ui/core'
-
-import Alert from '@material-ui/lab/Alert'
-import { Close as CloseIcon } from '@material-ui/icons'
+import { Typography, Container, Divider } from '@material-ui/core'
 
 import PrimaryButton from '../../PrimaryButton'
 import UploadButton from './UploadButton'
@@ -116,6 +113,12 @@ const SupervisorAssignment = props => {
               severity: 'error'
             })
             setAlertOpen(true)
+          } else {
+            setAlert({
+              message: 'Supervisors were added successfully',
+              severity: 'success'
+            })
+            setAlertOpen(true)
           }
           return setSupervisors(remainingsupervisors)
         }
@@ -130,6 +133,11 @@ const SupervisorAssignment = props => {
       })
       .catch(err => {
         console.log(err)
+        setAlert({
+          message: 'An error occurred, please try again',
+          severity: 'error'
+        })
+        setAlertOpen(true)
       })
   }
 
@@ -151,45 +159,49 @@ const SupervisorAssignment = props => {
   )
 
   return (
-    <Container>
+    <Container maxWidth="lg">
       <BackButton />
-      <Typography variant="h6">Upload CSV file</Typography>
+      <Typography variant="h6">Add Supervisors (CSV File)</Typography>
       <CSVUploader onAdd={onAddBulk} />
-      <Container maxWidth="md">
-        <Typography variant="h6">Add Individual Supervisor</Typography>
-        <UserEmailInputField
-          email={currentEmail}
-          endAdornment={endAdornment}
-          onChange={onChange}
-          includeEmailPrefix={includeEmailPrefix}
-          onChangeEmailPrefix={onChangeEmailPrefix}
-          onAdd={onAdd}
-        />
-        <CollapsableAlert
-          open={alertOpen}
-          setOpen={setAlertOpen}
-          message={alert.message}
-          severity={alert.severity}
-        />
 
-        <br />
+      <br />
+      <Divider />
+      <br />
 
-        <PaginatedTable
-          value={supervisors}
-          removableEntries
-          removeEntry={handleRemove}
-        />
+      <Typography variant="h6">Add Supervisor by Email</Typography>
+      <UserEmailInputField
+        email={currentEmail}
+        endAdornment={endAdornment}
+        onChange={onChange}
+        includeEmailPrefix={includeEmailPrefix}
+        onChangeEmailPrefix={onChangeEmailPrefix}
+        onAdd={onAdd}
+      />
 
-        <UploadButton disabled={!supervisors.length} onUpload={onUpload} />
-        <PrimaryButton
-          type="text"
-          color="secondary"
-          onClick={() => {
-            setSupervisors([])
-          }}>
-          Clear Supervisor List
-        </PrimaryButton>
-      </Container>
+      <CollapsableAlert
+        open={alertOpen}
+        setOpen={setAlertOpen}
+        message={alert.message}
+        severity={alert.severity}
+      />
+
+      <br />
+
+      <PaginatedTable
+        value={supervisors}
+        removableEntries
+        removeEntry={handleRemove}
+      />
+
+      <UploadButton disabled={!supervisors.length} onUpload={onUpload} />
+      <PrimaryButton
+        type="text"
+        color="secondary"
+        onClick={() => {
+          setSupervisors([])
+        }}>
+        Clear Supervisor List
+      </PrimaryButton>
     </Container>
   )
 }

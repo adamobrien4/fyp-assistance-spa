@@ -33,7 +33,8 @@ const Tags = props => {
     showCheckedStrategy: SHOW_PARENT,
     placeholder: 'Search Topic Tags',
     bordered: true,
-    showSearch: true
+    showSearch: true,
+    size: 'large'
   }
 
   if (loading) {

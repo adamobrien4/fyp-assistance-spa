@@ -8,12 +8,14 @@ import {
   DialogTitle,
   DialogContent,
   IconButton,
+  Button,
   DialogActions,
   Divider,
   FormControl,
   Select,
   MenuItem,
-  CircularProgress
+  CircularProgress,
+  Typography
 } from '@material-ui/core'
 import { Edit, Cancel } from '@material-ui/icons'
 import { makeStyles } from '@material-ui/core/styles'
@@ -47,6 +49,16 @@ const useStyles = makeStyles(theme => ({
     color: green[500],
     position: 'absolute',
     left: '50%'
+  },
+  dialogCloseButton: {
+    position: 'absolute',
+    top: theme.spacing(1),
+    right: theme.spacing(1),
+    color: theme.palette.grey[500],
+    fontSize: '28px'
+  },
+  dialogEditButton: {
+    marginBottom: theme.spacing(1)
   }
 }))
 
@@ -134,28 +146,34 @@ const TopicModal = props => {
       aria-labelledby="max-width-dialog-title"
       style={{ zIndex: '900 !important' }}
       disableBackdropClick>
-      <DialogTitle id="max-width-dialog-title">
-        <IconButton onClick={toggleEditMode} disabled={savingChanges}>
-          <Edit />
-        </IconButton>
-        <IconButton
-          edge="end"
-          onClick={() => {
-            if (
-              editMode &&
-              // eslint-disable-next-line no-restricted-globals
-              confirm(
-                'Unsaved changes will be lost!. Are you sure you want to exit?'
-              ) === false
-            ) {
-              return
-            }
+      <IconButton
+        className={classes.dialogCloseButton}
+        onClick={() => {
+          if (
+            editMode &&
+            // eslint-disable-next-line no-restricted-globals
+            confirm(
+              'Unsaved changes will be lost!. Are you sure you want to exit?'
+            ) === false
+          ) {
+            return
+          }
 
-            props.setDialogOpen(false)
-          }}
-          disabled={savingChanges}>
-          <Cancel />
-        </IconButton>
+          props.setDialogOpen(false)
+        }}
+        disabled={savingChanges}>
+        <Cancel />
+      </IconButton>
+      <DialogTitle id="max-width-dialog-title">
+        <Button
+          variant="contained"
+          className={classes.dialogEditButton}
+          color={editMode ? 'secondary' : 'primary'}
+          onClick={toggleEditMode}
+          disabled={savingChanges}
+          endIcon={<Edit />}>
+          Toggle Edit Mode
+        </Button>
         <Divider />
       </DialogTitle>
       <DialogContent>

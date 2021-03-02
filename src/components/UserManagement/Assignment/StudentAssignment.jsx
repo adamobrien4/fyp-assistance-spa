@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import api from '../../../utils/api.axios'
 
-import { Typography, Container } from '@material-ui/core'
+import { Typography, Container, Divider } from '@material-ui/core'
 
 import PrimaryButton from '../../PrimaryButton'
 import UploadButton from './UploadButton'
@@ -155,49 +155,52 @@ const StudentAssignment = props => {
   )
 
   return (
-    <Container>
+    <Container maxWidth="lg">
       <BackButton />
       <Typography variant="h6">Upload CSV file</Typography>
       <CSVUploader onAdd={onAddBulk} />
-      <Container maxWidth="md">
-        <Typography variant="h6">Add Individual Student</Typography>
-        <UserEmailInputField
-          email={currentEmail}
-          endAdornment={endAdornment}
-          onChange={onChange}
-          includeEmailPrefix={includeEmailPrefix}
-          onChangeEmailPrefix={onChangeEmailPrefix}
-          onAdd={onAdd}
-        />
 
-        <br />
+      <br />
+      <Divider />
+      <br />
 
-        <CollapsableAlert
-          open={alertOpen}
-          setOpen={setAlertOpen}
-          message={alert.message}
-          severity={alert.severity}
-        />
+      <Typography variant="h6">Add Individual Student</Typography>
+      <UserEmailInputField
+        email={currentEmail}
+        endAdornment={endAdornment}
+        onChange={onChange}
+        includeEmailPrefix={includeEmailPrefix}
+        onChangeEmailPrefix={onChangeEmailPrefix}
+        onAdd={onAdd}
+      />
 
-        <br />
+      <br />
 
-        <PaginatedTable
-          value={students}
-          removableEntries
-          removeEntry={handleRemove}
-        />
+      <CollapsableAlert
+        open={alertOpen}
+        setOpen={setAlertOpen}
+        message={alert.message}
+        severity={alert.severity}
+      />
 
-        <UploadButton disabled={!students.length} onUpload={onUpload} />
-        <PrimaryButton
-          type="text"
-          color="secondary"
-          onClick={() => {
-            setStudents([])
-            setAlertOpen(false)
-          }}>
-          Clear Student List
-        </PrimaryButton>
-      </Container>
+      <br />
+
+      <PaginatedTable
+        value={students}
+        removableEntries
+        removeEntry={handleRemove}
+      />
+
+      <UploadButton disabled={!students.length} onUpload={onUpload} />
+      <PrimaryButton
+        type="text"
+        color="secondary"
+        onClick={() => {
+          setStudents([])
+          setAlertOpen(false)
+        }}>
+        Clear Student List
+      </PrimaryButton>
     </Container>
   )
 }

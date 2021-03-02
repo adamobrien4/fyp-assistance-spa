@@ -146,7 +146,7 @@ export default function NavBar(props) {
             vertical: 'top',
             horizontal: 'center'
           }}>
-          <MenuItem
+          {/* <MenuItem
             onClick={() => {
               history.push('/settings')
               setAnchorEl(null)
@@ -155,7 +155,7 @@ export default function NavBar(props) {
               <AccountCircleIcon fontSize="small" />
             </ListItemIcon>
             <ListItemText primary="My Account" />
-          </MenuItem>
+          </MenuItem> */}
           <MenuItem
             onClick={() => {
               instance.logout({ onRedirectNavigate: 'http://localhost:3000/' })

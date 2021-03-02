@@ -139,7 +139,7 @@ function App() {
 
               // Testing
               phase = {
-                phase: 1,
+                phase: 3,
                 startDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10),
                 endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 10)
               }
