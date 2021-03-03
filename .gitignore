@@ -25,5 +25,7 @@ yarn-error.log*
 .vscode
 .eslintcache
 
+.env
+
 Test.jsx
 test.js
