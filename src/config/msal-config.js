@@ -43,7 +43,8 @@ const msalConfig = {
 
 const loginRequest = {
   authority: `${config.endpoints.login}/${config.auth.tenantId}`,
-  scopes: ['user.read', 'offline_access']
+  scopes: ['user.read', 'offline_access'],
+  redirectUri: process.env.REACT_APP_REDIRECT
 }
 
 export { msalConfig, loginRequest, config }
