@@ -24,9 +24,10 @@ export default function CSVUploader(props) {
 
     let studentsArray = []
     for (let entry of data) {
-      let email = entry.data.studentEmail
+      let email = entry.data.StudentEmail
       // Skip any entries which are null or empty
       if (!email || email === '') {
+        console.log(email, 'is being skipped')
         continue
       }
 

@@ -8,9 +8,6 @@
 # testing
 /coverage
 
-# production
-/build
-
 # misc
 .DS_Store
 .env.local
@@ -24,6 +21,8 @@ yarn-error.log*
 
 .vscode
 .eslintcache
+
+.env
 
 Test.jsx
 test.js

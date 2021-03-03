@@ -54,9 +54,8 @@ export default function ManageCoordinator(props) {
     api
       .post('/coordinator/assign', data)
       .then(res => {
-        console.log(res)
-        switch (res.data) {
-          case 'success':
+        switch (res.data?.coordinator[0]?.status) {
+          case 'assigned':
             console.log('Sucessful Coordinator assign')
             // TODO: Find out how to assign this role automatically
             setAlert({
@@ -73,7 +72,8 @@ export default function ManageCoordinator(props) {
             break
           case 'not_found':
             setAlert({
-              message: 'Email address could not be found',
+              message:
+                'Email address supplied could not be linked to an active user',
               severity: 'error'
             })
             break
@@ -86,7 +86,13 @@ export default function ManageCoordinator(props) {
         console.log(alert)
         setAlertOpen(true)
       })
-      .catch(err => console.log(err))
+      .catch(err => {
+        setAlert({
+          message: 'An error occurred, please try again',
+          severity: 'warning'
+        })
+        setAlertOpen(true)
+      })
   }
 
   const refreshAssignedCoordinators = () => {
@@ -134,11 +140,36 @@ export default function ManageCoordinator(props) {
           refreshAssignedCoordinators()
         })
         .catch(err => {
-          console.log(err)
-          setTableAlert({
-            message: 'Could not remove coordinator',
-            severity: 'error'
-          })
+          switch (err) {
+            case 'error_while_retrieving_coordinator':
+              setTableAlert({
+                message:
+                  'An error occurred while retrieving the selected coordinator, please try again',
+                severity: 'warning'
+              })
+              break
+            case 'unable_to_remove':
+              // Could not delete user from database (please try again)
+              setTableAlert({
+                message: 'Could not remove coordinator, please try again',
+                severity: 'warning'
+              })
+              break
+            case 'coordinator_not_found':
+              setTableAlert({
+                message: 'Could not find selected coordinator',
+                severity: 'warning'
+              })
+              refreshAssignedCoordinators()
+              break
+            default:
+              console.log(err)
+              setTableAlert({
+                message: 'Could not remove coordinator',
+                severity: 'error'
+              })
+          }
+
           setTableAlertOpen(true)
         })
       setDialogOpen(false)

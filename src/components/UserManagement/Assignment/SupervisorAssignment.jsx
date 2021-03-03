@@ -1,10 +1,7 @@
 import React, { useState } from 'react'
 import api from '../../../utils/api.axios'
 
-import { Typography, Container, IconButton, Collapse } from '@material-ui/core'
-
-import Alert from '@material-ui/lab/Alert'
-import { Close as CloseIcon } from '@material-ui/icons'
+import { Typography, Container, Divider } from '@material-ui/core'
 
 import PrimaryButton from '../../PrimaryButton'
 import UploadButton from './UploadButton'
@@ -17,7 +14,7 @@ import CollapsableAlert from '../../CollapsableAlert'
 
 const SupervisorAssignment = props => {
   const [currentEmail, setCurrentEmail] = useState('')
-  const [supervisors, setsupervisors] = useState([])
+  const [supervisors, setSupervisors] = useState([])
   const [includeEmailPrefix, setIncludeEmailPrefix] = useState(true)
   const [alert, setAlert] = useState({})
   const [alertOpen, setAlertOpen] = useState(false)
@@ -57,7 +54,7 @@ const SupervisorAssignment = props => {
     let supervisorsList = [...supervisors]
     supervisorsList.push({ email: email })
     setCurrentEmail('')
-    setsupervisors(supervisorsList)
+    setSupervisors(supervisorsList)
   }
 
   const onAddBulk = bulksupervisors => {
@@ -72,7 +69,7 @@ const SupervisorAssignment = props => {
         email: supervisor
       })
     }
-    setsupervisors(supervisorsList)
+    setSupervisors(supervisorsList)
   }
 
   const onUpload = async e => {
@@ -116,18 +113,41 @@ const SupervisorAssignment = props => {
               severity: 'error'
             })
             setAlertOpen(true)
+          } else {
+            setAlert({
+              message: 'Supervisors were added successfully',
+              severity: 'success'
+            })
+            setAlertOpen(true)
           }
-          return setsupervisors(remainingsupervisors)
+          return setSupervisors(remainingsupervisors)
         }
-        setsupervisors([])
+        setSupervisors([])
+
+        setAlert({
+          message: 'All supervisors were sucessfully added',
+          severity: 'success'
+        })
+
+        setAlertOpen(true)
       })
       .catch(err => {
         console.log(err)
+        setAlert({
+          message: 'An error occurred, please try again',
+          severity: 'error'
+        })
+        setAlertOpen(true)
       })
   }
 
   const onChangeEmailPrefix = e => {
     setIncludeEmailPrefix(e.target.checked)
+  }
+
+  const handleRemove = studentEmail => {
+    let filteredSupervisors = supervisors.filter(s => s.email !== studentEmail)
+    setSupervisors(filteredSupervisors)
   }
 
   const endAdornment = includeEmailPrefix ? (
@@ -139,41 +159,49 @@ const SupervisorAssignment = props => {
   )
 
   return (
-    <Container>
+    <Container maxWidth="lg">
       <BackButton />
-      <Typography variant="h6">Upload CSV file</Typography>
+      <Typography variant="h6">Add Supervisors (CSV File)</Typography>
       <CSVUploader onAdd={onAddBulk} />
-      <Container maxWidth="md">
-        <Typography variant="h6">Add Individual Supervisor</Typography>
-        <UserEmailInputField
-          email={currentEmail}
-          endAdornment={endAdornment}
-          onChange={onChange}
-          includeEmailPrefix={includeEmailPrefix}
-          onChangeEmailPrefix={onChangeEmailPrefix}
-          onAdd={onAdd}
-        />
-        <CollapsableAlert
-          open={alertOpen}
-          setOpen={setAlertOpen}
-          message={alert.message}
-          severity={alert.severity}
-        />
 
-        <br />
+      <br />
+      <Divider />
+      <br />
 
-        <PaginatedTable value={supervisors} />
+      <Typography variant="h6">Add Supervisor by Email</Typography>
+      <UserEmailInputField
+        email={currentEmail}
+        endAdornment={endAdornment}
+        onChange={onChange}
+        includeEmailPrefix={includeEmailPrefix}
+        onChangeEmailPrefix={onChangeEmailPrefix}
+        onAdd={onAdd}
+      />
 
-        <UploadButton disabled={!supervisors.length} onUpload={onUpload} />
-        <PrimaryButton
-          type="text"
-          color="secondary"
-          onClick={() => {
-            setsupervisors([])
-          }}>
-          Clear Supervisor List
-        </PrimaryButton>
-      </Container>
+      <CollapsableAlert
+        open={alertOpen}
+        setOpen={setAlertOpen}
+        message={alert.message}
+        severity={alert.severity}
+      />
+
+      <br />
+
+      <PaginatedTable
+        value={supervisors}
+        removableEntries
+        removeEntry={handleRemove}
+      />
+
+      <UploadButton disabled={!supervisors.length} onUpload={onUpload} />
+      <PrimaryButton
+        type="text"
+        color="secondary"
+        onClick={() => {
+          setSupervisors([])
+        }}>
+        Clear Supervisor List
+      </PrimaryButton>
     </Container>
   )
 }

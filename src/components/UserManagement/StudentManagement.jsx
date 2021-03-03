@@ -19,6 +19,7 @@ import { Edit, Delete } from '@material-ui/icons'
 import api from '../../utils/api.axios'
 import Input from '../Input'
 import PrimaryButton from '../PrimaryButton'
+import CollapsableAlert from '../CollapsableAlert'
 
 import TablePaginationActions from '../Table/TablePaginationActions'
 
@@ -29,6 +30,8 @@ const StudentManagement = props => {
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(5)
   const [loading, setLoading] = useState(true)
+  const [alert, setAlert] = useState({})
+  const [alertOpen, setAlertOpen] = useState(false)
 
   useEffect(() => {
     refreshStudentList()
@@ -44,7 +47,20 @@ const StudentManagement = props => {
         setVisableStudents(res.data.students)
       })
       .catch(err => {
-        console.log(err)
+        switch (err) {
+          case 'error_retrieving_students':
+            setAlert({
+              message: 'Could not retrieve students from database',
+              severity: 'warning'
+            })
+            break
+          default:
+            setAlert({
+              message: 'An error occurred, please try again',
+              severity: 'error'
+            })
+        }
+        setAlertOpen(true)
       })
       .finally(() => {
         setLoading(false)
@@ -89,11 +105,38 @@ const StudentManagement = props => {
       .post('/student/delete', { studentId: id })
       .then(res => {
         console.log(res)
+        setAlert({
+          message: 'Student sucessfully removed',
+          severity: 'success'
+        })
+        setAlertOpen(true)
         refreshStudentList()
       })
       .catch(err => {
-        // TODO: Inform user of error
         console.log(err)
+        switch (err) {
+          case 'error_retrieving_student':
+            setAlert({
+              message:
+                'An error occurred while retrieving the student. Please try again',
+              severity: 'warning'
+            })
+            break
+          case 'student_not_found':
+            setAlert({
+              message: 'Could not find the requested student',
+              severity: 'warning'
+            })
+            refreshStudentList()
+            break
+          default:
+            setAlert({
+              message: 'An error occurred, please try again',
+              severity: 'error'
+            })
+        }
+
+        setAlertOpen(true)
       })
   }
 
@@ -112,7 +155,6 @@ const StudentManagement = props => {
         <PrimaryButton>Assign Students</PrimaryButton>
       </Link>
       <Input label="Search" onChange={handleSearch} />
-
       <TableContainer component={Paper}>
         <Table aria-label="simple table">
           <TableHead>
@@ -183,10 +225,16 @@ const StudentManagement = props => {
           </TableFooter>
         </Table>
       </TableContainer>
-
-      <PrimaryButton disabled={selected.length === 0} onClick={handleRemove}>
+      {console.log(alertOpen)}
+      <CollapsableAlert
+        open={alertOpen}
+        setOpen={setAlertOpen}
+        message={alert.message}
+        severity={alert.severity}
+      />
+      {/* <PrimaryButton disabled={selected.length === 0} onClick={handleRemove}>
         Remove Selected
-      </PrimaryButton>
+      </PrimaryButton> */}
     </Container>
   )
 }

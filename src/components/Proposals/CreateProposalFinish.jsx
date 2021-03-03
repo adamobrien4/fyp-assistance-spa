@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import PropTypes from 'prop-types'
 
+import { PhaseContext } from '../../contexts/PhaseContext'
 import { useData } from '../../contexts/CreateProposalContext'
 import { useHistory } from 'react-router-dom'
 
@@ -17,6 +18,7 @@ import Breadcrumb from './Breadcrumb'
 const CreateProposal = props => {
   // CreateProposal Context
   const { setContextData, contextData } = useData()
+  const { currentPhase } = useContext(PhaseContext)
 
   const history = useHistory()
 
@@ -100,24 +102,38 @@ const CreateProposal = props => {
         </>
       ) : null}
 
-      <PrimaryButton
-        onClick={() => handleNextStep(true)}
-        endIcon={
-          <Tooltip title="Not editable after submission">
-            <HelpIcon />
-          </Tooltip>
-        }>
-        Submit Proposal to Supervisor
-      </PrimaryButton>
-      <PrimaryButton
-        onClick={() => handleNextStep(false)}
-        endIcon={
-          <Tooltip title="Editable until submitted">
-            <HelpIcon />
-          </Tooltip>
-        }>
-        Save Proposal as Draft
-      </PrimaryButton>
+      {currentPhase.phase === 4 ? (
+        <>
+          <PrimaryButton
+            onClick={() => handleNextStep(true)}
+            endIcon={
+              <Tooltip title="Not editable after submission">
+                <HelpIcon />
+              </Tooltip>
+            }>
+            Submit Proposal
+          </PrimaryButton>
+          <PrimaryButton
+            onClick={() => handleNextStep(false)}
+            endIcon={
+              <Tooltip title="Editable until submitted">
+                <HelpIcon />
+              </Tooltip>
+            }>
+            Save Proposal as Draft
+          </PrimaryButton>
+        </>
+      ) : (
+        <PrimaryButton
+          onClick={() => handleNextStep(true)}
+          endIcon={
+            <Tooltip title="Not editable after submission">
+              <HelpIcon />
+            </Tooltip>
+          }>
+          Submit Proposal
+        </PrimaryButton>
+      )}
     </Container>
   )
 }

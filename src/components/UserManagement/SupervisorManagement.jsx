@@ -158,7 +158,7 @@ const SupervisorManagement = props => {
   return (
     <Container maxwidth="md">
       <Link to="/supervisor/assign">
-        <PrimaryButton>Assign Supervisors</PrimaryButton>
+        <PrimaryButton>Go to Assign Supervisors Page</PrimaryButton>
       </Link>
       <Input label="Search" onChange={handleSearch} />
 
@@ -195,11 +195,6 @@ const SupervisorManagement = props => {
                   </TableCell>
                   <TableCell align="right">{supervisor.email}</TableCell>
                   <TableCell align="right">
-                    {/*<PrimaryButton
-                      style={{ width: '25%', margin: 0 }}
-                      startIcon={<Edit />}>
-                      View
-                    </PrimaryButton>*/}
                     {/* TODO: Add loading etc when removing supervisor */}
                     <PrimaryButton
                       onClick={() => handleRemoveSingle(supervisor._id)}

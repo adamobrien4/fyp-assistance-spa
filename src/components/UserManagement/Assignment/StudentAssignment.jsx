@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import api from '../../../utils/api.axios'
 
-import { Typography, Container } from '@material-ui/core'
+import { Typography, Container, Divider } from '@material-ui/core'
 
 import PrimaryButton from '../../PrimaryButton'
 import UploadButton from './UploadButton'
@@ -58,9 +58,12 @@ const StudentAssignment = props => {
 
   const onAddBulk = bulkStudents => {
     let studentsList = [...students]
+    console.log('studentsList', studentsList)
+    console.log('bulkStudents', bulkStudents)
     for (let student of bulkStudents) {
       // Skip any empty rows or strings
       if (!student || student.length === 0) {
+        console.log('Skipping', student)
         return
       }
       studentsList.push({
@@ -85,7 +88,7 @@ const StudentAssignment = props => {
     api
       .post('/student/assign', body)
       .then(res => {
-        console.log(res.data.students)
+        console.log(res.data)
         if (res.data.students.length > 0) {
           let studentsMap = [...students]
           let emailsMap = students.map(student => student.email)
@@ -108,14 +111,26 @@ const StudentAssignment = props => {
           console.log(remainingStudents)
           if (remainingStudents.length > 0) {
             setAlert({
-              message: 'Could not add the following student emails',
+              message:
+                'Could not add the following student emails (Hover email for more details)',
               severity: 'error'
             })
-            setAlertOpen(true)
+          } else {
+            setAlert({
+              message: 'All students were sucessfully added',
+              severity: 'success'
+            })
           }
+          setAlertOpen(true)
           return setStudents(remainingStudents)
         }
         setStudents([])
+        setAlert({
+          message: 'All students were sucessfully added',
+          severity: 'success'
+        })
+
+        setAlertOpen(true)
       })
       .catch(err => {
         console.log(err)
@@ -124,6 +139,11 @@ const StudentAssignment = props => {
 
   const onChangeEmailPrefix = e => {
     setIncludeEmailPrefix(e.target.checked)
+  }
+
+  const handleRemove = studentEmail => {
+    let filteredStudents = students.filter(s => s.email !== studentEmail)
+    setStudents(filteredStudents)
   }
 
   const endAdornment = includeEmailPrefix ? (
@@ -135,44 +155,52 @@ const StudentAssignment = props => {
   )
 
   return (
-    <Container>
+    <Container maxWidth="lg">
       <BackButton />
       <Typography variant="h6">Upload CSV file</Typography>
       <CSVUploader onAdd={onAddBulk} />
-      <Container maxWidth="md">
-        <Typography variant="h6">Add Individual Student</Typography>
-        <UserEmailInputField
-          email={currentEmail}
-          endAdornment={endAdornment}
-          onChange={onChange}
-          includeEmailPrefix={includeEmailPrefix}
-          onChangeEmailPrefix={onChangeEmailPrefix}
-          onAdd={onAdd}
-        />
 
-        <br />
+      <br />
+      <Divider />
+      <br />
 
-        <CollapsableAlert
-          open={alertOpen}
-          setOpen={setAlertOpen}
-          message={alert.message}
-          severity={alert.severity}
-        />
+      <Typography variant="h6">Add Individual Student</Typography>
+      <UserEmailInputField
+        email={currentEmail}
+        endAdornment={endAdornment}
+        onChange={onChange}
+        includeEmailPrefix={includeEmailPrefix}
+        onChangeEmailPrefix={onChangeEmailPrefix}
+        onAdd={onAdd}
+      />
 
-        <br />
+      <br />
 
-        <PaginatedTable value={students} />
+      <CollapsableAlert
+        open={alertOpen}
+        setOpen={setAlertOpen}
+        message={alert.message}
+        severity={alert.severity}
+      />
 
-        <UploadButton disabled={!students.length} onUpload={onUpload} />
-        <PrimaryButton
-          type="text"
-          color="secondary"
-          onClick={() => {
-            setStudents([])
-          }}>
-          Clear Student List
-        </PrimaryButton>
-      </Container>
+      <br />
+
+      <PaginatedTable
+        value={students}
+        removableEntries
+        removeEntry={handleRemove}
+      />
+
+      <UploadButton disabled={!students.length} onUpload={onUpload} />
+      <PrimaryButton
+        type="text"
+        color="secondary"
+        onClick={() => {
+          setStudents([])
+          setAlertOpen(false)
+        }}>
+        Clear Student List
+      </PrimaryButton>
     </Container>
   )
 }

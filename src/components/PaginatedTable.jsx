@@ -15,8 +15,10 @@ import {
   TableRow,
   Tooltip,
   Paper,
-  IconButton
+  IconButton,
+  Button
 } from '@material-ui/core'
+import DeleteIcon from '@material-ui/icons/Delete'
 import { makeStyles } from '@material-ui/core/styles'
 
 const useStyles = makeStyles(theme => ({
@@ -107,12 +109,17 @@ const PaginatedTable = props => {
         <TableHead>
           <TableRow>
             <TableCell>Email</TableCell>
+            {props.removableEntries ? (
+              <TableCell align="right">Actions</TableCell>
+            ) : null}
           </TableRow>
         </TableHead>
         <TableBody>
           {visable.length === 0 ? (
             <TableRow>
-              <TableCell>No Users to display</TableCell>
+              <TableCell colspan={props.removableEntries ? 2 : 1}>
+                No Users to display
+              </TableCell>
             </TableRow>
           ) : (
             (rowsPerPage > 0
@@ -132,6 +139,17 @@ const PaginatedTable = props => {
                     {user.email}
                   </TableCell>
                 </Tooltip>
+                {props.removableEntries ? (
+                  <TableCell align="right">
+                    <Button
+                      variant="outlined"
+                      color="secondary"
+                      startIcon={<DeleteIcon />}
+                      onClick={() => props.removeEntry(user.email)}>
+                      Remove
+                    </Button>
+                  </TableCell>
+                ) : null}
               </TableRow>
             ))
           )}
@@ -160,7 +178,9 @@ const PaginatedTable = props => {
 }
 
 PaginatedTable.propTypes = {
-  value: PropTypes.array.isRequired
+  value: PropTypes.array.isRequired,
+  removableEntries: PropTypes.bool,
+  removeEntry: PropTypes.func
 }
 
 export default PaginatedTable

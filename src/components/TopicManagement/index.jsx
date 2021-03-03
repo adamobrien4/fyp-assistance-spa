@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react'
 import PropTypes from 'prop-types'
-import { Link } from 'react-router-dom'
+import { Link, useHistory } from 'react-router-dom'
 
 import {
   Container,
@@ -93,8 +93,10 @@ export default function TopicManagement(props) {
     false
   )
   const [submittingTopics, setSubmittingTopics] = useState(false)
+  const [submitAllowed, setSubmitAllowed] = useState(false)
 
   const { currentPhase } = useContext(PhaseContext)
+  const history = useHistory()
 
   useEffect(() => {
     refreshTopicList()
@@ -120,6 +122,8 @@ export default function TopicManagement(props) {
         let retrievedTopics = []
         let customTopic = false
 
+        let hasSuggestionReady = false
+
         res.data.topics.forEach(topic => {
           if (topic.type === 'regular') {
             retrievedTopics.push(topic)
@@ -132,7 +136,13 @@ export default function TopicManagement(props) {
             console.error('Unknown topic type')
             console.log(topic)
           }
+
+          if (topic.status === 'suggestion') {
+            hasSuggestionReady = true
+          }
         })
+
+        setSubmitAllowed(hasSuggestionReady)
 
         setTopics(retrievedTopics)
         setCustomTopic(customTopic)
@@ -262,7 +272,9 @@ export default function TopicManagement(props) {
               <TableRow>
                 <TableCell>Title</TableCell>
                 <TableCell align="center">Status</TableCell>
-                <TableCell align="right">Proposals</TableCell>
+                <TableCell align="right">
+                  {currentPhase.phase === 4 ? 'Proposals' : 'Actions'}
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -287,11 +299,17 @@ export default function TopicManagement(props) {
                     <TableCell align="center">
                       {topicStatusToHumanFriendlyString(topic.status)}
                     </TableCell>
-                    <TableCell align="right">
-                      <Can I="takeActionPhaseFour" this={currentPhase}>
-                        <Link to={`/topic/${topic._id}`}>6 Submissions</Link>
-                      </Can>
-                    </TableCell>
+                    {currentPhase.phase === 4 ? (
+                      <TableCell align="right">
+                        <Can I="takeActionPhaseFour" this={currentPhase}>
+                          <Link to={`/topic/${topic._id}`}>6 Submissions</Link>
+                        </Can>
+                      </TableCell>
+                    ) : (
+                      <TableCell align="right">
+                        <Button variant="contained">Next Step</Button>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))
               )}
@@ -321,13 +339,23 @@ export default function TopicManagement(props) {
         </TableContainer>
 
         <Can I="takeActionPhaseTwo" this={currentPhase}>
-          <Link to="/topics/add">
-            <Button variant="outlined">Create new Topic / Suggestion</Button>
-          </Link>
+          <div style={{ display: 'flex', flexDirection: 'row' }}>
+            <PrimaryButton
+              type="button"
+              onClick={() => history.push('/topics/add')}
+              variant="outlined"
+              style={{ flex: 1, flexGrow: 4 }}>
+              Add new Topic Suggestion
+            </PrimaryButton>
 
-          <PrimaryButton onClick={handlePreSubmitTopics}>
-            Submit Suggestions
-          </PrimaryButton>
+            {/* TODO: Inform user why the button is disabled */}
+            <PrimaryButton
+              disabled={!submitAllowed}
+              onClick={handlePreSubmitTopics}
+              style={{ flex: 1, flexGrow: 4 }}>
+              Submit Suggestions
+            </PrimaryButton>
+          </div>
         </Can>
 
         <Typography>Editing a Topic</Typography>
@@ -342,7 +370,9 @@ export default function TopicManagement(props) {
         <Typography>Viewing Topic proposals</Typography>
         <Typography variant="paragraph">
           *Note: Viewing topic proposals will only become available during phase
-          4. <Link to="/help/phases">What are Phases?</Link>
+          4. <br />
+          <Link to="/help/phases">What are Phases?</Link>
+          <br />
           To view all proposals students have sent to your topics, click on the
           link below the `Proposals` on the above table.
         </Typography>
