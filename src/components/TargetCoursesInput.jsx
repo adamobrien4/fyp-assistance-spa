@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { Controller } from 'react-hook-form'
 
-import Autocomplete from '@material-ui/lab/AutoComplete'
+import { Autocomplete } from '@material-ui/lab'
 import Input from './Input'
 
 // TODO: Load courses from DB
