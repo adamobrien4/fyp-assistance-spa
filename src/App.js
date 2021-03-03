@@ -129,23 +129,12 @@ function App() {
                   endDate: null
                 })
               }
-
-              console.log('phase', phase)
-
-              // Testing
-              phase = {
-                phase: 3,
-                startDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10),
-                endDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 10)
-              }
               setCurrentPhase(phase)
 
               let userObject = {
                 role,
                 id: account.localAccountId
               }
-
-              console.log(userObject)
 
               if (userObject.role) {
                 setUserObject(userObject)

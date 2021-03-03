@@ -24,6 +24,8 @@ import SendIcon from '@material-ui/icons/Send'
 import ExitToAppIcon from '@material-ui/icons/ExitToApp'
 import AccountCircleIcon from '@material-ui/icons/AccountCircle'
 
+import ChangePhase from './Development/ChangePhase'
+
 const useStyles = makeStyles(theme => ({
   navDisplayFlex: {
     display: 'flex',
@@ -121,6 +123,9 @@ export default function NavBar(props) {
             </Link>
           </Can>
         </Can>
+
+        {/* Allow user to change current system phase */}
+        {process.env.REACT_APP_ALLOW_USER_PHASE_CHANGE ? <ChangePhase /> : null}
       </div>
 
       {/* User Avatar */}
