@@ -36,14 +36,8 @@ const config = {
 const msalConfig = {
   auth: {
     clientId: config.auth.clientId,
-    redirectUri:
-      process.env.REACT_APP_STAGE === 'dev'
-        ? process.env.REACT_APP_DEV_REDIRECT_URL
-        : process.env.REACT_APP_PROD_REDIRECT_URL,
-    postLogoutRedirectUri:
-      process.env.REACT_APP_STAGE === 'dev'
-        ? process.env.REACT_APP_DEV_POST_LOGOUT_URL
-        : process.env.REACT_APP_PROD_POST_LOGOUT_URL
+    redirectUri: process.env.REACT_APP_REDIRECT_URL,
+    postLogoutRedirectUri: process.env.REACT_APP_POST_LOGOUT_URL
   }
 }
 
