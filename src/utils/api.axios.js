@@ -15,6 +15,8 @@ const service = axios.create({
 service.interceptors.request.use(async req => {
   console.log('Sending request')
 
+  console.log(req)
+
   let request = {
     authority: `${config.endpoints.login}/${config.auth.tenantId}`,
     scopes: config.auth.scopes.customApi,

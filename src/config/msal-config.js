@@ -1,4 +1,4 @@
-export const config = {
+const sharedConfig = {
   auth: {
     clientId: '3ee9d15a-60e1-4aea-b21d-bd09d831e62c',
     tenantId: 'a7dbec41-2d60-49c3-a1c8-790d52eaec3c',
@@ -33,15 +33,43 @@ export const config = {
   }
 }
 
-export const msalConfig = {
-  auth: {
-    clientId: config.auth.clientId,
-    redirectUri: 'http://localhost:3000',
-    postLogoutRedirectUri: 'http://localhost:3000'
+const devConfig = {
+  ...sharedConfig,
+  endpoints: {
+    graph: 'https://graph.microsoft.com/v1.0',
+    login: 'https://login.microsoftonline.com',
+    customApi: process.env.REACT_APP_DEV_API_URL
   }
 }
 
-export const loginRequest = {
+const prodConfig = {
+  ...sharedConfig,
+  endpoints: {
+    graph: 'https://graph.microsoft.com/v1.0',
+    login: 'https://login.microsoftonline.com',
+    customApi: process.env.REACT_APP_PROD_API_URL
+  }
+}
+
+const config = process.env.REACT_APP_STAGE === 'dev' ? devConfig : prodConfig
+
+const msalConfig = {
+  auth: {
+    clientId: config.auth.clientId,
+    redirectUri:
+      process.env.REACT_APP_STAGE === 'dev'
+        ? process.env.REACT_APP_DEV_REDIRECT_URL
+        : process.env.REACT_APP_PROD_REDIRECT_URL,
+    postLogoutRedirectUri:
+      process.env.REACT_APP_STAGE === 'dev'
+        ? process.env.REACT_APP_DEV_POST_LOGOUT_URL
+        : process.env.REACT_APP_PROD_POST_LOGOUT_URL
+  }
+}
+
+const loginRequest = {
   authority: `${config.endpoints.login}/${config.auth.tenantId}`,
   scopes: ['user.read', 'offline_access']
 }
+
+export { msalConfig, loginRequest, config }
