@@ -8,15 +8,13 @@ import {
 } from '@azure/msal-react'
 import { InteractionType } from '@azure/msal-browser'
 
-import api from './utils/api.axios'
-
 import { loginRequest, config } from './config/msal-config'
 
 import { AuthContext } from './contexts/AuthContext'
 import { PhaseContext } from './contexts/PhaseContext'
 import { AbilityContext } from './Auth/Can'
 import generateAbilitiesFor from './Auth/ability'
-import { setup as apiSetup } from './utils/api.axios'
+import api, { setup as apiSetup } from './utils/api.axios'
 import axiosGraphInstance, { setup as graphSetup } from './utils/graph.axios'
 
 import { Toolbar } from '@material-ui/core'
@@ -43,7 +41,6 @@ import SupervisorManagement from './components/UserManagement/SupervisorManageme
 // Coordinator Imports
 import CoordinatorManagement from './components/UserManagement/Coordinator/CoordinatorManagement'
 import Header from './components/Header'
-import Button from '@material-ui/core/Button'
 import ManageProposal from './components/Proposals/ManageProposal'
 import ViewTopic from './components/ViewTopic'
 
@@ -63,8 +60,6 @@ import PhaseManagement from './components/PhaseManagement'
 import Phase from './Auth/Phase'
 
 import HelpPage from './components/Help/HelpPage'
-
-import Test from './components/Test'
 
 function App() {
   const [appReady, setAppReady] = useState(false)
@@ -189,7 +184,6 @@ function App() {
 }
 
 const Pages = props => {
-  const { instance } = useMsal()
   const ability = generateAbilitiesFor(props.user)
   const { currentPhase } = useContext(PhaseContext)
 
@@ -202,10 +196,6 @@ const Pages = props => {
   // Implement Can functionality to only show available routes
   return (
     <Switch>
-      <Route exact path="/test">
-        <Test />
-      </Route>
-
       <Route exact path="/">
         {currentPhase.phase !== 0 ? (
           props?.user?.role ? (
@@ -221,10 +211,6 @@ const Pages = props => {
       <Route exact path="/help">
         <HelpPage />
       </Route>
-
-      {ability.can('manage', 'Topic') && (
-        <Route path="/test" component={Test} />
-      )}
 
       {ability.can('read', 'Topic') && allowForPhase([3, 4]) && (
         <Route exact path="/topics">
