@@ -1,24 +1,37 @@
 import React, { useContext } from 'react'
 import { PhaseContext } from '../contexts/PhaseContext'
-import { useMsal } from '@azure/msal-react'
+import { AuthContext } from '../contexts/AuthContext'
 
 import CountdownToDate from './CountdownToDate'
-import { Typography, Container } from '@material-ui/core'
+import { Typography, Container, Divider } from '@material-ui/core'
 
-const phaseActions = {
-  1: ['Supervisors assigned to system', 'Students assigned to system'],
-  2: ['Topic suggestions drafting'],
-  3: ['TopicList available to be viewed', 'Student proposal drafting'],
-  4: ['Student proposal submission', 'Supervisors can respond to proposals']
-}
+import { makeStyles } from '@material-ui/core/styles'
+
+const useStyles = makeStyles(theme => ({
+  phaseBreakdownTitle: {
+    fontSize: '32px'
+  },
+  phaseTitle: {
+    fontSize: '25px'
+  }
+}))
 
 function Welcome() {
   const { currentPhase } = useContext(PhaseContext)
+  const { user } = useContext(AuthContext)
+  const classes = useStyles()
 
   console.log(currentPhase)
 
   return (
     <Container maxWidth="lg">
+      <Typography align="center" variant="h3" style={{ margin: '40px' }}>
+        Final Year Project Management System
+      </Typography>
+      <Typography style={{ margin: '20px' }} align="center">
+        Welcome to the FYP Management system.
+      </Typography>
+      <Typography varint="paragraph"></Typography>
       <Typography style={{ fontSize: '40px' }} align="center">
         Current Phase{' '}
         <span style={{ fontWeight: 'bold' }}>{currentPhase.phase}</span>
@@ -28,24 +41,35 @@ function Welcome() {
         until next phase
       </Typography>
 
-      <ul>
-        {phaseActions[currentPhase.phase].map(action => (
-          <li key={action}>{action}</li>
-        ))}
-      </ul>
+      <Divider />
 
-      {currentPhase.phase < 4 ? (
-        <>
-          <Typography align="center">
-            Actions available in next phase
-          </Typography>
-          <ul>
-            {phaseActions[currentPhase.phase + 1].map(action => (
-              <li key={action}>{action}</li>
-            ))}
-          </ul>
-        </>
-      ) : null}
+      <Typography align="center" className={classes.phaseBreakdownTitle}>
+        Task Breakdown
+      </Typography>
+      <Typography align="center" className={classes.phaseTitle}>
+        Phase 1
+      </Typography>
+      <Typography align="center">
+        Administrator assigns Corrdinator to system. System phases are setup.
+      </Typography>
+      <Typography align="center" className={classes.phaseTitle}>
+        Phase 2
+      </Typography>
+      <Typography align="center">
+        Students and Supervisors are assigned to the system.
+      </Typography>
+      <Typography align="center" className={classes.phaseTitle}>
+        Phase 3
+      </Typography>
+      <Typography align="center">
+        Supervisors can create their topics.
+      </Typography>
+      <Typography align="center" className={classes.phaseTitle}>
+        Phase 4
+      </Typography>
+      <Typography align="center">
+        Students can review topics and send project proposals.
+      </Typography>
     </Container>
   )
 }

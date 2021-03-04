@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
-import { useForm, Controller } from 'react-hook-form'
-import * as _ from 'lodash'
+import { useForm } from 'react-hook-form'
 
 import {
   Dialog,
@@ -11,9 +10,6 @@ import {
   Button,
   DialogActions,
   Divider,
-  FormControl,
-  Select,
-  MenuItem,
   CircularProgress
 } from '@material-ui/core'
 import { Edit, Cancel } from '@material-ui/icons'
@@ -24,11 +20,10 @@ import api from '../../utils/api.axios'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { editFormSchema } from '../../utils/yupSchemas/yupTopicSchema.js'
 
-import Input from '../Input'
-import MultiLineInput from '../MultiLineInput'
 import PrimaryButton from '../PrimaryButton'
-import Tags from '../Tags'
-import TargetCoursesInput from '../TargetCoursesInput'
+
+import RegularTopicModalContents from './RegularTopicModalContents'
+import StudentDefinedTopicModalContents from './StudentDefinedTopicModalContents'
 
 const useStyles = makeStyles(theme => ({
   formControl: {
@@ -180,143 +175,19 @@ const TopicModal = props => {
       <DialogContent>
         <form onSubmit={handleSubmit(onSubmit)}>
           {props.topic.type === 'regular' ? (
-            <>
-              <Input
-                ref={register}
-                name="title"
-                label="Title"
-                disabled={!editMode}
-                variant="outlined"
-                margin="none"
-                style={{ flex: '3', marginRight: '40px' }}
-                error={!!errors.title}
-                helperText={errors?.title?.message}
-              />
-              <MultiLineInput
-                inputRef={register}
-                name="description"
-                label="Description"
-                disabled={!editMode}
-                error={!!errors.description}
-                helperText={errors?.description?.message}
-              />
-
-              <Controller
-                control={control}
-                name="tags"
-                render={({ onChange, value }) => (
-                  <Tags
-                    value={value}
-                    onChange={vals => {
-                      onChange(vals)
-                    }}
-                    error={!!errors?.tags}
-                    helperText={errors?.tags?.message}
-                    disabled={!editMode}
-                  />
-                )}
-              />
-
-              <MultiLineInput
-                inputRef={register}
-                label="Additional Notes"
-                name="additionalNotes"
-                disabled={!editMode}
-                error={!!errors.additionalNotes}
-                helperText={errors?.additionalNotes?.message}
-              />
-
-              <TargetCoursesInput
-                control={control}
-                error={!!errors.targetCourses}
-                helperText={errors?.targetCourses?.message}
-                disabled={!editMode}
-              />
-
-              <FormControl
-                variant="outlined"
-                className={classes.formControl}
-                fullWidth>
-                <label>Status</label>
-                <Controller
-                  render={({ onChange, value }) => (
-                    <Select
-                      disabled={!editMode}
-                      value={value}
-                      onChange={onChange}>
-                      <MenuItem value="draft">Draft</MenuItem>
-                      <MenuItem value="archived" style={{ color: 'red' }}>
-                        Archived
-                      </MenuItem>
-                      <MenuItem value="active" disabled>
-                        Active
-                      </MenuItem>
-                      <MenuItem value="assigned" disabled>
-                        Assigned
-                      </MenuItem>
-                      <MenuItem value="prev_term" disabled>
-                        From Previous Term
-                      </MenuItem>
-                    </Select>
-                  )}
-                  name="status"
-                  control={control}
-                  error={!!errors.status}
-                  helperText={errors?.status?.message}
-                />
-              </FormControl>
-            </>
+            <RegularTopicModalContents
+              register={register}
+              control={control}
+              errors={errors}
+              editMode={editMode}
+            />
           ) : (
-            <>
-              <Input
-                inputRef={register}
-                label="Title"
-                variant="outlined"
-                margin="none"
-                name="title"
-                inputProps={{ readOnly: true }}
-              />
-              <MultiLineInput
-                inputRef={register}
-                name="description"
-                label="Description"
-                disabled={!editMode}
-                error={!!errors.description}
-                helperText={errors?.description?.message}
-              />
-
-              <Controller
-                control={control}
-                name="tags"
-                render={({ onChange, value }) => (
-                  <Tags
-                    value={value}
-                    onChange={vals => {
-                      onChange(vals)
-                    }}
-                    error={!!errors?.tags}
-                    helperText={errors?.tags?.message}
-                    disabled={!editMode}
-                  />
-                )}
-              />
-
-              <MultiLineInput
-                inputRef={register}
-                label="Additional Notes"
-                name="additionalNotes"
-                disabled={!editMode}
-                error={!!errors.additionalNotes}
-                helperText={errors?.additionalNotes?.message}
-              />
-
-              <TargetCoursesInput
-                control={control}
-                error={!!errors.targetCourses}
-                helperText={errors?.targetCourses?.message}
-                disabled={!editMode}
-              />
-            </>
+            <StudentDefinedTopicModalContents
+              register={register}
+              control={control}
+              errors={errors}
+              editMode={editMode}
+            />
           )}
 
           {editMode && (

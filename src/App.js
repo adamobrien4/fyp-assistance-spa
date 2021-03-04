@@ -281,19 +281,19 @@ const Pages = props => {
         </Route>
       )}
 
-      {ability.can('manage', 'Student') && allowForPhase(1) && (
+      {ability.can('manage', 'Student') && (
         <Route path="/student/manage">
           <StudentManagement />
         </Route>
       )}
 
-      {ability.can('manage', 'Supervisor') && allowForPhase(1) && (
+      {ability.can('manage', 'Supervisor') && (
         <Route path="/supervisor/assign">
           <SupervisorAssignment />
         </Route>
       )}
 
-      {ability.can('manage', 'Supervisor') && allowForPhase(1) && (
+      {ability.can('manage', 'Supervisor') && (
         <Route path="/supervisor/manage">
           <SupervisorManagement />
         </Route>
@@ -302,12 +302,6 @@ const Pages = props => {
       {ability.can('manage', 'Coordinator') && allowForPhase(1) && (
         <Route path="/coordinator">
           <CoordinatorManagement />
-        </Route>
-      )}
-
-      {ability.can('manage', 'Coordinator') && (
-        <Route path="/settings">
-          <Settings />
         </Route>
       )}
 

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react'
 import PropTypes from 'prop-types'
 import { Link, useHistory } from 'react-router-dom'
-import { useMsal } from '@azure/msal-react'
 
 import {
   Container,
@@ -22,8 +21,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  Switch,
-  Tooltip
+  Switch
 } from '@material-ui/core'
 
 import { PhaseContext } from '../../contexts/PhaseContext'
@@ -80,12 +78,10 @@ SubmissionDialog.propTypes = {
   setOpen: PropTypes.func.isRequired,
   checked: PropTypes.bool.isRequired,
   setChecked: PropTypes.func.isRequired,
-  setDialogOpen: PropTypes.func.isRequired,
   proceed: PropTypes.func.isRequired
 }
 
 export default function TopicManagement(props) {
-  const { accounts } = useMsal()
   const [topics, setTopics] = useState([])
   const [customTopic, setCustomTopic] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -97,7 +93,7 @@ export default function TopicManagement(props) {
     false
   )
   const [submittingTopics, setSubmittingTopics] = useState(false)
-  const [submitAllowed, setSubmitAllowed] = useState(false)
+  // const [submitAllowed, setSubmitAllowed] = useState(false)
 
   const [changingSupervisionStatus, setChangingSupervisionStatus] = useState(
     false
@@ -108,17 +104,6 @@ export default function TopicManagement(props) {
 
   useEffect(() => {
     refreshTopicList()
-
-    api
-      .get('/me/studentProjectAvailibility')
-      .then(res => {
-        console.log(res)
-
-        setCustomTopic(res.data.topic)
-      })
-      .catch(err => {
-        console.log(err)
-      })
   }, [])
 
   const refreshTopicList = () => {
@@ -130,7 +115,7 @@ export default function TopicManagement(props) {
         let retrievedTopics = []
         let customTopic = false
 
-        let hasSuggestionReady = false
+        // let hasSuggestionReady = false
 
         res.data.topics.forEach(topic => {
           if (topic.type === 'regular') {
@@ -145,12 +130,12 @@ export default function TopicManagement(props) {
             console.log(topic)
           }
 
-          if (topic.status === 'suggestion') {
-            hasSuggestionReady = true
-          }
+          // if (topic.status === 'suggestion') {
+          //   hasSuggestionReady = true
+          // }
         })
 
-        setSubmitAllowed(hasSuggestionReady)
+        // setSubmitAllowed(hasSuggestionReady)
 
         setTopics(retrievedTopics)
         setCustomTopic(customTopic)
@@ -172,27 +157,27 @@ export default function TopicManagement(props) {
       })
   }
 
-  const handlePreSubmitTopics = e => {
-    let hasSuggestion = false
-    for (let topic of topics) {
-      if (topic.status === 'suggestion') {
-        hasSuggestion = true
-        break
-      }
-    }
+  // const handlePreSubmitTopics = e => {
+  //   let hasSuggestion = false
+  //   for (let topic of topics) {
+  //     if (topic.status === 'suggestion') {
+  //       hasSuggestion = true
+  //       break
+  //     }
+  //   }
 
-    if (customTopic.status === 'suggestion') {
-      hasSuggestion = true
-    }
+  //   if (customTopic.status === 'suggestion') {
+  //     hasSuggestion = true
+  //   }
 
-    if (hasSuggestion) {
-      setSubmissionDialogOpen(true)
-    } else {
-      alert(
-        'You must have at least one topic marked as "Ready for Submision" before you submit your topics'
-      )
-    }
-  }
+  //   if (hasSuggestion) {
+  //     setSubmissionDialogOpen(true)
+  //   } else {
+  //     alert(
+  //       'You must have at least one topic marked as "Ready for Submision" before you submit your topics'
+  //     )
+  //   }
+  // }
 
   const handleSubmitTopics = () => {
     if (proceedSubmissionChecked) {
@@ -280,7 +265,7 @@ export default function TopicManagement(props) {
                 control={
                   <Switch
                     disabled={changingSupervisionStatus}
-                    checked={customTopic}
+                    checked={!!customTopic}
                     onChange={handleSuperviseStudentProjectChange}
                   />
                 }
@@ -307,7 +292,9 @@ export default function TopicManagement(props) {
                     scope="row"
                     align="center"
                     colSpan={3}>
-                    <Typography>No Topics to display</Typography>
+                    <Typography>
+                      No Supervisor Defined Topics to display
+                    </Typography>
                   </TableCell>
                 </TableRow>
               ) : (
@@ -339,24 +326,26 @@ export default function TopicManagement(props) {
               )}
 
               {customTopic ? (
-                <TableRow key={customTopic._id}>
-                  <TableCell component="th" scope="row">
-                    <MuiLink
-                      onClick={() => openTopicDetailsDialog(customTopic)}>
-                      {customTopic.title}
-                    </MuiLink>
-                  </TableCell>
-                  <TableCell align="center">
-                    {topicStatusToHumanFriendlyString(customTopic.status)}
-                  </TableCell>
-                  <TableCell align="right">
-                    <Can I="takeActionPhaseFour" this={currentPhase}>
-                      <Link to={`/topic/${customTopic._id}`}>
-                        {customTopic.proposalCount} Proposals
-                      </Link>
-                    </Can>
-                  </TableCell>
-                </TableRow>
+                <>
+                  <TableRow key={customTopic._id}>
+                    <TableCell component="th" scope="row">
+                      <MuiLink
+                        onClick={() => openTopicDetailsDialog(customTopic)}>
+                        {customTopic.title}
+                      </MuiLink>
+                    </TableCell>
+                    <TableCell align="center">
+                      {topicStatusToHumanFriendlyString(customTopic.status)}
+                    </TableCell>
+                    <TableCell align="right">
+                      <Can I="takeActionPhaseFour" this={currentPhase}>
+                        <Link to={`/topic/${customTopic._id}`}>
+                          {customTopic.proposalCount} Proposals
+                        </Link>
+                      </Can>
+                    </TableCell>
+                  </TableRow>
+                </>
               ) : null}
             </TableBody>
           </Table>
@@ -372,12 +361,12 @@ export default function TopicManagement(props) {
             </PrimaryButton>
 
             {/* TODO: Inform user why the button is disabled */}
-            {/*<PrimaryButton
+            {/* <PrimaryButton
               disabled={!submitAllowed}
               onClick={handlePreSubmitTopics}
               style={{ flex: 1, flexGrow: 4 }}>
               Submit Topic Suggestions
-            </PrimaryButton>*/}
+            </PrimaryButton> */}
           </div>
         </Can>
       </Container>

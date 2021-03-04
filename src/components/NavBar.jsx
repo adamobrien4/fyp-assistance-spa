@@ -102,17 +102,15 @@ export default function NavBar(props) {
         )}
 
         {/* Coordinator */}
-        <Can I="takeActionPhaseOne" this={currentPhase}>
-          <Can I="manage" a="Student">
-            <Link to="/student/manage" className={styles.linkButton}>
-              <Button className={styles.linkText}>Manage Students</Button>
-            </Link>
-          </Can>
-          <Can I="manage" a="Supervisor">
-            <Link to="/supervisor/manage" className={styles.linkButton}>
-              <Button className={styles.linkText}>Manage Supervisors</Button>
-            </Link>
-          </Can>
+        <Can I="manage" a="Student">
+          <Link to="/student/manage" className={styles.linkButton}>
+            <Button className={styles.linkText}>Manage Students</Button>
+          </Link>
+        </Can>
+        <Can I="manage" a="Supervisor">
+          <Link to="/supervisor/manage" className={styles.linkButton}>
+            <Button className={styles.linkText}>Manage Supervisors</Button>
+          </Link>
         </Can>
 
         {/* Administrator / Coordinator */}
@@ -122,11 +120,11 @@ export default function NavBar(props) {
               <Button className={styles.linkText}>Manage Coordinators</Button>
             </Link>
           </Can>
-          <Can I="update" a="Phase">
-            <Link to="/phase/manage" className={styles.linkButton}>
-              <Button className={styles.linkText}>Manage Phases</Button>
-            </Link>
-          </Can>
+        </Can>
+        <Can I="update" a="Phase">
+          <Link to="/phase/manage" className={styles.linkButton}>
+            <Button className={styles.linkText}>Manage Phases</Button>
+          </Link>
         </Can>
 
         {/* Allow user to change current system phase */}
