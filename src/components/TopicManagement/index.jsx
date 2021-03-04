@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react'
 import PropTypes from 'prop-types'
 import { Link, useHistory } from 'react-router-dom'
+import { useMsal } from '@azure/msal-react'
 
 import {
   Container,
@@ -21,7 +22,8 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  Switch
+  Switch,
+  Tooltip
 } from '@material-ui/core'
 
 import { PhaseContext } from '../../contexts/PhaseContext'
@@ -40,9 +42,10 @@ const SubmissionDialog = props => {
       <DialogTitle id="form-dialog-title">Submit Topic Suggestions</DialogTitle>
       <DialogContent>
         <DialogContentText>
-          Are you sure you want to submit your topic suggestions?
+          {
+            'All topic suggestions marked as "Ready for Submission" will be submitted'
+          }
           <br />
-          <b>This can not be reverted</b>
         </DialogContentText>
         <FormControlLabel
           control={
@@ -82,6 +85,7 @@ SubmissionDialog.propTypes = {
 }
 
 export default function TopicManagement(props) {
+  const { accounts } = useMsal()
   const [topics, setTopics] = useState([])
   const [customTopic, setCustomTopic] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -94,6 +98,10 @@ export default function TopicManagement(props) {
   )
   const [submittingTopics, setSubmittingTopics] = useState(false)
   const [submitAllowed, setSubmitAllowed] = useState(false)
+
+  const [changingSupervisionStatus, setChangingSupervisionStatus] = useState(
+    false
+  )
 
   const { currentPhase } = useContext(PhaseContext)
   const history = useHistory()
@@ -173,6 +181,10 @@ export default function TopicManagement(props) {
       }
     }
 
+    if (customTopic.status === 'suggestion') {
+      hasSuggestion = true
+    }
+
     if (hasSuggestion) {
       setSubmissionDialogOpen(true)
     } else {
@@ -214,13 +226,17 @@ export default function TopicManagement(props) {
 
     console.log(body)
 
+    setChangingSupervisionStatus(true)
+
     api
       .post('/supervisor/me/studentProjectAvailibility', body)
       .then(res => {
         refreshTopicList()
       })
       .catch(err => console.log(err))
-      .finally(() => {})
+      .finally(() => {
+        setChangingSupervisionStatus(false)
+      })
   }
 
   if (loading) {
@@ -250,31 +266,37 @@ export default function TopicManagement(props) {
         proceed={handleSubmitTopics}
       />
       <Container maxWidth="lg">
+        <Typography align="center" variant="h4">
+          Topic Management
+        </Typography>
         <Can I="takeActionPhaseTwo" this={currentPhase}>
-          <Typography>
-            Do you want to be available to supervise student defined projects?
-            (Custom Student Projects)
-          </Typography>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={customTopic}
-                onChange={handleSuperviseStudentProjectChange}
+          <Paper elevation={2} style={{ marginTop: '20px' }}>
+            <Typography variant="h6" align="center">
+              Do you want to be available to supervise student defined projects?
+              (Custom Student Projects)
+            </Typography>
+            <center>
+              <FormControlLabel
+                control={
+                  <Switch
+                    disabled={changingSupervisionStatus}
+                    checked={customTopic}
+                    onChange={handleSuperviseStudentProjectChange}
+                  />
+                }
+                label="Supervise Student Defined Projects"
               />
-            }
-            label="Supervise Student Defined Projects"
-          />
+            </center>
+          </Paper>
         </Can>
 
         <TableContainer component={Paper} style={{ margin: '20px 0' }}>
           <Table style={{ minWidth: '650px' }} size="small">
             <TableHead>
               <TableRow>
-                <TableCell>Title</TableCell>
+                <TableCell>Title (Edit Topic)</TableCell>
                 <TableCell align="center">Status</TableCell>
-                <TableCell align="right">
-                  {currentPhase.phase === 4 ? 'Proposals' : 'Actions'}
-                </TableCell>
+                <TableCell align="right">Proposals</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -302,12 +324,14 @@ export default function TopicManagement(props) {
                     {currentPhase.phase === 4 ? (
                       <TableCell align="right">
                         <Can I="takeActionPhaseFour" this={currentPhase}>
-                          <Link to={`/topic/${topic._id}`}>6 Submissions</Link>
+                          <Link to={`/topic/${topic._id}`}>
+                            {topic.proposalCount} Proposals
+                          </Link>
                         </Can>
                       </TableCell>
                     ) : (
                       <TableCell align="right">
-                        <Button variant="contained">Next Step</Button>
+                        Proposals viewable in Phase 4
                       </TableCell>
                     )}
                   </TableRow>
@@ -328,7 +352,7 @@ export default function TopicManagement(props) {
                   <TableCell align="right">
                     <Can I="takeActionPhaseFour" this={currentPhase}>
                       <Link to={`/topic/${customTopic._id}`}>
-                        6 Submissions
+                        {customTopic.proposalCount} Proposals
                       </Link>
                     </Can>
                   </TableCell>
@@ -343,39 +367,19 @@ export default function TopicManagement(props) {
             <PrimaryButton
               type="button"
               onClick={() => history.push('/topics/add')}
-              variant="outlined"
               style={{ flex: 1, flexGrow: 4 }}>
               Add new Topic Suggestion
             </PrimaryButton>
 
             {/* TODO: Inform user why the button is disabled */}
-            <PrimaryButton
+            {/*<PrimaryButton
               disabled={!submitAllowed}
               onClick={handlePreSubmitTopics}
               style={{ flex: 1, flexGrow: 4 }}>
-              Submit Suggestions
-            </PrimaryButton>
+              Submit Topic Suggestions
+            </PrimaryButton>*/}
           </div>
         </Can>
-
-        <Typography>Editing a Topic</Typography>
-        <Typography variant="paragraph">
-          To edit a topic click on the `Topic Title` link on the table above. A
-          popup should be displayed containing all the Topic information. Click
-          the `Edit (Pencil)` icon in the top left to begin editing. Make any
-          necessary changes to the topic, then click the `Save Changes` button
-          at the bottom of the popup. To close the popup click the `Exit (X)`
-          icon in the top left.
-        </Typography>
-        <Typography>Viewing Topic proposals</Typography>
-        <Typography variant="paragraph">
-          *Note: Viewing topic proposals will only become available during phase
-          4. <br />
-          <Link to="/help/phases">What are Phases?</Link>
-          <br />
-          To view all proposals students have sent to your topics, click on the
-          link below the `Proposals` on the above table.
-        </Typography>
       </Container>
     </>
   )

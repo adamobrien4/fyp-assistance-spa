@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react'
 import PropTypes from 'prop-types'
-import { Switch, Route } from 'react-router-dom'
+import { Switch, Route, useHistory } from 'react-router-dom'
 import {
   MsalAuthenticationTemplate,
   useMsal,
@@ -60,6 +60,7 @@ import PhaseManagement from './components/PhaseManagement'
 import Phase from './Auth/Phase'
 
 import HelpPage from './components/Help/HelpPage'
+import APIUnavailable from './components/APIUnavailable'
 
 function App() {
   const [appReady, setAppReady] = useState(false)
@@ -69,86 +70,97 @@ function App() {
   const { user, setUserObject } = useContext(AuthContext)
   const { setCurrentPhase } = useContext(PhaseContext)
 
+  const history = useHistory()
+
   const authRequest = {
     ...loginRequest
   }
 
   useEffect(() => {
     if (account && inProgress === 'none') {
+      console.log('Setting up api')
       apiSetup(instance, account)
-      graphSetup(instance, account)
-      // TODO: Wait on this function to finish before allowing the user to continue to the website
-      // This will ensure all profile data is ready to use throughout the app
-      instance
-        .acquireTokenSilent({
-          ...loginRequest,
-          account: account
+        .then(r => {
+          console.log('API Setup returned', r)
+          graphSetup(instance, account)
+          // TODO: Wait on this function to finish before allowing the user to continue to the website
+          // This will ensure all profile data is ready to use throughout the app
+          instance
+            .acquireTokenSilent({
+              ...loginRequest,
+              account: account
+            })
+            .then(async response => {
+              // User is logged in
+              // FIXME: This is being called twice on user login, 2 requests to ms graph
+              console.log('User is logged in')
+
+              axiosGraphInstance
+                .get(`${config.endpoints.graph}/me/appRoleAssignments`)
+                .then(async resp => {
+                  let rolePriority = -1
+                  let role = null
+                  for (const roleData of resp.data.value) {
+                    const roleObject = config.appRoles[roleData.appRoleId]
+
+                    if (!roleObject) {
+                      console.log('Unknown role: ' + JSON.stringify(roleData))
+                      continue
+                    }
+
+                    const { priority, displayName } = roleObject
+                    if (priority > rolePriority) {
+                      rolePriority = priority
+                      role = displayName
+                    }
+                  }
+
+                  let phaseDoc = await api.get('/phase').catch(err => {
+                    console.log('Could not retrieve phase')
+                    console.log(err)
+                  })
+
+                  let phase = null
+
+                  if (phaseDoc.data.phase) {
+                    phase = new Phase({
+                      phase: phaseDoc.data.phase._id,
+                      startDate: phaseDoc.data.phase.start_date,
+                      endDate: phaseDoc.data.phase.end_date
+                    })
+                  } else {
+                    phase = new Phase({
+                      phase: 0,
+                      startDate: null,
+                      endDate: null
+                    })
+                  }
+                  setCurrentPhase(phase)
+
+                  let userObject = {
+                    role,
+                    id: account.localAccountId
+                  }
+
+                  if (userObject.role) {
+                    setUserObject(userObject)
+                    setAppReady(true)
+                  } else {
+                    // User has no assigned role
+                    setUserObject(userObject)
+                    setAppReady(true)
+                  }
+                })
+                .catch(err => {
+                  alert('Could not initialise your account, please try again')
+                  console.log(err)
+                })
+            })
         })
-        .then(async response => {
-          // User is logged in
-          // FIXME: This is being called twice on user login, 2 requests to ms graph
-          console.log('User is logged in')
-
-          axiosGraphInstance
-            .get(`${config.endpoints.graph}/me/appRoleAssignments`)
-            .then(async resp => {
-              let rolePriority = -1
-              let role = null
-              for (const roleData of resp.data.value) {
-                const roleObject = config.appRoles[roleData.appRoleId]
-
-                if (!roleObject) {
-                  console.log('Unknown role: ' + JSON.stringify(roleData))
-                  continue
-                }
-
-                const { priority, displayName } = roleObject
-                if (priority > rolePriority) {
-                  rolePriority = priority
-                  role = displayName
-                }
-              }
-
-              let phaseDoc = await api.get('/phase').catch(err => {
-                console.log('Could not retrieve phase')
-                console.log(err)
-              })
-
-              let phase = null
-
-              if (phaseDoc.data.phase) {
-                phase = new Phase({
-                  phase: phaseDoc.data.phase._id,
-                  startDate: phaseDoc.data.phase.start_date,
-                  endDate: phaseDoc.data.phase.end_date
-                })
-              } else {
-                phase = new Phase({
-                  phase: 0,
-                  startDate: null,
-                  endDate: null
-                })
-              }
-              setCurrentPhase(phase)
-
-              let userObject = {
-                role,
-                id: account.localAccountId
-              }
-
-              if (userObject.role) {
-                setUserObject(userObject)
-                setAppReady(true)
-              } else {
-                // User has no assigned role
-                setUserObject(userObject)
-                setAppReady(true)
-              }
-            })
-            .catch(err => {
-              alert('Could not initialise your account, please try again')
-              console.log(err)
-            })
+        .catch(err => {
+          // TODO: Handle unavailable API error
+          console.log(err)
+          alert('Unable to connect to API')
         })
     }
   }, [account, inProgress, instance])
@@ -199,6 +211,10 @@ const Pages = props => {
 
       <Route exact path="/help">
         <HelpPage />
+      </Route>
+
+      <Route path="/api-unavailable">
+        <APIUnavailable />
       </Route>
 
       {ability.can('read', 'Topic') && allowForPhase([3, 4]) && (

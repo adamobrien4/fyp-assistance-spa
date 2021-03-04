@@ -2,13 +2,9 @@ import React from 'react'
 import api from '../utils/api.axios'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
+import { useHistory } from 'react-router-dom'
 
-import {
-  Container,
-  Typography,
-  Switch,
-  FormControlLabel
-} from '@material-ui/core'
+import { Container, Typography } from '@material-ui/core'
 
 import { formSchema, defaultValues } from '../utils/yupSchemas/yupTopicSchema'
 
@@ -19,6 +15,7 @@ import Tags from './Tags'
 import TargetCoursesInput from './TargetCoursesInput'
 
 const AddTopicForm = props => {
+  const history = useHistory()
   const { register, handleSubmit, errors, control } = useForm({
     resolver: yupResolver(formSchema),
     reValidateMode: 'onChange',
@@ -32,9 +29,7 @@ const AddTopicForm = props => {
       .post('/topic/add', data)
       .then(resp => {
         console.log(resp)
-        alert('Topic has been sucessfully added')
-
-        // TODO: Redirect user to topic management screen
+        history.push('/topics/manage')
       })
       .catch(err => console.log(err))
   }

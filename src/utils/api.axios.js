@@ -35,13 +35,29 @@ service.interceptors.request.use(async req => {
   return req
 })
 
-export const setup = (inst, acc) => {
-  if (isSetup) {
-    return
-  }
-  instance = inst
-  account = acc
-  isSetup = true
+export const setup = async (inst, acc) => {
+  return new Promise((resolve, reject) => {
+    if (isSetup) {
+      return resolve('Is setup')
+    }
+
+    instance = inst
+    account = acc
+
+    // Check that API is available
+    service
+      .get('/ping', { timeout: 2000 })
+      .then(() => {
+        isSetup = true
+        return resolve('setup complete')
+      })
+      .catch(err => {
+        // Timeout
+        console.log(err)
+        console.log('Timed Out: Server not Available')
+        return reject(new Error('Timed Out: Server not Available'))
+      })
+  })
 }
 
 export const printDetails = () => {

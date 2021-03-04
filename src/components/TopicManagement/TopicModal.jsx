@@ -14,8 +14,7 @@ import {
   FormControl,
   Select,
   MenuItem,
-  CircularProgress,
-  Typography
+  CircularProgress
 } from '@material-ui/core'
 import { Edit, Cancel } from '@material-ui/icons'
 import { makeStyles } from '@material-ui/core/styles'
@@ -89,6 +88,8 @@ const TopicModal = props => {
     reValidateMode: 'onChange',
     defaultValues
   })
+
+  console.log(errors)
 
   const toggleEditMode = () => {
     let edtmd = !editMode
@@ -180,56 +181,17 @@ const TopicModal = props => {
         <form onSubmit={handleSubmit(onSubmit)}>
           {props.topic.type === 'regular' ? (
             <>
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'stretch',
-                  width: '100%'
-                }}>
-                <Input
-                  ref={register}
-                  name="title"
-                  label="Title"
-                  disabled={!editMode}
-                  variant="outlined"
-                  margin="none"
-                  style={{ flex: '3', marginRight: '40px' }}
-                  error={!!errors.title}
-                  helperText={errors?.title?.message}
-                />
-                <FormControl variant="outlined" className={classes.formControl}>
-                  <Controller
-                    render={({ onChange, value }) => (
-                      <Select
-                        disabled={!editMode}
-                        value={value}
-                        onChange={onChange}>
-                        <MenuItem value="draft">Draft</MenuItem>
-                        <MenuItem value="suggestion">
-                          Ready for Submission
-                        </MenuItem>
-                        <MenuItem value="archived" style={{ color: 'red' }}>
-                          Archived
-                        </MenuItem>
-                        <MenuItem value="active" disabled>
-                          Active
-                        </MenuItem>
-                        <MenuItem value="assigned" disabled>
-                          Assigned
-                        </MenuItem>
-                        <MenuItem value="prev_term" disabled>
-                          From Previous Term
-                        </MenuItem>
-                      </Select>
-                    )}
-                    name="status"
-                    control={control}
-                    error={!!errors.status}
-                    helperText={errors?.status?.message}
-                  />
-                </FormControl>
-              </div>
+              <Input
+                ref={register}
+                name="title"
+                label="Title"
+                disabled={!editMode}
+                variant="outlined"
+                margin="none"
+                style={{ flex: '3', marginRight: '40px' }}
+                error={!!errors.title}
+                helperText={errors?.title?.message}
+              />
               <MultiLineInput
                 inputRef={register}
                 name="description"
@@ -270,14 +232,48 @@ const TopicModal = props => {
                 helperText={errors?.targetCourses?.message}
                 disabled={!editMode}
               />
+
+              <FormControl
+                variant="outlined"
+                className={classes.formControl}
+                fullWidth>
+                <label>Status</label>
+                <Controller
+                  render={({ onChange, value }) => (
+                    <Select
+                      disabled={!editMode}
+                      value={value}
+                      onChange={onChange}>
+                      <MenuItem value="draft">Draft</MenuItem>
+                      <MenuItem value="archived" style={{ color: 'red' }}>
+                        Archived
+                      </MenuItem>
+                      <MenuItem value="active" disabled>
+                        Active
+                      </MenuItem>
+                      <MenuItem value="assigned" disabled>
+                        Assigned
+                      </MenuItem>
+                      <MenuItem value="prev_term" disabled>
+                        From Previous Term
+                      </MenuItem>
+                    </Select>
+                  )}
+                  name="status"
+                  control={control}
+                  error={!!errors.status}
+                  helperText={errors?.status?.message}
+                />
+              </FormControl>
             </>
           ) : (
             <>
               <Input
+                inputRef={register}
                 label="Title"
-                value={defaultValues.title}
                 variant="outlined"
                 margin="none"
+                name="title"
                 inputProps={{ readOnly: true }}
               />
               <MultiLineInput

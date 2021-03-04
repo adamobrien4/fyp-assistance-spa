@@ -4,6 +4,7 @@ import api from '../utils/api.axios'
 import moment from 'moment'
 
 import {
+  Typography,
   Container,
   TableContainer,
   TableHead,
@@ -111,6 +112,12 @@ const PhaseManagement = props => {
     <Container maxWidth="lg">
       <h1>Phase Management</h1>
 
+      <Typography>
+        {
+          'To select a date, open the date selection input, select your required date, and click the "Ok" button in the bottom right of the input panel.'
+        }
+      </Typography>
+
       <TableContainer component={Paper}>
         <Table aria-label="simple table">
           <TableHead>
@@ -131,7 +138,7 @@ const PhaseManagement = props => {
                   <TableCell>
                     <DatePicker
                       defaultValue={phase.date}
-                      onChange={val => updatePhase(val, phase.phase)}
+                      onOk={val => updatePhase(val, phase.phase)}
                       format="DD / MMM / YY HH:mm"
                       showTime={{ format: 'HH:mm' }}
                       size="large"

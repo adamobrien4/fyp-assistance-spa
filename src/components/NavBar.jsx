@@ -47,7 +47,12 @@ export default function NavBar(props) {
   const { currentPhase } = useContext(PhaseContext)
 
   const history = useHistory()
-  const { instance } = useMsal()
+  const { instance, accounts } = useMsal()
+  const account = accounts[0]
+
+  const accountAbbr = account.name.split(' ').map(el => el[0])
+
+  console.log(account)
 
   const [anchorEl, setAnchorEl] = useState(null)
 
@@ -134,7 +139,7 @@ export default function NavBar(props) {
           aria-label="delete"
           onClick={handleClick}
           endIcon={<ExpandMoreIcon style={{ color: 'white' }} />}>
-          <Avatar style={{ color: 'white' }}>AB</Avatar>
+          <Avatar style={{ color: 'white' }}>{accountAbbr}</Avatar>
         </Button>
 
         <Menu
