@@ -24,7 +24,6 @@ import { proposalStatusToHumanFriendlyString } from '../../utils/proposal'
 import ProposalModal from './ProposalModal'
 
 const NextActionButton = props => {
-  const { currentPhase } = useContext(PhaseContext)
   switch (props.status) {
     case 'draft':
       return (
@@ -40,7 +39,7 @@ const NextActionButton = props => {
       )
     case 'submitted':
       return (
-        <Can I="takeActionPhaseThree" this={currentPhase}>
+        <Can I="takeActionPhaseThree" this={props.currentPhase}>
           <Button onClick={() => props.downgradeStatus(props.proposalId)}>
             Convert to Draft
           </Button>
@@ -55,7 +54,8 @@ NextActionButton.propTypes = {
   updateStatus: PropTypes.func.isRequired,
   downgradeStatus: PropTypes.func.isRequired,
   proposalId: PropTypes.string.isRequired,
-  status: PropTypes.string.isRequired
+  status: PropTypes.string.isRequired,
+  currentPhase: PropTypes.object.isRequired
 }
 
 const ProposalsTable = props => {
@@ -109,6 +109,7 @@ const ProposalsTable = props => {
                     proposalId={proposal._id}
                     updateStatus={props.updateStatus}
                     downgradeStatus={props.downgradeStatus}
+                    currentPhase={props.currentPhase}
                   />
                 </TableCell>
               </TableRow>
@@ -126,7 +127,8 @@ ProposalsTable.propTypes = {
   setSelectedProposal: PropTypes.func.isRequired,
   updateStatus: PropTypes.func.isRequired,
   downgradeStatus: PropTypes.func.isRequired,
-  setDialogOpen: PropTypes.func.isRequired
+  setDialogOpen: PropTypes.func.isRequired,
+  currentPhase: PropTypes.object.isRequired
 }
 
 const ManageProposal = props => {
@@ -135,6 +137,8 @@ const ManageProposal = props => {
   const [selectedProposal, setSelectedProposal] = useState()
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
+
+  const { currentPhase } = useContext(PhaseContext)
 
   useEffect(() => {
     refreshProposalList()
@@ -213,6 +217,11 @@ const ManageProposal = props => {
         <Typography variant="h4" align="center">
           Proposal Management
         </Typography>
+        {currentPhase.phase !== 4 ? (
+          <Typography align="center">
+            Supervisors will be available to respond to Proposals during Phase 4
+          </Typography>
+        ) : null}
         <Typography>Supervisor Topic Proposals</Typography>
         <ProposalsTable
           loading={loading}
@@ -221,6 +230,7 @@ const ManageProposal = props => {
           downgradeStatus={downgradeStatus}
           setSelectedProposal={setSelectedProposal}
           setDialogOpen={setDialogOpen}
+          currentPhase={currentPhase}
         />
 
         <Typography>Custom Proposals</Typography>
@@ -231,6 +241,7 @@ const ManageProposal = props => {
           downgradeStatus={downgradeStatus}
           setSelectedProposal={setSelectedProposal}
           setDialogOpen={setDialogOpen}
+          currentPhase={currentPhase}
         />
       </Container>
     </>

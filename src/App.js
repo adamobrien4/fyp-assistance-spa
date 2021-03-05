@@ -223,7 +223,7 @@ const Pages = props => {
         </Route>
       )}
 
-      <Route path="/topics/view/:code">
+      <Route path="/topics/view/:id">
         <ViewTopic />
       </Route>
 
@@ -262,7 +262,7 @@ const Pages = props => {
       )}
 
       {ability.can('create', 'Proposal') && (
-        <Route path="/proposals/add/:topicCode?">
+        <Route path="/proposals/add/:topicId?">
           <CreateProposalContextProvider>
             <CreateProposal />
           </CreateProposalContextProvider>

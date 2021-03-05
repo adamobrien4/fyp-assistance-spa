@@ -5,7 +5,6 @@ import { PhaseContext } from '../../contexts/PhaseContext'
 import { useData } from '../../contexts/CreateProposalContext'
 import { useHistory } from 'react-router-dom'
 
-import { withStyles } from '@material-ui/core/styles'
 import { Typography, Container, Tooltip } from '@material-ui/core'
 
 import HelpIcon from '@material-ui/icons/Help'

@@ -17,7 +17,7 @@ const useStyles = makeStyles(theme => ({
 }))
 
 const ViewTopic = props => {
-  let { code } = useParams()
+  let { id } = useParams()
 
   const classes = useStyles()
 
@@ -27,7 +27,7 @@ const ViewTopic = props => {
 
   useEffect(() => {
     api
-      .get(`/topic/${code}`)
+      .get(`/topic/${id}`)
       .then(res => {
         if (res.data.topic) {
           console.log(res)
@@ -102,7 +102,7 @@ const ViewTopic = props => {
             </Link>
           </Typography>
         ) : (
-          <Link to={`/proposals/add/${topic.code}`}>
+          <Link to={`/proposals/add/${topic._id}`}>
             <PrimaryButton>
               Look interesting? Draft Proposal for this Topic
             </PrimaryButton>

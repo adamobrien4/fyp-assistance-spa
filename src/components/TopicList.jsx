@@ -187,16 +187,15 @@ export default function TopicList(props) {
               </TableRow>
             ) : (
               topics.map(topic => (
-                <TableRow key={topic.code}>
+                <TableRow key={topic.id}>
                   <TableCell component="th" scope="row">
-                    <Link to={'./topics/view/' + topic.code}>
+                    <Link to={'./topics/view/' + topic._id}>
                       <MuiLink component="p">{topic.title}</MuiLink>
                     </Link>
                   </TableCell>
                   <TableCell align="center">
-                    {topic.supervisor.displayName} - {topic.supervisor.abbr}
+                    {topic.supervisor.displayName}
                   </TableCell>
-                  <TableCell align="center">{topic.code}</TableCell>
                   <TableCell>
                     <div
                       style={{

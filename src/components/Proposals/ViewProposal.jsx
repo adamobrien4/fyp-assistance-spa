@@ -30,7 +30,7 @@ const formSchema = yup.object({
   responseType: yup
     .string()
     .oneOf(
-      ['pending_edits', 'accept', 'reject'],
+      ['pending_edits', 'accepted', 'rejected'],
       'Please select a response type'
     ),
   message: yup.string().when('responseType', {

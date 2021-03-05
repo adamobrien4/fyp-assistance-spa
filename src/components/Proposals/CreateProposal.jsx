@@ -31,7 +31,7 @@ const CreateProposal = props => {
 
   // CreateProposal Context
   const { setContextData, contextData } = useData()
-  const { topicCode } = useParams()
+  const { topicId } = useParams()
 
   const defaultValues = {
     title: contextData?.title || '',
@@ -49,10 +49,10 @@ const CreateProposal = props => {
   const history = useHistory()
 
   useEffect(() => {
-    if (topicCode && contextData.topic === null) {
-      console.log('Loading from topicCode')
+    if (topicId && contextData.topic === null) {
+      console.log('Loading from topicId')
       api
-        .get('/topic/' + topicCode)
+        .get('/topic/' + topicId)
         .then(res => {
           console.log(res)
 
