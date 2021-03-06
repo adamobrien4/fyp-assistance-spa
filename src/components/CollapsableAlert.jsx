@@ -36,10 +36,8 @@ const CollapsableAlert = props => {
 }
 
 CollapsableAlert.defaultProps = {
-  open: false,
-  setOpen: () => {},
   message: 'No Message Supplied',
-  severity: 'error'
+  severity: 'info'
 }
 
 CollapsableAlert.propTypes = {

@@ -146,9 +146,7 @@ export default function Test(props) {
           </Grid>
         </Grid>
 
-        <PrimaryButton disabled={updating}>
-          {updating ? 'Updating . . .' : 'Save Changes'}
-        </PrimaryButton>
+        <PrimaryButton loading={updating}>Save Changes</PrimaryButton>
       </form>
     </Container>
   )

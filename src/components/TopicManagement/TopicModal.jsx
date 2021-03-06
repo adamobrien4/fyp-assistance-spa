@@ -191,19 +191,10 @@ const TopicModal = props => {
           )}
 
           {editMode && (
-            <PrimaryButton disabled={savingChanges}>Save Changes</PrimaryButton>
+            <PrimaryButton loading={savingChanges}>Save Changes</PrimaryButton>
           )}
         </form>
       </DialogContent>
-      <DialogActions>
-        {editMode ? (
-          <>
-            {savingChanges && (
-              <CircularProgress size={24} className={classes.buttonProgress} />
-            )}
-          </>
-        ) : null}
-      </DialogActions>
     </Dialog>
   )
 }

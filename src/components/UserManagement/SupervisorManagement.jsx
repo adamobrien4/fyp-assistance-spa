@@ -26,6 +26,7 @@ import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight'
 import { makeStyles } from '@material-ui/core/styles'
 import Input from '../Input'
 import PrimaryButton from '../PrimaryButton'
+import CollapsableAlert from '../CollapsableAlert'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -78,6 +79,12 @@ const SupervisorManagement = props => {
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(5)
   const [loading, setLoading] = useState(true)
+  const [removing, setRemoving] = useState(null)
+  const [alert, setAlert] = useState({
+    message: 'No Message Supplied',
+    severity: 'info'
+  })
+  const [alertOpen, setAlertOpen] = useState(false)
 
   useEffect(() => {
     refreshSupervisorList()
@@ -134,6 +141,7 @@ const SupervisorManagement = props => {
   const handleRemoveSingle = id => {
     console.log('removing supervisor w/ id', id)
 
+    setRemoving(id)
     api
       .post('/supervisor/delete', { supervisorId: id })
       .then(res => {
@@ -141,14 +149,16 @@ const SupervisorManagement = props => {
         refreshSupervisorList()
       })
       .catch(err => {
-        // TODO: Inform user of error
         console.log(err)
+        setAlert({
+          message: 'Could not remove Supervisor',
+          severity: 'error'
+        })
+        setAlertOpen(true)
       })
-  }
-
-  const handleRemove = () => {
-    console.log('Removing Supervisors')
-    console.log(selected)
+      .finally(() => {
+        setRemoving(null)
+      })
   }
 
   if (loading) {
@@ -195,8 +205,8 @@ const SupervisorManagement = props => {
                   </TableCell>
                   <TableCell align="right">{supervisor.email}</TableCell>
                   <TableCell align="right">
-                    {/* TODO: Add loading etc when removing supervisor */}
                     <PrimaryButton
+                      loading={removing === supervisor.id}
                       onClick={() => handleRemoveSingle(supervisor._id)}
                       style={{ width: '50%', margin: '0 0 0 5px' }}
                       color="secondary"
@@ -229,9 +239,12 @@ const SupervisorManagement = props => {
         </Table>
       </TableContainer>
 
-      <PrimaryButton disabled={selected.length === 0} onClick={handleRemove}>
-        Remove Selected
-      </PrimaryButton>
+      <CollapsableAlert
+        open={alertOpen}
+        setOpen={setAlertOpen}
+        message={alert.message}
+        severity={alert.severity}
+      />
     </Container>
   )
 }

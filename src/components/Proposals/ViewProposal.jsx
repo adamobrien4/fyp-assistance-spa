@@ -190,7 +190,7 @@ const ViewProposal = props => {
                 <Grid item xs={2}>
                   <PrimaryButton
                     style={{ height: '56px', marginTop: '16px' }}
-                    disabled={submittingResponse}>
+                    loading={submittingResponse}>
                     Submit
                   </PrimaryButton>
                 </Grid>

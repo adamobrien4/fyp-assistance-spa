@@ -20,11 +20,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 
 import ListItemIcon from '@material-ui/core/ListItemIcon'
 import ListItemText from '@material-ui/core/ListItemText'
-import SendIcon from '@material-ui/icons/Send'
 import ExitToAppIcon from '@material-ui/icons/ExitToApp'
-import AccountCircleIcon from '@material-ui/icons/AccountCircle'
-
-import ChangePhase from './Development/ChangePhase'
 
 const useStyles = makeStyles(theme => ({
   navDisplayFlex: {
@@ -84,7 +80,7 @@ export default function NavBar(props) {
 
             <Can I="manage" a="Proposal">
               <Link to="/proposals" className={styles.linkButton}>
-                <Button className={styles.linkText}>Manage Proposals</Button>
+                <Button className={styles.linkText}>My Proposals</Button>
               </Link>
             </Can>
           </>
@@ -96,7 +92,7 @@ export default function NavBar(props) {
           currentPhase.phase === 4) && (
           <Can I="manage" a="Topic">
             <Link to="/topics/manage" className={styles.linkButton}>
-              <Button className={styles.linkText}>Manage Topic List</Button>
+              <Button className={styles.linkText}>My Topics</Button>
             </Link>
           </Can>
         )}
@@ -126,9 +122,6 @@ export default function NavBar(props) {
             <Button className={styles.linkText}>Manage Phases</Button>
           </Link>
         </Can>
-
-        {/* Allow user to change current system phase */}
-        {process.env.REACT_APP_ALLOW_USER_PHASE_CHANGE ? <ChangePhase /> : null}
       </div>
 
       {/* User Avatar */}
@@ -154,19 +147,11 @@ export default function NavBar(props) {
             vertical: 'top',
             horizontal: 'center'
           }}>
-          {/* <MenuItem
-            onClick={() => {
-              history.push('/settings')
-              setAnchorEl(null)
-            }}>
-            <ListItemIcon>
-              <AccountCircleIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText primary="My Account" />
-          </MenuItem> */}
           <MenuItem
             onClick={() => {
-              instance.logout({ onRedirectNavigate: 'http://localhost:3000/' })
+              instance.logout({
+                onRedirectNavigate: process.env.REACT_APP_REDIRECT_URL
+              })
               setAnchorEl(null)
             }}>
             <ListItemIcon>

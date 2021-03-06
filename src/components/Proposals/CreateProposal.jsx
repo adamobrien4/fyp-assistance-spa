@@ -105,7 +105,16 @@ const CreateProposal = props => {
   }
 
   if (!validTopic) {
-    return <h1>Cannot create proposal without a selected topic</h1>
+    return (
+      <Container maxWidth="lg">
+        <Typography align="center">
+          Cannot create proposal without a selected topic
+        </Typography>
+        <PrimaryButton type="button" onClick={() => history.push('/topics')}>
+          View Available Topics
+        </PrimaryButton>
+      </Container>
+    )
   }
 
   return (

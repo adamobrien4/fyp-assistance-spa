@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -34,6 +34,12 @@ const CreateProposal = props => {
   })
 
   const history = useHistory()
+
+  useEffect(() => {
+    if (!contextData.topic) {
+      history.push('/proposals/add')
+    }
+  }, [])
 
   const onSubmit = data => {
     // Get data from form and store in context
@@ -72,8 +78,6 @@ const CreateProposal = props => {
           error={!!errors.languages}
           helperText={errors?.languages?.message}
         />
-
-        {/* TODO: Save as Draft or save and Submit to supervisor */}
 
         <PrimaryButton>Save and Continue</PrimaryButton>
       </form>

@@ -5,7 +5,7 @@ import PrimaryButton from '../../PrimaryButton'
 
 export default function UploadButton(props) {
   return (
-    <PrimaryButton disabled={props.disabled} onClick={props.onUpload}>
+    <PrimaryButton loading={props.disabled} onClick={props.onUpload}>
       Upload All
     </PrimaryButton>
   )

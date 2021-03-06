@@ -188,11 +188,11 @@ const StudentManagement = props => {
                   </TableCell>
                   <TableCell align="right">{student.email}</TableCell>
                   <TableCell align="right">
-                    <PrimaryButton
+                    {/* <PrimaryButton
                       style={{ width: '25%', margin: 0 }}
                       startIcon={<Edit />}>
                       View
-                    </PrimaryButton>
+                    </PrimaryButton> */}
                     <PrimaryButton
                       onClick={() => handleRemoveSingle(student._id)}
                       style={{ width: '25%', margin: '0 0 0 5px' }}

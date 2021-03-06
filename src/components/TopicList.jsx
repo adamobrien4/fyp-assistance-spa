@@ -233,7 +233,11 @@ export default function TopicList(props) {
                     </div>
                   </TableCell>
                   <TableCell align="right">
-                    {topic.proposalCount} Students have shown interest
+                    {topic.proposalCount}{' '}
+                    {topic.proposalCount < 2
+                      ? 'Student has '
+                      : 'Students have '}
+                    shown interest
                   </TableCell>
                 </TableRow>
               ))

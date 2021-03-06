@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react'
 import PropTypes from 'prop-types'
-import { Switch, Route, useHistory } from 'react-router-dom'
+import { Switch, Route } from 'react-router-dom'
 import {
   MsalAuthenticationTemplate,
   useMsal,
@@ -53,7 +53,6 @@ import NotFound from './components/NotFound'
 
 import TopicProposals from './components/TopicManagement/TopicProposals'
 import ViewProposal from './components/Proposals/ViewProposal'
-import Settings from './components/Settings'
 
 import PhaseManagement from './components/PhaseManagement'
 
@@ -70,8 +69,6 @@ function App() {
   const { user, setUserObject } = useContext(AuthContext)
   const { setCurrentPhase } = useContext(PhaseContext)
 
-  const history = useHistory()
-
   const authRequest = {
     ...loginRequest
   }
@@ -83,8 +80,6 @@ function App() {
         .then(r => {
           console.log('API Setup returned', r)
           graphSetup(instance, account)
-          // TODO: Wait on this function to finish before allowing the user to continue to the website
-          // This will ensure all profile data is ready to use throughout the app
           instance
             .acquireTokenSilent({
               ...loginRequest,

@@ -93,7 +93,6 @@ export default function TopicManagement(props) {
     false
   )
   const [submittingTopics, setSubmittingTopics] = useState(false)
-  // const [submitAllowed, setSubmitAllowed] = useState(false)
 
   const [changingSupervisionStatus, setChangingSupervisionStatus] = useState(
     false
@@ -115,8 +114,6 @@ export default function TopicManagement(props) {
         let retrievedTopics = []
         let customTopic = false
 
-        // let hasSuggestionReady = false
-
         res.data.topics.forEach(topic => {
           if (topic.type === 'regular') {
             retrievedTopics.push(topic)
@@ -129,13 +126,7 @@ export default function TopicManagement(props) {
             console.error('Unknown topic type')
             console.log(topic)
           }
-
-          // if (topic.status === 'suggestion') {
-          //   hasSuggestionReady = true
-          // }
         })
-
-        // setSubmitAllowed(hasSuggestionReady)
 
         setTopics(retrievedTopics)
         setCustomTopic(customTopic)
@@ -156,28 +147,6 @@ export default function TopicManagement(props) {
         setLoading(false)
       })
   }
-
-  // const handlePreSubmitTopics = e => {
-  //   let hasSuggestion = false
-  //   for (let topic of topics) {
-  //     if (topic.status === 'suggestion') {
-  //       hasSuggestion = true
-  //       break
-  //     }
-  //   }
-
-  //   if (customTopic.status === 'suggestion') {
-  //     hasSuggestion = true
-  //   }
-
-  //   if (hasSuggestion) {
-  //     setSubmissionDialogOpen(true)
-  //   } else {
-  //     alert(
-  //       'You must have at least one topic marked as "Ready for Submision" before you submit your topics'
-  //     )
-  //   }
-  // }
 
   const handleSubmitTopics = () => {
     if (proceedSubmissionChecked) {
@@ -359,14 +328,6 @@ export default function TopicManagement(props) {
               style={{ flex: 1, flexGrow: 4 }}>
               Add new Topic Suggestion
             </PrimaryButton>
-
-            {/* TODO: Inform user why the button is disabled */}
-            {/* <PrimaryButton
-              disabled={!submitAllowed}
-              onClick={handlePreSubmitTopics}
-              style={{ flex: 1, flexGrow: 4 }}>
-              Submit Topic Suggestions
-            </PrimaryButton> */}
           </div>
         </Can>
       </Container>

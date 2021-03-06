@@ -28,8 +28,10 @@ export default function defineAbilityFor(user) {
       can('manage', 'Student')
       can('manage', 'Supervisor')
       can('read', 'Topic')
-      //can('create', 'Topic')
-      //can('manage', 'Topic', { supervisor: user.id })
+      can('create', 'Topic')
+      can('manage', 'Topic', { supervisor: user.id })
+      can('read', 'Proposal')
+      can('respond', 'Proposal', { 'topic.supervisor': user.id })
       break
     case 'Administrator':
       can('manage', 'Coordinator')

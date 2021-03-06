@@ -195,7 +195,7 @@ const SupervisorAssignment = props => {
 
       <UploadButton disabled={!supervisors.length} onUpload={onUpload} />
       <PrimaryButton
-        type="text"
+        type="button"
         color="secondary"
         onClick={() => {
           setSupervisors([])

@@ -193,7 +193,7 @@ const StudentAssignment = props => {
 
       <UploadButton disabled={!students.length} onUpload={onUpload} />
       <PrimaryButton
-        type="text"
+        type="button"
         color="secondary"
         onClick={() => {
           setStudents([])

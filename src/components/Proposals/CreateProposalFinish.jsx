@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 
 import { PhaseContext } from '../../contexts/PhaseContext'
@@ -11,6 +11,8 @@ import HelpIcon from '@material-ui/icons/Help'
 
 import api from '../../utils/api.axios'
 
+import Input from '../Input'
+import MultiLineInput from '../MultiLineInput'
 import PrimaryButton from '../PrimaryButton'
 import Breadcrumb from './Breadcrumb'
 
@@ -18,8 +20,16 @@ const CreateProposal = props => {
   // CreateProposal Context
   const { setContextData, contextData } = useData()
   const { currentPhase } = useContext(PhaseContext)
+  const [submitting, setSubmitting] = useState(false)
 
   const history = useHistory()
+
+  useEffect(() => {
+    console.log('useEffect', contextData.topic)
+    if (!contextData.topic) {
+      history.push('/proposals/add')
+    }
+  }, [])
 
   const handleNextStep = submitProposal => {
     // Get data from form and store in context
@@ -45,6 +55,8 @@ const CreateProposal = props => {
 
     console.log('Submitting ', formData)
 
+    setSubmitting(true)
+
     api
       .post('/proposal/add', formData)
       .then(res => {
@@ -69,13 +81,17 @@ const CreateProposal = props => {
           console.log('Error', error.message)
         }
       })
+      .finally(() => {
+        setSubmitting(false)
+      })
   }
 
   return (
     <Container component="main" maxWidth="md">
       <Breadcrumb />
       <Typography>Create Proposal - Finish (Review)</Typography>
-      <code>{JSON.stringify(contextData)}</code>
+
+      {/* TODO: Print Topic in easier to read fashion */}
 
       <Typography>
         {contextData.isCustomProposal
@@ -85,25 +101,50 @@ const CreateProposal = props => {
 
       {contextData.isCustomProposal ? null : (
         <>
-          <Typography>{contextData.topic.title}</Typography>
-          <Typography>{contextData.topic.supervisor?.displayName}</Typography>
+          <Input
+            label="Related Topic"
+            value={contextData?.topic?.title}
+            readOnly
+          />
+          <Input
+            label="Supervisor"
+            value={contextData?.topic?.supervisor?.displayName}
+            readOnly
+          />
         </>
       )}
 
-      <Typography>{contextData.title}</Typography>
-      <Typography>{contextData.description}</Typography>
-      <Typography>{contextData.additionalNotes}</Typography>
+      <Input label="Title" value={contextData.title} readOnly />
+      <MultiLineInput
+        label="Description"
+        value={contextData.description}
+        readOnly
+      />
+      <MultiLineInput
+        label="Additional Notes"
+        value={contextData.additionalNotes}
+        readOnly
+      />
 
       {contextData.isCustomProposal ? (
         <>
-          <Typography>{contextData.environment}</Typography>
-          <Typography>{contextData.languages}</Typography>
+          <MultiLineInput
+            label="Environment"
+            value={contextData.environment}
+            readOnly
+          />
+          <MultiLineInput
+            label="Languages"
+            value={contextData.languages}
+            readOnly
+          />
         </>
       ) : null}
 
       {currentPhase.phase === 4 ? (
         <>
           <PrimaryButton
+            loading={submitting}
             onClick={() => handleNextStep(true)}
             endIcon={
               <Tooltip title="Not editable after submission">
@@ -113,6 +154,7 @@ const CreateProposal = props => {
             Submit Proposal
           </PrimaryButton>
           <PrimaryButton
+            loading={submitting}
             onClick={() => handleNextStep(false)}
             endIcon={
               <Tooltip title="Editable until submitted">
@@ -124,6 +166,7 @@ const CreateProposal = props => {
         </>
       ) : (
         <PrimaryButton
+          loading={submitting}
           onClick={() => handleNextStep(true)}
           endIcon={
             <Tooltip title="Not editable after submission">

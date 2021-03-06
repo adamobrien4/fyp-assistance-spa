@@ -154,7 +154,7 @@ const PhaseManagement = props => {
         </Table>
       </TableContainer>
 
-      <PrimaryButton onClick={onSubmit} disabled={updating}>
+      <PrimaryButton onClick={onSubmit} loading={updating}>
         Update Phase Dates
       </PrimaryButton>
       <CollapsableAlert
