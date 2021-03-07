@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { useForm } from 'react-hook-form'
 
@@ -8,9 +8,7 @@ import {
   DialogContent,
   IconButton,
   Button,
-  DialogActions,
-  Divider,
-  CircularProgress
+  Divider
 } from '@material-ui/core'
 import { Edit, Cancel } from '@material-ui/icons'
 import { makeStyles } from '@material-ui/core/styles'
@@ -78,13 +76,22 @@ const TopicModal = props => {
   const [editMode, setEditMode] = useState(false)
   const [savingChanges, setSavingChanges] = useState(false)
 
-  const { register, handleSubmit, errors, control } = useForm({
+  const { register, handleSubmit, errors, control, reset } = useForm({
     resolver: yupResolver(editFormSchema),
     reValidateMode: 'onChange',
     defaultValues
   })
 
-  console.log(errors)
+  useEffect(() => {
+    reset({
+      title: props.topic.title,
+      description: props.topic.description,
+      tags: props.topic.tags,
+      additionalNotes: props.topic.additionalNotes,
+      targetCourses: props.topic.targetCourses,
+      status: props.topic.status
+    })
+  }, [props.topic])
 
   const toggleEditMode = () => {
     let edtmd = !editMode
@@ -113,10 +120,12 @@ const TopicModal = props => {
     console.log(differences)
 
     if (differences) {
+      setSavingChanges(true)
       api
         .post(`/topic/edit/${props.topic._id}`, differences)
         .then(res => {
           console.log(res)
+          props.setDialogOpen(false)
           props.refresh()
         })
         .catch(err => {

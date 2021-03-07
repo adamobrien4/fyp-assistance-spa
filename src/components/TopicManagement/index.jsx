@@ -92,8 +92,6 @@ export default function TopicManagement(props) {
   const [proceedSubmissionChecked, setProceedSubmissionChecked] = useState(
     false
   )
-  const [submittingTopics, setSubmittingTopics] = useState(false)
-
   const [changingSupervisionStatus, setChangingSupervisionStatus] = useState(
     false
   )
@@ -112,7 +110,7 @@ export default function TopicManagement(props) {
         console.log(res)
 
         let retrievedTopics = []
-        let customTopic = false
+        let retrievedCustomTopic = false
 
         res.data.topics.forEach(topic => {
           if (topic.type === 'regular') {
@@ -121,7 +119,7 @@ export default function TopicManagement(props) {
             topic.type === 'studentTopic' &&
             topic.status !== 'archived'
           ) {
-            customTopic = topic
+            retrievedCustomTopic = topic
           } else {
             console.error('Unknown topic type')
             console.log(topic)
@@ -129,15 +127,16 @@ export default function TopicManagement(props) {
         })
 
         setTopics(retrievedTopics)
-        setCustomTopic(customTopic)
+        setCustomTopic(retrievedCustomTopic)
 
         // If a topic is currently selected, update it to the newly returned topic
         if (selectedTopic) {
-          setSelectedTopic(
-            res.data.topics.filter(topic => {
-              return topic._id === selectedTopic._id
-            })[0]
-          )
+          console.log('Has selected Topic')
+          let updatedSelectedTopic = res.data.topics.filter(topic => {
+            return topic._id === selectedTopic._id
+          })[0]
+          console.log('Updated selected Topic', updatedSelectedTopic)
+          setSelectedTopic(updatedSelectedTopic)
         }
       })
       .catch(err => {
@@ -146,25 +145,6 @@ export default function TopicManagement(props) {
       .finally(() => {
         setLoading(false)
       })
-  }
-
-  const handleSubmitTopics = () => {
-    if (proceedSubmissionChecked) {
-      console.log('Submit topics')
-
-      setSubmittingTopics(true)
-
-      api
-        .post('/topic/submit')
-        .then(res => {
-          console.log(res)
-        })
-        .catch(err => console.log(err))
-        .finally(() => {
-          setSubmittingTopics(false)
-          refreshTopicList()
-        })
-    }
   }
 
   const openTopicDetailsDialog = topic => {
@@ -197,28 +177,17 @@ export default function TopicManagement(props) {
     return <Typography>Loading ...</Typography>
   }
 
-  if (submittingTopics) {
-    return <Typography>Submitting Topics ...</Typography>
-  }
-
   return (
     <>
-      {selectedTopic ? (
+      {selectedTopic && (
         <TopicModal
-          key={selectedTopic._id}
+          key={selectedTopic?._id}
           dialogOpen={dialogOpen}
           setDialogOpen={setDialogOpen}
           topic={selectedTopic}
           refresh={refreshTopicList}
         />
-      ) : null}
-      <SubmissionDialog
-        open={submissionDialogOpen}
-        setOpen={setSubmissionDialogOpen}
-        checked={proceedSubmissionChecked}
-        setChecked={setProceedSubmissionChecked}
-        proceed={handleSubmitTopics}
-      />
+      )}
       <Container maxWidth="lg">
         <Typography align="center" variant="h4">
           Topic Management
@@ -249,6 +218,7 @@ export default function TopicManagement(props) {
             <TableHead>
               <TableRow>
                 <TableCell>Title (Edit Topic)</TableCell>
+                <TableCell align="center">Type</TableCell>
                 <TableCell align="center">Status</TableCell>
                 <TableCell align="right">Proposals</TableCell>
               </TableRow>
@@ -260,7 +230,7 @@ export default function TopicManagement(props) {
                     component="th"
                     scope="row"
                     align="center"
-                    colSpan={3}>
+                    colSpan={4}>
                     <Typography>
                       No Supervisor Defined Topics to display
                     </Typography>
@@ -274,6 +244,7 @@ export default function TopicManagement(props) {
                         {topic.title}
                       </MuiLink>
                     </TableCell>
+                    <TableCell align="center">Supervisor Defined</TableCell>
                     <TableCell align="center">
                       {topicStatusToHumanFriendlyString(topic.status)}
                     </TableCell>
@@ -303,16 +274,23 @@ export default function TopicManagement(props) {
                         {customTopic.title}
                       </MuiLink>
                     </TableCell>
+                    <TableCell align="center">Student Defined</TableCell>
                     <TableCell align="center">
                       {topicStatusToHumanFriendlyString(customTopic.status)}
                     </TableCell>
-                    <TableCell align="right">
-                      <Can I="takeActionPhaseFour" this={currentPhase}>
-                        <Link to={`/topic/${customTopic._id}`}>
-                          {customTopic.proposalCount} Proposals
-                        </Link>
-                      </Can>
-                    </TableCell>
+                    {currentPhase.phase === 4 ? (
+                      <TableCell align="right">
+                        <Can I="takeActionPhaseFour" this={currentPhase}>
+                          <Link to={`/topic/${customTopic._id}`}>
+                            {customTopic.proposalCount} Proposals
+                          </Link>
+                        </Can>
+                      </TableCell>
+                    ) : (
+                      <TableCell align="right">
+                        Proposals viewable in Phase 4
+                      </TableCell>
+                    )}
                   </TableRow>
                 </>
               ) : null}

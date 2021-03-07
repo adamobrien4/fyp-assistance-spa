@@ -18,6 +18,7 @@ const StudentAssignment = props => {
   const [includeEmailPrefix, setIncludeEmailPrefix] = useState(true)
   const [alert, setAlert] = useState({})
   const [alertOpen, setAlertOpen] = useState(false)
+  const [uploading, setUploading] = useState(false)
 
   const onChange = e => {
     setCurrentEmail(e.target.value)
@@ -85,6 +86,7 @@ const StudentAssignment = props => {
 
     console.log('Uploading: ', body)
 
+    setUploading(true)
     api
       .post('/student/assign', body)
       .then(res => {
@@ -134,6 +136,9 @@ const StudentAssignment = props => {
       })
       .catch(err => {
         console.log(err)
+      })
+      .finally(() => {
+        setUploading(false)
       })
   }
 
@@ -191,7 +196,11 @@ const StudentAssignment = props => {
         removeEntry={handleRemove}
       />
 
-      <UploadButton disabled={!students.length} onUpload={onUpload} />
+      <UploadButton
+        disabled={!students.length}
+        loading={uploading}
+        onUpload={onUpload}
+      />
       <PrimaryButton
         type="button"
         color="secondary"

@@ -25,10 +25,7 @@ const RegularTopicModalContents = props => {
         ref={props.register}
         name="title"
         label="Title"
-        disabled={!props.editMode}
-        variant="outlined"
-        margin="none"
-        style={{ flex: '3', marginRight: '40px' }}
+        readOnly={!props.editMode}
         error={!!props.errors.title}
         helperText={props.errors?.title?.message}
       />
@@ -36,7 +33,7 @@ const RegularTopicModalContents = props => {
         inputRef={props.register}
         name="description"
         label="Description"
-        disabled={!props.editMode}
+        readOnly={!props.editMode}
         error={!!props.errors.description}
         helperText={props.errors?.description?.message}
       />
@@ -61,7 +58,7 @@ const RegularTopicModalContents = props => {
         inputRef={props.register}
         label="Additional Notes"
         name="additionalNotes"
-        disabled={!props.editMode}
+        readOnly={!props.editMode}
         error={!!props.errors.additionalNotes}
         helperText={props.errors?.additionalNotes?.message}
       />
@@ -107,7 +104,7 @@ const RegularTopicModalContents = props => {
 }
 
 RegularTopicModalContents.propTypes = {
-  register: PropTypes.object.isRequired,
+  register: PropTypes.func.isRequired,
   control: PropTypes.object.isRequired,
   errors: PropTypes.object.isRequired,
   editMode: PropTypes.bool.isRequired

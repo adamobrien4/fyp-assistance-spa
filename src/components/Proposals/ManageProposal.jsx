@@ -15,6 +15,7 @@ import {
   TableCell,
   Button
 } from '@material-ui/core'
+import EditIcon from '@material-ui/icons/Edit'
 import { useHistory } from 'react-router-dom'
 
 import api from '../../utils/api.axios'
@@ -40,7 +41,11 @@ const NextActionButton = props => {
     case 'submitted':
       return (
         <Can I="takeActionPhaseThree" this={props.currentPhase}>
-          <Button onClick={() => props.downgradeStatus(props.proposalId)}>
+          <Button
+            variant="outlined"
+            color="secondary"
+            startIcon={<EditIcon />}
+            onClick={() => props.downgradeStatus(props.proposalId)}>
             Convert to Draft
           </Button>
         </Can>
@@ -95,7 +100,7 @@ const ProposalsTable = props => {
                 <TableCell>
                   <MuiLink
                     onClick={() =>
-                      history.push(`/topics/view/${proposal.topic.code}`)
+                      history.push(`/topics/view/${proposal.topic._id}`)
                     }>
                     {proposal.topic.title}
                   </MuiLink>

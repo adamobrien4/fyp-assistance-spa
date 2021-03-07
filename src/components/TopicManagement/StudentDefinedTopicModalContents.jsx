@@ -13,16 +13,16 @@ const StudentDefinedTopicModalContents = props => {
       <Input
         inputRef={props.register}
         label="Title"
-        variant="outlined"
-        margin="none"
         name="title"
-        inputProps={{ readOnly: true }}
+        readOnly={!props.editMode}
+        error={!!props.errors.title}
+        helperText={props.errors?.title?.message}
       />
       <MultiLineInput
         inputRef={props.register}
         name="description"
         label="Description"
-        disabled={!props.editMode}
+        readOnly={!props.editMode}
         error={!!props.errors.description}
         helperText={props.errors?.description?.message}
       />
@@ -47,7 +47,7 @@ const StudentDefinedTopicModalContents = props => {
         inputRef={props.register}
         label="Additional Notes"
         name="additionalNotes"
-        disabled={!props.editMode}
+        readOnly={!props.editMode}
         error={!!props.errors.additionalNotes}
         helperText={props.errors?.additionalNotes?.message}
       />
@@ -56,7 +56,7 @@ const StudentDefinedTopicModalContents = props => {
         control={props.control}
         error={!!props.errors.targetCourses}
         helperText={props.errors?.targetCourses?.message}
-        disabled={!props.editMode}
+        readOnly={!props.editMode}
       />
     </>
   )

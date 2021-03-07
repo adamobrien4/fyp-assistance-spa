@@ -13,6 +13,10 @@ import { makeStyles } from '@material-ui/core/styles'
 import { useHistory, Link } from 'react-router-dom'
 import { Can } from '../Auth/Can'
 
+import Topic from '../Auth/Topic'
+import Proposal from '../Auth/Proposal'
+import Phase from '../Auth/Phase'
+
 import { PhaseContext } from '../contexts/PhaseContext'
 
 import HomeIcon from '@material-ui/icons/Home'
@@ -48,11 +52,7 @@ export default function NavBar(props) {
 
   const accountAbbr = account.name.split(' ').map(el => el[0])
 
-  console.log(account)
-
   const [anchorEl, setAnchorEl] = useState(null)
-
-  console.log(currentPhase)
 
   const handleClick = event => {
     setAnchorEl(event.currentTarget)
@@ -72,13 +72,13 @@ export default function NavBar(props) {
         </Link>
         {currentPhase.phase === 3 || currentPhase.phase === 4 ? (
           <>
-            <Can I="read" a="Topic">
+            <Can I="read" a={Topic.name}>
               <Link to="/topics" className={styles.linkButton}>
                 <Button className={styles.linkText}>View Topics List</Button>
               </Link>
             </Can>
 
-            <Can I="manage" a="Proposal">
+            <Can I="manage" a={Proposal.name}>
               <Link to="/proposals" className={styles.linkButton}>
                 <Button className={styles.linkText}>My Proposals</Button>
               </Link>
@@ -90,7 +90,7 @@ export default function NavBar(props) {
         {(currentPhase.phase === 2 ||
           currentPhase.phase === 3 ||
           currentPhase.phase === 4) && (
-          <Can I="manage" a="Topic">
+          <Can I="manage" a={Topic.name}>
             <Link to="/topics/manage" className={styles.linkButton}>
               <Button className={styles.linkText}>My Topics</Button>
             </Link>
@@ -117,7 +117,7 @@ export default function NavBar(props) {
             </Link>
           </Can>
         </Can>
-        <Can I="update" a="Phase">
+        <Can I="update" a={Phase.name}>
           <Link to="/phase/manage" className={styles.linkButton}>
             <Button className={styles.linkText}>Manage Phases</Button>
           </Link>

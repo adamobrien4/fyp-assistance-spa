@@ -110,7 +110,9 @@ const PhaseManagement = props => {
 
   return (
     <Container maxWidth="lg">
-      <h1>Phase Management</h1>
+      <Typography variant="h4" align="center">
+        Phase Management
+      </Typography>
 
       <Typography>
         {

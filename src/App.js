@@ -17,6 +17,10 @@ import generateAbilitiesFor from './Auth/ability'
 import api, { setup as apiSetup } from './utils/api.axios'
 import axiosGraphInstance, { setup as graphSetup } from './utils/graph.axios'
 
+import Topic from './Auth/Topic'
+import Phase from './Auth/Phase'
+import Proposal from './Auth/Proposal'
+
 import { Toolbar } from '@material-ui/core'
 
 import { CreateProposalContextProvider } from './contexts/CreateProposalContext'
@@ -55,8 +59,6 @@ import TopicProposals from './components/TopicManagement/TopicProposals'
 import ViewProposal from './components/Proposals/ViewProposal'
 
 import PhaseManagement from './components/PhaseManagement'
-
-import Phase from './Auth/Phase'
 
 import HelpPage from './components/Help/HelpPage'
 import APIUnavailable from './components/APIUnavailable'
@@ -212,7 +214,7 @@ const Pages = props => {
         <APIUnavailable />
       </Route>
 
-      {ability.can('read', 'Topic') && allowForPhase([3, 4]) && (
+      {ability.can('read', Topic.name) && allowForPhase([3, 4]) && (
         <Route exact path="/topics">
           <TopicList />
         </Route>
@@ -222,25 +224,25 @@ const Pages = props => {
         <ViewTopic />
       </Route>
 
-      {ability.can('create', 'Topic') && allowForPhase(2) && (
+      {ability.can('create', Topic.name) && allowForPhase(2) && (
         <Route path="/topics/add" component={AddTopicForm} />
       )}
 
-      {ability.can('manage', 'Topic') && allowForPhase([2, 3, 4]) && (
+      {ability.can('manage', Topic.name) && allowForPhase([2, 3, 4]) && (
         <Route path="/topics/manage" component={TopicManagement} />
       )}
 
-      {ability.can('read', 'Proposal') && (
+      {ability.can('read', Proposal.name) && (
         <Route path="/topic/:topicId">
           <TopicProposals />
         </Route>
       )}
 
-      {ability.can('manage', 'Proposal') && (
+      {ability.can('manage', Proposal.name) && (
         <Route exact path="/proposals" component={ManageProposal} />
       )}
 
-      {ability.can('create', 'Proposal') && (
+      {ability.can('create', Proposal.name) && (
         <Route exact path="/proposals/add/step2">
           <CreateProposalContextProvider>
             <CreateProposalStep2 />
@@ -248,7 +250,7 @@ const Pages = props => {
         </Route>
       )}
 
-      {ability.can('create', 'Proposal') && (
+      {ability.can('create', Proposal.name) && (
         <Route exact path="/proposals/add/finish">
           <CreateProposalContextProvider>
             <CreateProposalFinish />
@@ -256,7 +258,7 @@ const Pages = props => {
         </Route>
       )}
 
-      {ability.can('create', 'Proposal') && (
+      {ability.can('create', Proposal.name) && (
         <Route path="/proposals/add/:topicId?">
           <CreateProposalContextProvider>
             <CreateProposal />
@@ -264,7 +266,7 @@ const Pages = props => {
         </Route>
       )}
 
-      {ability.can('read', 'Proposal') && (
+      {ability.can('read', Proposal.name) && (
         <Route exact path="/proposal/view/:id">
           <ViewProposal />
         </Route>
@@ -300,7 +302,7 @@ const Pages = props => {
         </Route>
       )}
 
-      {ability.can('update', 'Phase') && (
+      {ability.can('update', Phase.name) && (
         <Route path="/phase/manage">
           <PhaseManagement />
         </Route>

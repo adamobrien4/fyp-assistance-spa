@@ -18,6 +18,7 @@ const SupervisorAssignment = props => {
   const [includeEmailPrefix, setIncludeEmailPrefix] = useState(true)
   const [alert, setAlert] = useState({})
   const [alertOpen, setAlertOpen] = useState(false)
+  const [uploading, setUploading] = useState(false)
 
   const onChange = e => {
     setCurrentEmail(e.target.value)
@@ -82,6 +83,7 @@ const SupervisorAssignment = props => {
     }
 
     console.log('Uploading: ', body)
+    setUploading(true)
 
     api
       .post('/supervisor/assign', body)
@@ -139,6 +141,9 @@ const SupervisorAssignment = props => {
         })
         setAlertOpen(true)
       })
+      .finally(() => {
+        setUploading(false)
+      })
   }
 
   const onChangeEmailPrefix = e => {
@@ -178,6 +183,8 @@ const SupervisorAssignment = props => {
         onAdd={onAdd}
       />
 
+      <br />
+
       <CollapsableAlert
         open={alertOpen}
         setOpen={setAlertOpen}
@@ -193,7 +200,11 @@ const SupervisorAssignment = props => {
         removeEntry={handleRemove}
       />
 
-      <UploadButton disabled={!supervisors.length} onUpload={onUpload} />
+      <UploadButton
+        disabled={!supervisors.length}
+        loading={uploading}
+        onUpload={onUpload}
+      />
       <PrimaryButton
         type="button"
         color="secondary"
