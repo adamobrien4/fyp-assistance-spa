@@ -1,80 +1,88 @@
-import React, { useEffect } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 
+import { PhaseContext } from '../../contexts/PhaseContext'
 import { useData } from '../../contexts/CreateProposalContext'
 import { useHistory } from 'react-router-dom'
 
-import { withStyles } from '@material-ui/core/styles'
-import { Typography, Container } from '@material-ui/core'
+import { Typography, Container, Tooltip } from '@material-ui/core'
+
+import HelpIcon from '@material-ui/icons/Help'
 
 import api from '../../utils/api.axios'
-import * as yup from 'yup'
 
+import Input from '../Input'
+import MultiLineInput from '../MultiLineInput'
 import PrimaryButton from '../PrimaryButton'
 import Breadcrumb from './Breadcrumb'
 
-const customProposalSchema = yup.object().shape({
-  title: yup.string().required('Proposal must have a title'),
-  description: yup.string().required('Proposal must have a description'),
-  notes: yup.string(),
-  environment: yup.string().required('Proposal must have environment provided'),
-  languages: yup
-    .string()
-    .required('Proposal must have languages/technologies provided')
-})
-
-const providedProposalSchema = yup.object().shape({
-  topic: yup.object().shape({
-    _id: yup.string().required('Topic must have an _id')
-  }),
-  title: yup.string().required('Proposal must have a title'),
-  description: yup.string().required('Proposal must have a description'),
-  notes: yup.string()
-})
-
 const CreateProposal = props => {
   // CreateProposal Context
-  const { setContextValues, data } = useData()
+  const { setContextData, contextData } = useData()
+  const { currentPhase } = useContext(PhaseContext)
+  const [submitting, setSubmitting] = useState(false)
 
   const history = useHistory()
 
-  const handleNextStep = () => {
+  useEffect(() => {
+    console.log('useEffect', contextData.topic)
+    if (!contextData.topic) {
+      history.push('/proposals/add')
+    }
+  }, [])
+
+  const handleNextStep = submitProposal => {
     // Get data from form and store in context
 
     let formData = {
-      isCustomProposal: data.isCustomProposal,
-      title: data.title,
-      description: data.description,
-      additionalNotes: data.additionalNotes,
-      chooseMessage: data.chooseMeMessage
+      isCustomProposal: contextData.isCustomProposal,
+      title: contextData.title,
+      description: contextData.description,
+      additionalNotes: contextData.additionalNotes,
+      chooseMessage: contextData.chooseMeMessage,
+      topic: contextData.topic._id,
+      saveAsDraft: !submitProposal
     }
 
-    if (data.isCustomProposal) {
+    if (contextData.isCustomProposal) {
       let prevData = { ...formData }
       formData = {
         ...prevData,
-        environment: data.environment,
-        languages: data.languages
-      }
-    } else {
-      let prevData = { ...formData }
-      formData = {
-        ...prevData,
-        topic: data.topic._id
+        environment: contextData.environment,
+        languages: contextData.languages
       }
     }
 
     console.log('Submitting ', formData)
 
+    setSubmitting(true)
+
     api
       .post('/proposal/add', formData)
       .then(res => {
         console.log(res)
-        setContextValues({})
+        setContextData({})
         history.push('/proposals')
       })
-      .catch(err => {
-        console.log(err)
+      .catch(error => {
+        if (error.response) {
+          switch (error.response.data) {
+            case 'existing_topic_proposal':
+              alert('Cannot create multiple proposals for a single topic')
+              break
+            default:
+              break
+          }
+        } else if (error.request) {
+          // The request was made but no response was received
+          console.log(error.request)
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          console.log('Error', error.message)
+        }
+      })
+      .finally(() => {
+        setSubmitting(false)
       })
   }
 
@@ -82,33 +90,92 @@ const CreateProposal = props => {
     <Container component="main" maxWidth="md">
       <Breadcrumb />
       <Typography>Create Proposal - Finish (Review)</Typography>
-      <code>{JSON.stringify(data)}</code>
+
+      {/* TODO: Print Topic in easier to read fashion */}
 
       <Typography>
-        {data.isCustomProposal
+        {contextData.isCustomProposal
           ? 'Custom Proposal'
           : 'Supervisor Defined Proposal'}
       </Typography>
 
-      {data.isCustomProposal ? null : (
+      {contextData.isCustomProposal ? null : (
         <>
-          <Typography>{data.topic.title}</Typography>
-          <Typography>{data.topic.supervisor?.displayName}</Typography>
+          <Input
+            label="Related Topic"
+            value={contextData?.topic?.title}
+            readOnly
+          />
+          <Input
+            label="Supervisor"
+            value={contextData?.topic?.supervisor?.displayName}
+            readOnly
+          />
         </>
       )}
 
-      <Typography>{data.title}</Typography>
-      <Typography>{data.description}</Typography>
-      <Typography>{data.additionalNotes}</Typography>
+      <Input label="Title" value={contextData.title} readOnly />
+      <MultiLineInput
+        label="Description"
+        value={contextData.description}
+        readOnly
+      />
+      <MultiLineInput
+        label="Additional Notes"
+        value={contextData.additionalNotes}
+        readOnly
+      />
 
-      {data.isCustomProposal ? (
+      {contextData.isCustomProposal ? (
         <>
-          <Typography>{data.environment}</Typography>
-          <Typography>{data.languages}</Typography>
+          <MultiLineInput
+            label="Environment"
+            value={contextData.environment}
+            readOnly
+          />
+          <MultiLineInput
+            label="Languages"
+            value={contextData.languages}
+            readOnly
+          />
         </>
       ) : null}
 
-      <PrimaryButton onClick={handleNextStep}>Submit Proposal</PrimaryButton>
+      {currentPhase.phase === 4 ? (
+        <>
+          <PrimaryButton
+            loading={submitting}
+            onClick={() => handleNextStep(true)}
+            endIcon={
+              <Tooltip title="Not editable after submission">
+                <HelpIcon />
+              </Tooltip>
+            }>
+            Submit Proposal
+          </PrimaryButton>
+          <PrimaryButton
+            loading={submitting}
+            onClick={() => handleNextStep(false)}
+            endIcon={
+              <Tooltip title="Editable until submitted">
+                <HelpIcon />
+              </Tooltip>
+            }>
+            Save Proposal as Draft
+          </PrimaryButton>
+        </>
+      ) : (
+        <PrimaryButton
+          loading={submitting}
+          onClick={() => handleNextStep(true)}
+          endIcon={
+            <Tooltip title="Not editable after submission">
+              <HelpIcon />
+            </Tooltip>
+          }>
+          Submit Proposal
+        </PrimaryButton>
+      )}
     </Container>
   )
 }

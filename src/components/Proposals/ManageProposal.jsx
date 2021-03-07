@@ -1,118 +1,172 @@
-import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-
+import React, { useState, useEffect, useContext } from 'react'
+import { PhaseContext } from '../../contexts/PhaseContext'
+import { Can } from '../../Auth/Can'
+import PropTypes from 'prop-types'
 import {
-  Typography,
   Container,
-  Card,
-  Box,
-  CardContent,
-  Grid,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemSecondaryAction,
-  IconButton
+  Typography,
+  Link as MuiLink,
+  TableContainer,
+  Paper,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  Button
 } from '@material-ui/core'
 import EditIcon from '@material-ui/icons/Edit'
-import VisibilityIcon from '@material-ui/icons/Visibility'
-import { makeStyles } from '@material-ui/styles'
+import { useHistory } from 'react-router-dom'
+
 import api from '../../utils/api.axios'
 
-import Input from '../Input'
-import MultiLineInput from '../MultiLineInput'
-import PrimaryButton from '../PrimaryButton'
-import EditProposal from './EditProposal'
+import { proposalStatusToHumanFriendlyString } from '../../utils/proposal'
 
-const useStyles = makeStyles(theme => ({
-  proposalListing: {
-    margin: '5px 5px',
-    backgroundColor: 'lightgray',
-    width: '90%'
-  },
-  statusBadge: {
-    padding: '5px 10px',
-    backgroundColor: theme.palette.primary.main,
-    color: 'white',
-    textTransform: 'capitalize',
-    borderRadius: '5px'
+import ProposalModal from './ProposalModal'
+
+const NextActionButton = props => {
+  switch (props.status) {
+    case 'draft':
+      return (
+        <Button onClick={() => props.updateStatus(props.proposalId)}>
+          Submit Proposal
+        </Button>
+      )
+    case 'pending_edits':
+      return (
+        <Button onClick={() => props.updateStatus(props.proposalId)}>
+          Submit Updated Proposal
+        </Button>
+      )
+    case 'submitted':
+      return (
+        <Can I="takeActionPhaseThree" this={props.currentPhase}>
+          <Button
+            variant="outlined"
+            color="secondary"
+            startIcon={<EditIcon />}
+            onClick={() => props.downgradeStatus(props.proposalId)}>
+            Convert to Draft
+          </Button>
+        </Can>
+      )
+    default:
+      return null
   }
-}))
+}
 
-const ProposalListing = props => {
-  const classes = useStyles()
+NextActionButton.propTypes = {
+  updateStatus: PropTypes.func.isRequired,
+  downgradeStatus: PropTypes.func.isRequired,
+  proposalId: PropTypes.string.isRequired,
+  status: PropTypes.string.isRequired,
+  currentPhase: PropTypes.object.isRequired
+}
+
+const ProposalsTable = props => {
+  const history = useHistory()
   return (
-    <ListItem
-      key={props.proposal._id}
-      className={classes.proposalListing}
-      button
-      onClick={props.onClick}>
-      {props.isCustomProposal ? (
-        <StudentProposalListing proposal={props.proposal} />
-      ) : (
-        <SupervisorProposalListing proposal={props.proposal} />
-      )}
-    </ListItem>
+    <TableContainer component={Paper}>
+      <Table aria-label="simple table">
+        <TableHead>
+          <TableRow>
+            <TableCell>Title</TableCell>
+            <TableCell>For Topic</TableCell>
+            <TableCell>Status</TableCell>
+            <TableCell align="right">Actions</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {props.loading ? (
+            <TableRow key="loading_supervisor_proposals">
+              <TableCell colSpan={4}>Loading Values ...</TableCell>
+            </TableRow>
+          ) : props.values.length === 0 ? (
+            <TableRow key="no_supervisor_proposals">
+              <TableCell colSpan={4}>No Proposals to show</TableCell>
+            </TableRow>
+          ) : (
+            props.values.map(proposal => (
+              <TableRow key={proposal.id}>
+                <TableCell>
+                  <MuiLink
+                    onClick={() => {
+                      props.setSelectedProposal(proposal)
+                      props.setDialogOpen(true)
+                    }}>
+                    {proposal.title}
+                  </MuiLink>
+                </TableCell>
+                <TableCell>
+                  <MuiLink
+                    onClick={() =>
+                      history.push(`/topics/view/${proposal.topic._id}`)
+                    }>
+                    {proposal.topic.title}
+                  </MuiLink>
+                </TableCell>
+                <TableCell>
+                  {proposalStatusToHumanFriendlyString(proposal.status)}
+                </TableCell>
+                <TableCell align="right">
+                  <NextActionButton
+                    status={proposal.status}
+                    proposalId={proposal._id}
+                    updateStatus={props.updateStatus}
+                    downgradeStatus={props.downgradeStatus}
+                    currentPhase={props.currentPhase}
+                  />
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </TableContainer>
   )
 }
 
-const SupervisorProposalListing = props => {
-  const classes = useStyles()
-  return (
-    <>
-      <ListItemText
-        primary={props.proposal.title}
-        secondary={props.proposal.topic.code}></ListItemText>
-      <ListItemSecondaryAction className={classes.statusBadge}>
-        {props.proposal.status}
-      </ListItemSecondaryAction>
-    </>
-  )
+ProposalsTable.propTypes = {
+  values: PropTypes.array.isRequired,
+  loading: PropTypes.bool.isRequired,
+  setSelectedProposal: PropTypes.func.isRequired,
+  updateStatus: PropTypes.func.isRequired,
+  downgradeStatus: PropTypes.func.isRequired,
+  setDialogOpen: PropTypes.func.isRequired,
+  currentPhase: PropTypes.object.isRequired
 }
 
-const StudentProposalListing = props => {
-  const classes = useStyles()
-  return (
-    <>
-      <ListItemText
-        primary={props.proposal.title}
-        secondary={
-          props.proposal.description.substring(0, 50) + ' ...'
-        }></ListItemText>
-      <ListItemSecondaryAction className={classes.statusBadge}>
-        {props.proposal.status}
-      </ListItemSecondaryAction>
-    </>
-  )
-}
-
-export default function ManageProposal(props) {
+const ManageProposal = props => {
+  const [supervisorProposals, setSupervisorProposals] = useState([])
+  const [customProposals, setCustomProposals] = useState([])
+  const [selectedProposal, setSelectedProposal] = useState()
   const [loading, setLoading] = useState(true)
-  const [proposals, setProposals] = useState([])
-  const [selectedProposal, setSelectedProposal] = useState(null)
-  const [isEditing, setIsEditing] = useState(false)
+  const [dialogOpen, setDialogOpen] = useState(false)
+
+  const { currentPhase } = useContext(PhaseContext)
 
   useEffect(() => {
-    refreshProposals()
-    setLoading(false)
+    refreshProposalList()
   }, [])
 
-  const refreshProposals = () => {
-    setIsEditing(false)
-    setSelectedProposal(null)
-
+  const refreshProposalList = () => {
     api
       .get('/proposal/me')
       .then(res => {
-        let incomingProposals = res.data.proposals.map(proposal => {
-          return {
-            ...proposal,
-            isCustomProposal: proposal.type === 'studentDefined'
-          }
-        })
+        console.log(res)
 
-        console.log(incomingProposals)
-        setProposals(incomingProposals)
+        let supervisor = res.data.proposals.filter(
+          proposal => proposal.type === 'supervisorDefined'
+        )
+        let custom = res.data.proposals.filter(
+          proposal => proposal.type === 'studentDefined'
+        )
+
+        console.log(supervisor)
+        console.log(custom)
+
+        setSupervisorProposals(supervisor)
+        setCustomProposals(custom)
       })
       .catch(err => {
         console.log(err)
@@ -122,91 +176,81 @@ export default function ManageProposal(props) {
       })
   }
 
-  const handleSelect = proposal => {
-    if (isEditing) {
-      // TODO: Ask user if they want to save any changes they have made so far
-      setIsEditing(false)
+  const setDialogOpenFunc = val => {
+    if (!val) {
+      setSelectedProposal(null)
     }
-
-    console.log(proposal)
-    setSelectedProposal(proposal)
+    setDialogOpen(val)
   }
 
-  if (loading) {
-    return <Typography>Loading...</Typography>
+  const updateStatus = proposalId => {
+    api
+      .post(`/proposal/${proposalId}/upgrade`)
+      .then(res => {
+        console.log(res)
+        refreshProposalList()
+      })
+      .catch(err => {
+        console.log(err)
+      })
+  }
+
+  const downgradeStatus = proposalId => {
+    api
+      .post(`/proposal/${proposalId}/downgrade`)
+      .then(res => {
+        console.log(res)
+        refreshProposalList()
+      })
+      .catch(err => {
+        console.log(err)
+      })
   }
 
   return (
-    <Grid container justify="center" spacing={0}>
-      <Grid key={0} item style={{ width: '30%' }}>
-        <Typography variant="h6">Supervisor Defined Topic Proposals</Typography>
-        <List>
-          {proposals
-            .filter(proposal => !proposal.isCustomProposal)
-            .map(proposal => {
-              return (
-                <ProposalListing
-                  key={proposal._id}
-                  isCustomProposal={false}
-                  proposal={proposal}
-                  onClick={() => handleSelect(proposal)}
-                />
-              )
-            })}
-        </List>
-
-        <Typography variant="h6" margin={1}>
-          Custom Topic Proposals
+    <>
+      {selectedProposal ? (
+        <ProposalModal
+          key={selectedProposal._id}
+          dialogOpen={dialogOpen}
+          setDialogOpen={setDialogOpenFunc}
+          proposal={selectedProposal}
+          refresh={refreshProposalList}
+        />
+      ) : null}
+      <Container maxWidth="lg">
+        <Typography variant="h4" align="center">
+          Proposal Management
         </Typography>
-        <List>
-          {proposals
-            .filter(proposal => proposal.isCustomProposal)
-            .map(proposal => {
-              return (
-                <ProposalListing
-                  key={proposal._id}
-                  isCustomProposal={true}
-                  proposal={proposal}
-                  onClick={() => handleSelect(proposal)}
-                />
-              )
-            })}
-        </List>
-        <Link to="/proposals/add">
-          <PrimaryButton>Create new Proposal</PrimaryButton>
-        </Link>
-      </Grid>
-      <Grid key={1} item style={{ width: '70%' }}>
-        {selectedProposal ? (
-          <>
-            <IconButton onClick={() => setIsEditing(!isEditing)}>
-              <EditIcon />
-            </IconButton>
+        {currentPhase.phase !== 4 ? (
+          <Typography align="center">
+            Supervisors will be available to respond to Proposals during Phase 4
+          </Typography>
+        ) : null}
+        <Typography>Supervisor Topic Proposals</Typography>
+        <ProposalsTable
+          loading={loading}
+          values={supervisorProposals}
+          updateStatus={updateStatus}
+          downgradeStatus={downgradeStatus}
+          setSelectedProposal={setSelectedProposal}
+          setDialogOpen={setDialogOpen}
+          currentPhase={currentPhase}
+        />
 
-            {isEditing ? (
-              <EditProposal
-                proposal={selectedProposal}
-                refreshProposals={refreshProposals}
-              />
-            ) : (
-              <>
-                <Typography>View Topic Details no edit</Typography>
-              </>
-            )}
-
-            {selectedProposal.isCustomProposal ? null : (
-              <>
-                <Typography hidden={isEditing}>Related Topic</Typography>
-                <IconButton>
-                  <VisibilityIcon />
-                </IconButton>
-              </>
-            )}
-          </>
-        ) : (
-          <Typography>Select a Proposal to view its details</Typography>
-        )}
-      </Grid>
-    </Grid>
+        <Typography>Custom Proposals</Typography>
+        <ProposalsTable
+          loading={loading}
+          values={customProposals}
+          updateStatus={updateStatus}
+          downgradeStatus={downgradeStatus}
+          setSelectedProposal={setSelectedProposal}
+          setDialogOpen={setDialogOpen}
+          currentPhase={currentPhase}
+        />
+      </Container>
+    </>
   )
 }
+
+export default ManageProposal

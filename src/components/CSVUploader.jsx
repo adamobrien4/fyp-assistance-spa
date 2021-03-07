@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { CSVReader } from 'react-papaparse'
+import * as yup from 'yup'
 
 import Button from '@material-ui/core/Button'
 
@@ -23,12 +24,15 @@ export default function CSVUploader(props) {
 
     let studentsArray = []
     for (let entry of data) {
+      let email = entry.data.email
       // Skip any entries which are null or empty
-      if (!entry.data.StudentEmail || entry.data.StudentEmail === '') {
+      if (!email || email === '') {
+        console.log(email, 'is being skipped')
         continue
       }
-      console.log(entry.data.StudentEmail)
-      studentsArray.push(entry.data.StudentEmail)
+
+      console.log(email)
+      studentsArray.push(email)
     }
 
     props.onAdd(studentsArray)

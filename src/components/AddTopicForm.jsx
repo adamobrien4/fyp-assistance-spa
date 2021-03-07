@@ -1,12 +1,16 @@
-import React from 'react'
+import React, { useState, useContext } from 'react'
 import api from '../utils/api.axios'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
+import { useHistory } from 'react-router-dom'
+
+import { AuthContext } from '../contexts/AuthContext'
 
 import { Container, Typography } from '@material-ui/core'
 
 import { formSchema, defaultValues } from '../utils/yupSchemas/yupTopicSchema'
 
+import CollapsableAlert from './CollapsableAlert'
 import PrimaryButton from './PrimaryButton'
 import Input from './Input'
 import MultiLineInput from './MultiLineInput'
@@ -14,24 +18,41 @@ import Tags from './Tags'
 import TargetCoursesInput from './TargetCoursesInput'
 
 const AddTopicForm = props => {
+  const [alert, setAlert] = useState({
+    message: 'No Message Supplied',
+    severity: 'info'
+  })
+  const [alertOpen, setAlertOpen] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+
+  const history = useHistory()
   const { register, handleSubmit, errors, control } = useForm({
     resolver: yupResolver(formSchema),
     reValidateMode: 'onChange',
     defaultValues
   })
 
+  const { user } = useContext(AuthContext)
+
   const onSubmit = data => {
     console.log(data)
 
+    data.ownerType = user.role.toLowerCase()
+
+    setSubmitting(true)
     api
       .post('/topic/add', data)
       .then(resp => {
         console.log(resp)
-        alert('Topic has been sucessfully added')
-
-        // TODO: Redirect user to topic management screen
+        history.push('/topics/manage')
       })
-      .catch(err => console.log(err))
+      .catch(err => {
+        console.log(err)
+        setAlert({ message: 'Could not add topic', severity: 'error' })
+      })
+      .finally(() => {
+        setSubmitting(false)
+      })
   }
 
   return (
@@ -39,7 +60,7 @@ const AddTopicForm = props => {
       <Typography component="h1" variant="h4" align="center">
         Create new Topic
       </Typography>
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit)} autoComplete="off">
         <Input
           inputRef={register}
           type="text"
@@ -81,20 +102,21 @@ const AddTopicForm = props => {
           helperText={errors?.additionalNotes?.message}
         />
 
-        <Controller
+        <TargetCoursesInput
           control={control}
-          name="targetCourses"
-          render={({ onChange, value }) => (
-            <TargetCoursesInput
-              value={value}
-              onChange={onChange}
-              error={!!errors.targetCourses}
-              helperText={errors?.targetCourses?.message}
-            />
-          )}
+          label="Target Courses (Optional)"
+          error={!!errors.targetCourses}
+          helperText={errors?.targetCourses?.message}
         />
 
-        <PrimaryButton>Add Topic</PrimaryButton>
+        <PrimaryButton loading={submitting}>Add Topic</PrimaryButton>
+
+        <br />
+        <CollapsableAlert
+          open={alertOpen}
+          message={alert.message}
+          severity={alert.severity}
+        />
       </form>
     </Container>
   )

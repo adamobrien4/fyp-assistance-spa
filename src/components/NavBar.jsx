@@ -1,9 +1,30 @@
-import React from 'react'
-import { List, ListItem } from '@material-ui/core'
+import React, { useContext, useState } from 'react'
+import { useMsal } from '@azure/msal-react'
+import {
+  Avatar,
+  Button,
+  Box,
+  IconButton,
+  Menu,
+  MenuItem,
+  Toolbar
+} from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
-import { Link } from 'react-router-dom'
-import { AuthenticatedTemplate } from '@azure/msal-react'
+import { useHistory, Link } from 'react-router-dom'
 import { Can } from '../Auth/Can'
+
+import Topic from '../Auth/Topic'
+import Proposal from '../Auth/Proposal'
+import Phase from '../Auth/Phase'
+
+import { PhaseContext } from '../contexts/PhaseContext'
+
+import HomeIcon from '@material-ui/icons/Home'
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
+
+import ListItemIcon from '@material-ui/core/ListItemIcon'
+import ListItemText from '@material-ui/core/ListItemText'
+import ExitToAppIcon from '@material-ui/icons/ExitToApp'
 
 const useStyles = makeStyles(theme => ({
   navDisplayFlex: {
@@ -13,89 +34,133 @@ const useStyles = makeStyles(theme => ({
   },
   linkText: {
     textDecoration: 'none',
-    color: 'white',
-    width: '30%'
+    textTransform: 'none',
+    color: 'white'
+  },
+  linkButton: {
+    margin: '0 5px'
   }
 }))
 
 export default function NavBar(props) {
   const styles = useStyles()
+  const { currentPhase } = useContext(PhaseContext)
+
+  const history = useHistory()
+  const { instance, accounts } = useMsal()
+  const account = accounts[0]
+
+  const accountAbbr = account.name.split(' ').map(el => el[0])
+
+  const [anchorEl, setAnchorEl] = useState(null)
+
+  const handleClick = event => {
+    setAnchorEl(event.currentTarget)
+  }
+
+  const handleClose = () => {
+    setAnchorEl(null)
+  }
 
   return (
-    <AuthenticatedTemplate>
-      <List
-        component="nav"
-        aria-labelledby="main navigation"
-        className={styles.navDisplayFlex}>
-        <ListItem button>
-          <Link to="/" className={styles.linkText}>
-            Home
-          </Link>
-        </ListItem>
+    <Toolbar>
+      <div style={{ flexGrow: 1 }}>
+        <Link to="/">
+          <IconButton edge="start" aria-label="home">
+            <HomeIcon fontSize="large" style={{ color: 'white' }} />
+          </IconButton>
+        </Link>
+        {currentPhase.phase === 3 || currentPhase.phase === 4 ? (
+          <>
+            <Can I="read" a={Topic.name}>
+              <Link to="/topics" className={styles.linkButton}>
+                <Button className={styles.linkText}>View Topics List</Button>
+              </Link>
+            </Can>
 
-        {/* Student */}
-        <Can I="read" a="Topic">
-          <ListItem button>
-            <Link to="/topics" className={styles.linkText}>
-              View Topics List
-            </Link>
-          </ListItem>
-        </Can>
-        <Can I="manage" a="Proposal">
-          <ListItem button>
-            <Link to="/proposals" className={styles.linkText}>
-              Manage Proposals
-            </Link>
-          </ListItem>
-        </Can>
+            <Can I="manage" a={Proposal.name}>
+              <Link to="/proposals" className={styles.linkButton}>
+                <Button className={styles.linkText}>My Proposals</Button>
+              </Link>
+            </Can>
+          </>
+        ) : null}
 
         {/* Supervisor */}
-        <Can I="manage" a="Topic">
-          <ListItem button>
-            <Link to="/topics/manage" className={styles.linkText}>
-              Manage Topic List
+        {(currentPhase.phase === 2 ||
+          currentPhase.phase === 3 ||
+          currentPhase.phase === 4) && (
+          <Can I="manage" a={Topic.name}>
+            <Link to="/topics/manage" className={styles.linkButton}>
+              <Button className={styles.linkText}>My Topics</Button>
             </Link>
-          </ListItem>
-        </Can>
+          </Can>
+        )}
 
         {/* Coordinator */}
-        <Can I="create" a="Student">
-          <ListItem button>
-            <Link to="/student/assign" className={styles.linkText}>
-              Assign Students
-            </Link>
-          </ListItem>
-        </Can>
         <Can I="manage" a="Student">
-          <ListItem button>
-            <Link to="/student/manage" className={styles.linkText}>
-              Manage Students
-            </Link>
-          </ListItem>
-        </Can>
-        <Can I="create" a="Supervisor">
-          <ListItem button>
-            <Link to="/supervisor/assign" className={styles.linkText}>
-              Assign Supervisors
-            </Link>
-          </ListItem>
-        </Can>
-
-        {/* Administrator */}
-        <Can I="create" a="Coordinator">
-          <ListItem button>
-            <Link to="/coordinator" className={styles.linkText}>
-              Manage Coordinators
-            </Link>
-          </ListItem>
-        </Can>
-
-        <ListItem button>
-          <Link to="/logout" className={styles.linkText}>
-            Logout
+          <Link to="/student/manage" className={styles.linkButton}>
+            <Button className={styles.linkText}>Manage Students</Button>
           </Link>
-        </ListItem>
-      </List>
-    </AuthenticatedTemplate>
+        </Can>
+        <Can I="manage" a="Supervisor">
+          <Link to="/supervisor/manage" className={styles.linkButton}>
+            <Button className={styles.linkText}>Manage Supervisors</Button>
+          </Link>
+        </Can>
+
+        {/* Administrator / Coordinator */}
+        <Can I="takeActionPhaseOne" this={currentPhase}>
+          <Can I="create" a="Coordinator">
+            <Link to="/coordinator" className={styles.linkButton}>
+              <Button className={styles.linkText}>Manage Coordinators</Button>
+            </Link>
+          </Can>
+        </Can>
+        <Can I="update" a={Phase.name}>
+          <Link to="/phase/manage" className={styles.linkButton}>
+            <Button className={styles.linkText}>Manage Phases</Button>
+          </Link>
+        </Can>
+      </div>
+
+      {/* User Avatar */}
+      <Box edge="end">
+        <Button
+          aria-label="delete"
+          onClick={handleClick}
+          endIcon={<ExpandMoreIcon style={{ color: 'white' }} />}>
+          <Avatar style={{ color: 'white' }}>{accountAbbr}</Avatar>
+        </Button>
+
+        <Menu
+          anchorEl={anchorEl}
+          keepMounted
+          open={Boolean(anchorEl)}
+          onClose={handleClose}
+          getContentAnchorEl={null}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'center'
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'center'
+          }}>
+          <MenuItem
+            onClick={() => {
+              instance.logout({
+                onRedirectNavigate: process.env.REACT_APP_REDIRECT_URL
+              })
+              setAnchorEl(null)
+            }}>
+            <ListItemIcon>
+              <ExitToAppIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Logout" />
+          </MenuItem>
+        </Menu>
+      </Box>
+    </Toolbar>
   )
 }

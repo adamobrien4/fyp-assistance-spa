@@ -21,6 +21,8 @@ const EditProposal = props => {
   const [environment, setEnvironment] = useState(props.proposal?.environment)
   const [languages, setLanguages] = useState(props.proposal?.languages)
 
+  const [submittingChanges, setSubmittingChanges] = useState(false)
+
   const handleTitleInput = e => {
     setTitle(e.target.value)
   }
@@ -80,10 +82,7 @@ const EditProposal = props => {
       return
     }
 
-    console.log(changes)
-
-    console.log(originalProposal)
-
+    setSubmittingChanges(true)
     api
       .post(`/proposal/edit/${originalProposal._id}`, changes)
       .then(res => {
@@ -93,6 +92,9 @@ const EditProposal = props => {
       .catch(err => {
         // TODO: Inform user of error
         console.log(err)
+      })
+      .finally(() => {
+        setSubmittingChanges(false)
       })
   }
 
@@ -125,7 +127,10 @@ const EditProposal = props => {
         </>
       ) : null}
 
-      <PrimaryButton fullWidth={false} onClick={handleSaveChanges}>
+      <PrimaryButton
+        fullWidth={false}
+        onClick={handleSaveChanges}
+        loading={submittingChanges}>
         Save Changes
       </PrimaryButton>
     </>

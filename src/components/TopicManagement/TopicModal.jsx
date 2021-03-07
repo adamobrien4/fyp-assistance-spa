@@ -1,19 +1,14 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
-import { useForm, Controller } from 'react-hook-form'
-import * as _ from 'lodash'
+import { useForm } from 'react-hook-form'
 
 import {
   Dialog,
   DialogTitle,
   DialogContent,
   IconButton,
-  DialogActions,
-  Divider,
-  FormControl,
-  Select,
-  MenuItem,
-  CircularProgress
+  Button,
+  Divider
 } from '@material-ui/core'
 import { Edit, Cancel } from '@material-ui/icons'
 import { makeStyles } from '@material-ui/core/styles'
@@ -23,11 +18,10 @@ import api from '../../utils/api.axios'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { editFormSchema } from '../../utils/yupSchemas/yupTopicSchema.js'
 
-import Input from '../Input'
-import MultiLineInput from '../MultiLineInput'
 import PrimaryButton from '../PrimaryButton'
-import Tags from '../Tags'
-import TargetCoursesInput from '../TargetCoursesInput'
+
+import RegularTopicModalContents from './RegularTopicModalContents'
+import StudentDefinedTopicModalContents from './StudentDefinedTopicModalContents'
 
 const useStyles = makeStyles(theme => ({
   formControl: {
@@ -47,6 +41,16 @@ const useStyles = makeStyles(theme => ({
     color: green[500],
     position: 'absolute',
     left: '50%'
+  },
+  dialogCloseButton: {
+    position: 'absolute',
+    top: theme.spacing(1),
+    right: theme.spacing(1),
+    color: theme.palette.grey[500],
+    fontSize: '28px'
+  },
+  dialogEditButton: {
+    marginBottom: theme.spacing(1)
   }
 }))
 
@@ -72,11 +76,22 @@ const TopicModal = props => {
   const [editMode, setEditMode] = useState(false)
   const [savingChanges, setSavingChanges] = useState(false)
 
-  const { register, handleSubmit, errors, control } = useForm({
+  const { register, handleSubmit, errors, control, reset } = useForm({
     resolver: yupResolver(editFormSchema),
     reValidateMode: 'onChange',
     defaultValues
   })
+
+  useEffect(() => {
+    reset({
+      title: props.topic.title,
+      description: props.topic.description,
+      tags: props.topic.tags,
+      additionalNotes: props.topic.additionalNotes,
+      targetCourses: props.topic.targetCourses,
+      status: props.topic.status
+    })
+  }, [props.topic])
 
   const toggleEditMode = () => {
     let edtmd = !editMode
@@ -105,12 +120,12 @@ const TopicModal = props => {
     console.log(differences)
 
     if (differences) {
-      // TODO: Send differences object to api
-
+      setSavingChanges(true)
       api
         .post(`/topic/edit/${props.topic._id}`, differences)
         .then(res => {
           console.log(res)
+          props.setDialogOpen(false)
           props.refresh()
         })
         .catch(err => {
@@ -136,134 +151,59 @@ const TopicModal = props => {
       aria-labelledby="max-width-dialog-title"
       style={{ zIndex: '900 !important' }}
       disableBackdropClick>
-      <DialogTitle id="max-width-dialog-title">
-        <IconButton onClick={toggleEditMode} disabled={savingChanges}>
-          <Edit />
-        </IconButton>
-        <IconButton
-          edge="end"
-          onClick={() => {
-            if (
-              editMode &&
-              confirm(
-                'Unsaved changes will be lost!. Are you sure you want to exit?'
-              ) === false
-            ) {
-              return
-            }
+      <IconButton
+        className={classes.dialogCloseButton}
+        onClick={() => {
+          if (
+            editMode &&
+            // eslint-disable-next-line no-restricted-globals
+            confirm(
+              'Unsaved changes will be lost!. Are you sure you want to exit?'
+            ) === false
+          ) {
+            return
+          }
 
-            props.setDialogOpen(false)
-          }}
-          disabled={savingChanges}>
-          <Cancel />
-        </IconButton>
+          props.setDialogOpen(false)
+        }}
+        disabled={savingChanges}>
+        <Cancel />
+      </IconButton>
+      <DialogTitle id="max-width-dialog-title">
+        <Button
+          variant="contained"
+          className={classes.dialogEditButton}
+          color={editMode ? 'secondary' : 'primary'}
+          onClick={toggleEditMode}
+          disabled={savingChanges}
+          endIcon={<Edit />}>
+          Toggle Edit Mode
+        </Button>
         <Divider />
       </DialogTitle>
       <DialogContent>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'stretch',
-              width: '100%'
-            }}>
-            <Input
-              ref={register}
-              name="title"
-              label="Title"
-              disabled={!editMode}
-              variant="outlined"
-              margin="none"
-              style={{ flex: '3', marginRight: '40px' }}
-              error={!!errors.title}
-              helperText={errors?.title?.message}
+          {props.topic.type === 'regular' ? (
+            <RegularTopicModalContents
+              register={register}
+              control={control}
+              errors={errors}
+              editMode={editMode}
             />
-            <FormControl variant="outlined" className={classes.formControl}>
-              <Controller
-                render={({ onChange, value }) => (
-                  <Select
-                    disabled={!editMode}
-                    value={value}
-                    onChange={onChange}>
-                    <MenuItem value="draft">Draft</MenuItem>
-                    <MenuItem value="suggestion">Ready for Submission</MenuItem>
-                    <MenuItem value="archived" style={{ color: 'red' }}>
-                      Archived
-                    </MenuItem>
-                    <MenuItem value="active" disabled>
-                      Active
-                    </MenuItem>
-                    <MenuItem value="assigned" disabled>
-                      Assigned
-                    </MenuItem>
-                    <MenuItem value="prev_term" disabled>
-                      From Previous Term
-                    </MenuItem>
-                  </Select>
-                )}
-                name="status"
-                control={control}
-                error={!!errors.status}
-                helperText={errors?.status?.message}
-              />
-            </FormControl>
-          </div>
-          <MultiLineInput
-            inputRef={register}
-            name="description"
-            label="Description"
-            disabled={!editMode}
-            error={!!errors.description}
-            helperText={errors?.description?.message}
-          />
-
-          <Controller
-            control={control}
-            name="tags"
-            render={({ onChange, value }) => (
-              <Tags
-                value={value}
-                onChange={vals => {
-                  onChange(vals)
-                }}
-                error={!!errors?.tags}
-                helperText={errors?.tags?.message}
-                disabled={!editMode}
-              />
-            )}
-          />
-
-          <MultiLineInput
-            inputRef={register}
-            label="Additional Notes"
-            name="additionalNotes"
-            disabled={!editMode}
-            error={!!errors.additionalNotes}
-            helperText={errors?.additionalNotes?.message}
-          />
-
-          <TargetCoursesInput
-            control={control}
-            error={!!errors.targetCourses}
-            helperText={errors?.targetCourses?.message}
-            disabled={!editMode}
-          />
+          ) : (
+            <StudentDefinedTopicModalContents
+              register={register}
+              control={control}
+              errors={errors}
+              editMode={editMode}
+            />
+          )}
 
           {editMode && (
-            <PrimaryButton disabled={savingChanges}>Save Changes</PrimaryButton>
+            <PrimaryButton loading={savingChanges}>Save Changes</PrimaryButton>
           )}
         </form>
       </DialogContent>
-      <DialogActions>
-        {editMode ? (
-          <>
-            {savingChanges && (
-              <CircularProgress size={24} className={classes.buttonProgress} />
-            )}
-          </>
-        ) : null}
-      </DialogActions>
     </Dialog>
   )
 }
