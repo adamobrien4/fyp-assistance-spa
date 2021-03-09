@@ -1,4 +1,5 @@
 import React, { useContext, useState } from 'react'
+import PropTypes from 'prop-types'
 import { useMsal } from '@azure/msal-react'
 import {
   Avatar,
@@ -13,10 +14,6 @@ import { makeStyles } from '@material-ui/core/styles'
 import { useHistory, Link } from 'react-router-dom'
 import { Can } from '../Auth/Can'
 
-import Topic from '../Auth/Topic'
-import Proposal from '../Auth/Proposal'
-import Phase from '../Auth/Phase'
-
 import { PhaseContext } from '../contexts/PhaseContext'
 
 import HomeIcon from '@material-ui/icons/Home'
@@ -25,6 +22,7 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
 import ListItemText from '@material-ui/core/ListItemText'
 import ExitToAppIcon from '@material-ui/icons/ExitToApp'
+import NotificationsIcon from '@material-ui/icons/Notifications'
 
 const useStyles = makeStyles(theme => ({
   navDisplayFlex: {
@@ -39,6 +37,9 @@ const useStyles = makeStyles(theme => ({
   },
   linkButton: {
     margin: '0 5px'
+  },
+  notificationIcon: {
+    color: 'white'
   }
 }))
 
@@ -52,21 +53,35 @@ export default function NavBar(props) {
 
   const accountAbbr = account.name.split(' ').map(el => el[0])
 
-  const [anchorEl, setAnchorEl] = useState(null)
+  const [profileAnchorEl, setProfileAnchorEl] = useState(null)
+  const [notificationAnchorEl, setNotificationAnchorEl] = useState(null)
 
-  const handleClick = event => {
-    setAnchorEl(event.currentTarget)
+  const handleClickProfile = event => {
+    setProfileAnchorEl(event.currentTarget)
   }
 
-  const handleClose = () => {
-    setAnchorEl(null)
+  const handleCloseProfile = () => {
+    setProfileAnchorEl(null)
+  }
+
+  const handleOpenNotification = event => {
+    setNotificationAnchorEl(event.currentTarget)
+  }
+
+  const handleCloseNotification = () => {
+    setNotificationAnchorEl(null)
+  }
+
+  const handleClickNotification = path => {
+    if (path) history.push(path)
+    handleCloseNotification()
   }
 
   return (
     <Toolbar>
       <div style={{ flexGrow: 1 }}>
         <Link to="/">
-          <IconButton edge="start" aria-label="home">
+          <IconButton edge="start" aria-label="home" disableRipple>
             <HomeIcon fontSize="large" style={{ color: 'white' }} />
           </IconButton>
         </Link>
@@ -126,18 +141,54 @@ export default function NavBar(props) {
 
       {/* User Avatar */}
       <Box edge="end">
+        <IconButton aria-label="notifications" disableRipple>
+          <NotificationsIcon
+            onClick={handleOpenNotification}
+            fontSize={props.notifications.length ? 'large' : 'medium'}
+            className={styles.notificationIcon}
+          />
+        </IconButton>
+
+        <Menu
+          anchorEl={notificationAnchorEl}
+          keepMounted
+          open={Boolean(notificationAnchorEl)}
+          onClose={handleCloseNotification}
+          getContentAnchorEl={null}
+          anchorOrigin={{
+            vertical: 'bottom',
+            horizontal: 'center'
+          }}
+          transformOrigin={{
+            vertical: 'top',
+            horizontal: 'center'
+          }}>
+          {props.notifications.map(el => (
+            <MenuItem
+              key={el._id}
+              onClick={() => handleClickNotification(el?.path)}>
+              <ListItemText primary={el.title} />
+              <ListItemText secondary={el.created_at.toString()} />
+            </MenuItem>
+          ))}
+        </Menu>
+      </Box>
+
+      {/* User Avatar */}
+      <Box edge="end">
         <Button
+          disableRipple
           aria-label="delete"
-          onClick={handleClick}
+          onClick={handleClickProfile}
           endIcon={<ExpandMoreIcon style={{ color: 'white' }} />}>
           <Avatar style={{ color: 'white' }}>{accountAbbr}</Avatar>
         </Button>
 
         <Menu
-          anchorEl={anchorEl}
+          anchorEl={profileAnchorEl}
           keepMounted
-          open={Boolean(anchorEl)}
-          onClose={handleClose}
+          open={Boolean(profileAnchorEl)}
+          onClose={handleCloseProfile}
           getContentAnchorEl={null}
           anchorOrigin={{
             vertical: 'bottom',
@@ -152,7 +203,7 @@ export default function NavBar(props) {
               instance.logout({
                 onRedirectNavigate: process.env.REACT_APP_REDIRECT_URL
               })
-              setAnchorEl(null)
+              setProfileAnchorEl(null)
             }}>
             <ListItemIcon>
               <ExitToAppIcon fontSize="small" />
@@ -163,4 +214,8 @@ export default function NavBar(props) {
       </Box>
     </Toolbar>
   )
+}
+
+NavBar.propTypes = {
+  notifications: PropTypes.array.isRequired
 }
