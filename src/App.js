@@ -214,7 +214,7 @@ const Pages = props => {
         <APIUnavailable />
       </Route>
 
-      {ability.can('read', Topic.name) && allowForPhase([3, 4]) && (
+      {ability.can('read', 'Topic') && allowForPhase([3, 4]) && (
         <Route exact path="/topics">
           <TopicList />
         </Route>
@@ -224,25 +224,25 @@ const Pages = props => {
         <ViewTopic />
       </Route>
 
-      {ability.can('create', Topic.name) && allowForPhase(2) && (
+      {ability.can('create', 'Topic') && allowForPhase(2) && (
         <Route path="/topics/add" component={AddTopicForm} />
       )}
 
-      {ability.can('manage', Topic.name) && allowForPhase([2, 3, 4]) && (
+      {ability.can('manage', 'Topic') && allowForPhase([2, 3, 4]) && (
         <Route path="/topics/manage" component={TopicManagement} />
       )}
 
-      {ability.can('read', Proposal.name) && (
+      {ability.can('read', 'Proposal') && (
         <Route path="/topic/:topicId">
           <TopicProposals />
         </Route>
       )}
 
-      {ability.can('manage', Proposal.name) && (
+      {ability.can('manage', 'Proposal') && (
         <Route exact path="/proposals" component={ManageProposal} />
       )}
 
-      {ability.can('create', Proposal.name) && (
+      {ability.can('create', 'Proposal') && (
         <Route exact path="/proposals/add/step2">
           <CreateProposalContextProvider>
             <CreateProposalStep2 />
@@ -250,7 +250,7 @@ const Pages = props => {
         </Route>
       )}
 
-      {ability.can('create', Proposal.name) && (
+      {ability.can('create', 'Proposal') && (
         <Route exact path="/proposals/add/finish">
           <CreateProposalContextProvider>
             <CreateProposalFinish />
@@ -258,7 +258,7 @@ const Pages = props => {
         </Route>
       )}
 
-      {ability.can('create', Proposal.name) && (
+      {ability.can('create', 'Proposal') && (
         <Route path="/proposals/add/:topicId?">
           <CreateProposalContextProvider>
             <CreateProposal />
@@ -266,7 +266,7 @@ const Pages = props => {
         </Route>
       )}
 
-      {ability.can('read', Proposal.name) && (
+      {ability.can('read', 'Proposal') && (
         <Route exact path="/proposal/view/:id">
           <ViewProposal />
         </Route>
@@ -302,7 +302,7 @@ const Pages = props => {
         </Route>
       )}
 
-      {ability.can('update', Phase.name) && (
+      {ability.can('update', 'Phase') && (
         <Route path="/phase/manage">
           <PhaseManagement />
         </Route>

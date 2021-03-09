@@ -72,13 +72,13 @@ export default function NavBar(props) {
         </Link>
         {currentPhase.phase === 3 || currentPhase.phase === 4 ? (
           <>
-            <Can I="read" a={Topic.name}>
+            <Can I="read" a={'Topic'}>
               <Link to="/topics" className={styles.linkButton}>
                 <Button className={styles.linkText}>View Topics List</Button>
               </Link>
             </Can>
 
-            <Can I="manage" a={Proposal.name}>
+            <Can I="manage" a={'Proposal'}>
               <Link to="/proposals" className={styles.linkButton}>
                 <Button className={styles.linkText}>My Proposals</Button>
               </Link>
@@ -90,7 +90,7 @@ export default function NavBar(props) {
         {(currentPhase.phase === 2 ||
           currentPhase.phase === 3 ||
           currentPhase.phase === 4) && (
-          <Can I="manage" a={Topic.name}>
+          <Can I="manage" a={'Topic'}>
             <Link to="/topics/manage" className={styles.linkButton}>
               <Button className={styles.linkText}>My Topics</Button>
             </Link>
@@ -117,7 +117,7 @@ export default function NavBar(props) {
             </Link>
           </Can>
         </Can>
-        <Can I="update" a={Phase.name}>
+        <Can I="update" a={'Phase'}>
           <Link to="/phase/manage" className={styles.linkButton}>
             <Button className={styles.linkText}>Manage Phases</Button>
           </Link>
