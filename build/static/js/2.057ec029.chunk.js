@@ -35566,11 +35566,14 @@
       }
       Ce(q, we),
         Ce(
-          ['$and', '$or'].reduce(function (e, t) {
-            return (e[t] = Oe({}, e[t], { type: 'field' })), e
-          }, Oe({}, q, {
-            $nor: Oe({}, q.$nor, { type: 'field', parse: b.compound })
-          })),
+          ['$and', '$or'].reduce(
+            function (e, t) {
+              return (e[t] = Oe({}, e[t], { type: 'field' })), e
+            },
+            Oe({}, q, {
+              $nor: Oe({}, q.$nor, { type: 'field', parse: b.compound })
+            })
+          ),
           we,
           { forPrimitives: !0 }
         )

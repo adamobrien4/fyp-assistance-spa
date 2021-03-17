@@ -83,12 +83,12 @@ function App() {
           console.log(res)
           if (res.data?.notifications?.length > 0) {
             setNotifications(res.data.notifications)
-            return resolve()
           }
+          resolve()
         })
         .catch(err => {
           console.error(err)
-          return reject(err)
+          reject(err)
         })
     })
   }
