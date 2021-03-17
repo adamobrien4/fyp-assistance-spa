@@ -1,7 +1,6 @@
 import { AbilityBuilder, Ability } from '@casl/ability'
 
 export default function defineAbilityFor(user) {
-  console.log('Building abilities for', user)
   const { can, cannot, build } = new AbilityBuilder(Ability)
 
   // Setup to allow specific actions to be taken during each phase

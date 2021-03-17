@@ -1,8 +1,9 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import { AppBar } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
 
-import NavBar from './NavBar'
+import NavBar from './Navbar/NavBar'
 
 const useStyles = makeStyles(theme => ({
   appBar: {
@@ -14,7 +15,11 @@ export default function Header(props) {
   const classes = useStyles()
   return (
     <AppBar position="fixed" className={classes.appBar}>
-      <NavBar />
+      <NavBar notifications={props.notifications} />
     </AppBar>
   )
+}
+
+Header.propTypes = {
+  notifications: PropTypes.array.isRequired
 }
