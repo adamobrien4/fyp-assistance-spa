@@ -63,7 +63,7 @@ const StudentDefinedTopicModalContents = props => {
 }
 
 StudentDefinedTopicModalContents.propTypes = {
-  register: PropTypes.object.isRequired,
+  register: PropTypes.func.isRequired,
   control: PropTypes.object.isRequired,
   errors: PropTypes.object.isRequired,
   editMode: PropTypes.bool.isRequired

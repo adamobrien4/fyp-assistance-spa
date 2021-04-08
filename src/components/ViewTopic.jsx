@@ -56,7 +56,7 @@ const ViewTopic = props => {
 
   return (
     <Container maxWidth="md">
-      <BackButton dense />
+      <BackButton dense={true} />
 
       <Input label="Title" value={topic.title} readOnly />
       <Input label="Supervisor" value={topic.supervisor.displayName} readOnly />

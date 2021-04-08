@@ -19,7 +19,6 @@
     "@material-ui/icons": "^4.11.2",
     "@material-ui/lab": "^4.0.0-alpha.57",
     "@testing-library/jest-dom": "^5.11.8",
-    "@testing-library/react": "^11.2.2",
     "@testing-library/user-event": "^12.6.0",
     "antd": "^4.10.3",
     "axios": "^0.21.1",
@@ -62,6 +61,7 @@
     ]
   },
   "devDependencies": {
+    "@testing-library/react": "^11.2.5",
     "eslint": "^7.17.0",
     "eslint-config-standard": "^16.0.2",
     "eslint-plugin-import": "^2.22.1",

@@ -107,7 +107,7 @@ const PaginatedTable = props => {
     <TableContainer component={Paper}>
       <Table aria-label="simple table">
         <TableHead>
-          <TableRow>
+          <TableRow key="head">
             <TableCell>Email</TableCell>
             {props.removableEntries ? (
               <TableCell align="right">Actions</TableCell>
@@ -116,8 +116,8 @@ const PaginatedTable = props => {
         </TableHead>
         <TableBody>
           {visable.length === 0 ? (
-            <TableRow>
-              <TableCell colspan={props.removableEntries ? 2 : 1}>
+            <TableRow key="empty">
+              <TableCell colSpan={props.removableEntries ? 2 : 1}>
                 No Users to display
               </TableCell>
             </TableRow>

@@ -37,12 +37,25 @@ const Notifications = props => {
   }
 
   const handleClickNotification = (id, path) => {
-    api.post('/notification/read', { id: id }).catch(err => {
-      console.log(err)
-      console.log('unable to update notification')
-    })
-    if (path) history.push(path)
-    handleCloseNotification()
+    api
+      .post('/notification/read', { id: id })
+      .then(resp => {
+        console.log(resp)
+        console.log(props.notifications)
+
+        let notis = props.notifications.filter(
+          notification => notification._id !== id
+        )
+        props.setNotifications(notis)
+      })
+      .catch(err => {
+        console.log(err)
+        console.log('unable to update notification')
+      })
+      .finally(() => {
+        if (path) history.push(path)
+        handleCloseNotification()
+      })
   }
 
   return (
@@ -97,7 +110,8 @@ const Notifications = props => {
 }
 
 Notifications.propTypes = {
-  notifications: PropTypes.array.isRequired
+  notifications: PropTypes.array.isRequired,
+  setNotifications: PropTypes.func.isRequired
 }
 
 export default Notifications

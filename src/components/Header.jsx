@@ -15,11 +15,15 @@ export default function Header(props) {
   const classes = useStyles()
   return (
     <AppBar position="fixed" className={classes.appBar}>
-      <NavBar notifications={props.notifications} />
+      <NavBar
+        notifications={props.notifications}
+        setNotifications={props.setNotifications}
+      />
     </AppBar>
   )
 }
 
 Header.propTypes = {
-  notifications: PropTypes.array.isRequired
+  notifications: PropTypes.array.isRequired,
+  setNotifications: PropTypes.func.isRequired
 }

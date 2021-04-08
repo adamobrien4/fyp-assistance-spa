@@ -151,13 +151,7 @@ const StudentAssignment = props => {
     setStudents(filteredStudents)
   }
 
-  const endAdornment = includeEmailPrefix ? (
-    <span style={{ fontSize: '10px', color: 'gray', marginRight: 10 }}>
-      @studentmail.ul.ie
-    </span>
-  ) : (
-    ''
-  )
+  const endAdornment = includeEmailPrefix ? '@studentmail.ul.ie' : ''
 
   return (
     <Container maxWidth="lg">
@@ -177,6 +171,8 @@ const StudentAssignment = props => {
         includeEmailPrefix={includeEmailPrefix}
         onChangeEmailPrefix={onChangeEmailPrefix}
         onAdd={onAdd}
+        addInputTestId="studentEmailAssignmentInput"
+        addButtonTestId="studentEmailAssignmentButton"
       />
 
       <br />

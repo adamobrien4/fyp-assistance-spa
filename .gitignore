@@ -23,3 +23,6 @@ yarn-error.log*
 
 Test.jsx
 test.js
+package-lock.json
+
+build/static/js/2.057ec029.chunk.js

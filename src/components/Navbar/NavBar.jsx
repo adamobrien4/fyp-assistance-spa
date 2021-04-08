@@ -97,7 +97,10 @@ const NavBar = props => {
         </Can>
       </div>
 
-      <Notifications notifications={props.notifications} />
+      <Notifications
+        notifications={props.notifications}
+        setNotifications={props.setNotifications}
+      />
 
       <ProfileMenu />
     </Toolbar>
@@ -105,7 +108,8 @@ const NavBar = props => {
 }
 
 NavBar.propTypes = {
-  notifications: PropTypes.array.isRequired
+  notifications: PropTypes.array.isRequired,
+  setNotifications: PropTypes.func.isRequired
 }
 
 export default NavBar

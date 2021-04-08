@@ -186,7 +186,10 @@ function App() {
       loadingComponent={Loading}>
       {appReady ? (
         <AbilityContext.Provider value={generateAbilitiesFor(user)}>
-          <Header notifications={notifications} />
+          <Header
+            notifications={notifications}
+            setNotifications={setNotifications}
+          />
           <Toolbar />
           <Pages user={user} />
         </AbilityContext.Provider>
