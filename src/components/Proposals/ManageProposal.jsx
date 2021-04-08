@@ -72,6 +72,7 @@ const ProposalsTable = props => {
           <TableRow>
             <TableCell>Title</TableCell>
             <TableCell>For Topic</TableCell>
+            <TableCell>Type</TableCell>
             <TableCell>Status</TableCell>
             <TableCell align="right">Actions</TableCell>
           </TableRow>
@@ -104,6 +105,11 @@ const ProposalsTable = props => {
                     }>
                     {proposal.topic.title}
                   </MuiLink>
+                </TableCell>
+                <TableCell>
+                  {proposal.type === 'supervisorDefined'
+                    ? 'Supervisor Defined'
+                    : 'Student Defined'}
                 </TableCell>
                 <TableCell>
                   {proposalStatusToHumanFriendlyString(proposal.status)}
@@ -227,21 +233,10 @@ const ManageProposal = props => {
             Supervisors will be available to respond to Proposals during Phase 4
           </Typography>
         ) : null}
-        <Typography>Supervisor Topic Proposals</Typography>
+        <br />
         <ProposalsTable
           loading={loading}
-          values={supervisorProposals}
-          updateStatus={updateStatus}
-          downgradeStatus={downgradeStatus}
-          setSelectedProposal={setSelectedProposal}
-          setDialogOpen={setDialogOpen}
-          currentPhase={currentPhase}
-        />
-
-        <Typography>Custom Proposals</Typography>
-        <ProposalsTable
-          loading={loading}
-          values={customProposals}
+          values={[...supervisorProposals, ...customProposals]}
           updateStatus={updateStatus}
           downgradeStatus={downgradeStatus}
           setSelectedProposal={setSelectedProposal}

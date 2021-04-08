@@ -14,10 +14,10 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-const BackButton = props => {
+const BackButton = ({ dense, ...props }) => {
   const classes = useStyles()
   const history = useHistory()
-  return props.dense ? (
+  return props.dense === true ? (
     <IconButton
       className={classes.button}
       onClick={() => {

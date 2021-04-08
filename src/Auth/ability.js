@@ -24,7 +24,6 @@ export default function defineAbilityFor(user) {
       can('read', 'Proposal')
       can('respond', 'Proposal', { 'topic.supervisor': user.id })
       break
-    // eslint-disable-next-line
     case 'Coordinator':
       can('manage', 'Student')
       can('manage', 'Supervisor')

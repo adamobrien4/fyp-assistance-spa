@@ -40,7 +40,10 @@ export default function UserEmailInputField(props) {
         className={classes.input}
         placeholder="Student Email"
         value={props.email}
-        inputProps={{ 'aria-label': 'Student Email' }}
+        inputProps={{
+          'aria-label': 'Student Email',
+          'data-testid': props.addInputTestId
+        }}
         endAdornment={props.endAdornment}
         onChange={props.onChange}
       />
@@ -58,7 +61,8 @@ export default function UserEmailInputField(props) {
       <IconButton
         className={classes.iconButton}
         aria-label="search"
-        onClick={props.onAdd}>
+        onClick={props.onAdd}
+        data-testid={props.addButtonTestId}>
         <AddCircleIcon />
       </IconButton>
     </Paper>
@@ -71,5 +75,7 @@ UserEmailInputField.propTypes = {
   onChange: PropTypes.func.isRequired,
   includeEmailPrefix: PropTypes.bool.isRequired,
   onChangeEmailPrefix: PropTypes.func.isRequired,
-  onAdd: PropTypes.func.isRequired
+  onAdd: PropTypes.func.isRequired,
+  addInputTestId: PropTypes.string,
+  addButtonTestId: PropTypes.string
 }

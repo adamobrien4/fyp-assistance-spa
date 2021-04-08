@@ -1,30 +1,16 @@
-import React, { useContext, useState } from 'react'
-import { useMsal } from '@azure/msal-react'
-import {
-  Avatar,
-  Button,
-  Box,
-  IconButton,
-  Menu,
-  MenuItem,
-  Toolbar
-} from '@material-ui/core'
+import React, { useContext } from 'react'
+import PropTypes from 'prop-types'
+import { Button, IconButton, Toolbar } from '@material-ui/core'
 import { makeStyles } from '@material-ui/core/styles'
-import { useHistory, Link } from 'react-router-dom'
-import { Can } from '../Auth/Can'
+import { Link } from 'react-router-dom'
+import { Can } from '../../Auth/Can'
 
-import Topic from '../Auth/Topic'
-import Proposal from '../Auth/Proposal'
-import Phase from '../Auth/Phase'
-
-import { PhaseContext } from '../contexts/PhaseContext'
+import { PhaseContext } from '../../contexts/PhaseContext'
 
 import HomeIcon from '@material-ui/icons/Home'
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore'
 
-import ListItemIcon from '@material-ui/core/ListItemIcon'
-import ListItemText from '@material-ui/core/ListItemText'
-import ExitToAppIcon from '@material-ui/icons/ExitToApp'
+import Notifications from './Notifications'
+import ProfileMenu from './ProfileMenu'
 
 const useStyles = makeStyles(theme => ({
   navDisplayFlex: {
@@ -39,34 +25,21 @@ const useStyles = makeStyles(theme => ({
   },
   linkButton: {
     margin: '0 5px'
+  },
+  notificationIcon: {
+    color: 'white'
   }
 }))
 
-export default function NavBar(props) {
+const NavBar = props => {
   const styles = useStyles()
   const { currentPhase } = useContext(PhaseContext)
-
-  const history = useHistory()
-  const { instance, accounts } = useMsal()
-  const account = accounts[0]
-
-  const accountAbbr = account.name.split(' ').map(el => el[0])
-
-  const [anchorEl, setAnchorEl] = useState(null)
-
-  const handleClick = event => {
-    setAnchorEl(event.currentTarget)
-  }
-
-  const handleClose = () => {
-    setAnchorEl(null)
-  }
 
   return (
     <Toolbar>
       <div style={{ flexGrow: 1 }}>
         <Link to="/">
-          <IconButton edge="start" aria-label="home">
+          <IconButton edge="start" aria-label="home" disableRipple>
             <HomeIcon fontSize="large" style={{ color: 'white' }} />
           </IconButton>
         </Link>
@@ -124,43 +97,19 @@ export default function NavBar(props) {
         </Can>
       </div>
 
-      {/* User Avatar */}
-      <Box edge="end">
-        <Button
-          aria-label="delete"
-          onClick={handleClick}
-          endIcon={<ExpandMoreIcon style={{ color: 'white' }} />}>
-          <Avatar style={{ color: 'white' }}>{accountAbbr}</Avatar>
-        </Button>
+      <Notifications
+        notifications={props.notifications}
+        setNotifications={props.setNotifications}
+      />
 
-        <Menu
-          anchorEl={anchorEl}
-          keepMounted
-          open={Boolean(anchorEl)}
-          onClose={handleClose}
-          getContentAnchorEl={null}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'center'
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'center'
-          }}>
-          <MenuItem
-            onClick={() => {
-              instance.logout({
-                onRedirectNavigate: process.env.REACT_APP_REDIRECT_URL
-              })
-              setAnchorEl(null)
-            }}>
-            <ListItemIcon>
-              <ExitToAppIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText primary="Logout" />
-          </MenuItem>
-        </Menu>
-      </Box>
+      <ProfileMenu />
     </Toolbar>
   )
 }
+
+NavBar.propTypes = {
+  notifications: PropTypes.array.isRequired,
+  setNotifications: PropTypes.func.isRequired
+}
+
+export default NavBar

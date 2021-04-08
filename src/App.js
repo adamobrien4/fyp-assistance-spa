@@ -17,9 +17,7 @@ import generateAbilitiesFor from './Auth/ability'
 import api, { setup as apiSetup } from './utils/api.axios'
 import axiosGraphInstance, { setup as graphSetup } from './utils/graph.axios'
 
-import Topic from './Auth/Topic'
 import Phase from './Auth/Phase'
-import Proposal from './Auth/Proposal'
 
 import { Toolbar } from '@material-ui/core'
 
@@ -71,8 +69,28 @@ function App() {
   const { user, setUserObject } = useContext(AuthContext)
   const { setCurrentPhase } = useContext(PhaseContext)
 
+  const [notifications, setNotifications] = useState([])
+
   const authRequest = {
     ...loginRequest
+  }
+
+  const loadNotifications = () => {
+    return new Promise((resolve, reject) => {
+      api
+        .get('/notification')
+        .then(res => {
+          console.log(res)
+          if (res.data?.notifications?.length > 0) {
+            setNotifications(res.data.notifications)
+          }
+          resolve()
+        })
+        .catch(err => {
+          console.error(err)
+          reject(err)
+        })
+    })
   }
 
   useEffect(() => {
@@ -140,13 +158,11 @@ function App() {
                   }
 
                   if (userObject.role) {
-                    setUserObject(userObject)
-                    setAppReady(true)
-                  } else {
-                    // User has no assigned role
-                    setUserObject(userObject)
-                    setAppReady(true)
+                    await loadNotifications()
                   }
+
+                  setUserObject(userObject)
+                  setAppReady(true)
                 })
                 .catch(err => {
                   alert('Could not initialise your account, please try again')
@@ -170,7 +186,10 @@ function App() {
       loadingComponent={Loading}>
       {appReady ? (
         <AbilityContext.Provider value={generateAbilitiesFor(user)}>
-          <Header />
+          <Header
+            notifications={notifications}
+            setNotifications={setNotifications}
+          />
           <Toolbar />
           <Pages user={user} />
         </AbilityContext.Provider>
